@@ -1,0 +1,13 @@
+#!ipxe
+
+set mirror {{alpine_base_url}}/main
+set bob http://{{bob_listen_address}}
+set alpine ${bob}/alpine
+set overlay ${bob}/builder/builder.apkovl.tar.gz
+set script ${bob}/builder/${mac}.sh
+set flavor lts
+
+kernel ${alpine}/vmlinuz-${flavor} console=tty0 modules=loop,squashfs boot_if=${mac} nomodeset modloop=${alpine}/modloop-${flavor} alpine_repo=${mirror} apkovl=${overlay} build_script=${script}
+initrd ${alpine}/initramfs-${flavor}
+
+boot

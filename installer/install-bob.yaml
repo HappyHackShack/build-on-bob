@@ -9,22 +9,65 @@
   #     name:
   #     - dnsmasq
   #     - ipxe-bootimgs-x86
-  #     - nginx 
+  #     - nginx
+  #     - python3-pip
+  #     - qemu-img
 
-  - name: Make the required directories
-    ansible.builtin.file:
-      path: "{{ item }}"
-      state: directory
-    loop:
-    - "{{ BOB_ETC_DIRECTORY }}"
-    - "{{ BOB_HOME_DIRECTORY }}"
-    - "{{ BOB_TFTP_DIRECTORY }}"
-    - "{{ BOB_HTML_DIRECTORY }}/ipxe"
-    - "{{ BOB_HTML_DIRECTORY }}/alpine"
-    - "{{ BOB_HTML_DIRECTORY }}/fcos"
-    - "{{ BOB_HTML_DIRECTORY }}/fedora"
-    - "{{ BOB_HTML_DIRECTORY }}/rocky"
-    - "{{ BOB_HTML_DIRECTORY }}/ubuntu"
+  # - name: Install any Python requirements
+  #   ansible.builtin.pip:
+  #     name:
+  #     - flask
+
+  # - name: Make the required directories
+  #   ansible.builtin.file:
+  #     path: "{{ item }}"
+  #     state: directory
+  #   loop:
+  #   - "{{ BOB_ETC_DIRECTORY }}"
+  #   - "{{ BOB_HOME_DIRECTORY }}"
+  #   - "{{ BOB_TFTP_DIRECTORY }}"
+  #   - "{{ BOB_HTML_DIRECTORY }}/ipxe"
+  #   - "{{ BOB_HTML_DIRECTORY }}/builder"
+  #   - "{{ BOB_HTML_DIRECTORY }}/alpine"
+  #   - "{{ BOB_HTML_DIRECTORY }}/fcos"
+  #   - "{{ BOB_HTML_DIRECTORY }}/images"
+
+  - name: Get status of Overlay
+    ansible.builtin.stat:
+      path: builder.apkovl.tar.gz
+    register: overlay
+
+  - name: Build the overlay
+    ansible.builtin.shell: ./mk-overlay.sh
+    when: not overlay.stat.exists
+
+  # Shoudl this be in a bob fetch ? (so that they can be changed)
+  - name: Cloud Image block
+    block:
+    - name: Get status of cloud QCOW
+      ansible.builtin.stat:
+        path: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.qcow2"
+      register: cloud_qcow
+
+    - name: Fetch the cloud images
+      ansible.builtin.get_url:
+        url: "{{ ROCKY_QCOW_URL }}"
+        dest: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.qcow2"
+      when: not cloud_qcow.stat.exists
+
+    - name: Get status of cloud RAW
+      ansible.builtin.stat:
+        path: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.raw.gz"
+      register: cloud_raw_gz
+    
+    - name: Convert qcow to raw
+      ansible.builtin.shell:
+        chdir: "{{ BOB_HTML_DIRECTORY }}/images"
+        cmd: |
+          qemu-img convert -O raw {{ROCKY_IMAGE_FILE}}.qcow2 {{ROCKY_IMAGE_FILE}}.raw
+          gzip {{ROCKY_IMAGE_FILE}}.raw
+      when: not cloud_raw_gz.stat.exists
+
 
   # BOB Engine
   - name: The bob engine block
@@ -62,17 +105,16 @@
 
     - name: Put the bob man page into place
       ansible.builtin.copy:
-        src: "../bob.1.man"
+        src: "bob.1.man"
         dest: /usr/share/man/man1/bob.1
         owner: root
         mode: '0644'
 
     - name: Put the bob (python) engine into place
       ansible.builtin.copy:
-        src: "../opt_bob/bob.py"
-        dest: "{{ BOB_HOME_DIRECTORY }}/bob.py"
+        src: "../opt_bob/"
+        dest: "{{ BOB_HOME_DIRECTORY }}/"
         owner: root
-        mode: '0755'
 
   # DNSMASQ
   - name: The DNSMASQ block
@@ -101,10 +143,23 @@
   # NGINX
   - name: Any NGINX stuff block
     block:
+    - name: Put the Wendy proxy in place
+      ansible.builtin.template:
+        src: nginx-wendy.conf.j2
+        dest: "/etc/nginx/default.d/wendy.conf"
+      notify: Restart NGINX
+
     - name: Put the generic ipxe.cfg in place
       ansible.builtin.template:
         src: ipxe.cfg.j2
         dest: "{{BOB_HTML_DIRECTORY}}/ipxe.cfg"
+
+    - name: Copy the overlay
+      ansible.builtin.copy:
+        src: "builder.apkovl.tar.gz"
+        dest: "{{ BOB_HTML_DIRECTORY }}/builder"
+        owner: root
+        mode: '0644'
 
     - name: Enable the NGINX service
       ansible.builtin.service:
@@ -117,4 +172,8 @@
     ansible.builtin.service:
       name: dnsmasq
       state: restarted
-    
+
+  - name: Restart NGINX
+    ansible.builtin.service:
+      name: nginx
+      state: restarted

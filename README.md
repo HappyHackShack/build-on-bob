@@ -4,7 +4,13 @@ An automated deployment system.
 
 ## Installation
 
-* Check this code out onto the machine that you want to be the BOB server
-* Go and open install-config.yaml and set the variables to relevant values for your environment.
-* Have your environment variable BECOME_PASS set to be your password (and that you have sudo privileges)
-* Run the install playbook: `ansible-playbook bob-server.yaml` to install on the local machine
+Once you have cloned this repo onto the machine that you want to be the BOB server and **you have sudo rights**.
+```bash
+cd <code-repo>/installer
+# Check your config (adjust as needed)
+vi config.yaml
+# Set your environment ready for ansible
+export BECOME_PASS='<your password>'
+# Run the ansible installer
+ansible-playbook install-bob.yaml
+```

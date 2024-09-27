@@ -1,0 +1,8 @@
+#!/sbin/openrc-run
+
+description="My first init script"
+name="Headless init"
+
+command="/usr/local/bin/headless"
+command_background=false
+pidfile="/run/${RC_SVCNAME}.pid"

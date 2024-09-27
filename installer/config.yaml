@@ -21,6 +21,11 @@ all:
     # Mirrors
     BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v3.20'
 
+    # Cloud Images
+    ROCKY_QCOW_URL0: 'https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
+    ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
+    ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'
+
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing
     BOB_DNSMASQ_DIRECTORY: '/etc/dnsmasq.d'
     BOB_ETC_DIRECTORY: '/etc/bob'

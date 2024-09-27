@@ -68,39 +68,40 @@ log() {
     [[ $LEVEL -le $SYSLOG_LEVEL ]] && logger -t $SYSLOG_TAG -p $LEVEL "${TITLE}: ${MSG}"
 }
 
+do_Build() {
+    HOST="$1"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py build host $HOST
+}
+
+do_Complete() {
+    HOST="$1"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py complete host $HOST
+}
 
 do_Create() {
-    NOUN="$1"
-    shift
-
-    case $NOUN in
-        host)
-            ${OPT_BOB}/bob.py create $NOUN $1 $2 $3
-            systemctl restart dnsmasq
-            ;;
-        *)
-            echo -e "${YELLOW}What do you want me to create ?${END}"
-            ;;
-    esac
-
+    MAC="$1"
+    IP="$2"
+    HOST="$3"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to create ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py create host $MAC $IP $HOST
+    systemctl restart dnsmasq
 }
-
 
 do_Delete() {
-    NOUN="$1"
-    shift
-
-    case $NOUN in
-        host)
-            ${OPT_BOB}/bob.py delete $NOUN $1 
-            systemctl restart dnsmasq
-            ;;
-        *)
-            echo -e "${YELLOW}What do you want me to delete ?${END}"
-            ;;
-    esac
+    HOST="$1"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to delete ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py delete host $HOST
+    systemctl restart dnsmasq
 }
 
+do_Edit() {
+    HOST="$1"
+    OS="$2"
+    [[ $OS == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py edit host $HOST $OS 
+}
 
 do_Fetch() {
     NOUN="$1"
@@ -114,20 +115,10 @@ do_Fetch() {
     done
 }
 
-
 do_List() {
     NOUN="$1"
-    shift
-
-    case $NOUN in
-        hosts)
-            ${OPT_BOB}/bob.py list $NOUN $1 
-            systemctl restart dnsmasq
-            ;;
-        *)
-            echo -e "${YELLOW}What do you want me to list ?${END}"
-            ;;
-    esac
+    # Assume hosts (for now)
+    ${OPT_BOB}/bob.py list hosts
 }
 
 
@@ -173,6 +164,12 @@ VERB="$1"
 shift
 
 case $VERB in
+    build)
+        do_Build $*
+        ;;
+    complete)
+        do_Complete $*
+        ;;
     create)
         do_Create $*
         ;;

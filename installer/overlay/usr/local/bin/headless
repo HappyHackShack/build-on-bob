@@ -1,0 +1,16 @@
+#!/bin/sh
+
+RED=''
+GREEN=''
+BLUE=''
+
+hostname conan
+
+echo -e "\n\n\e[36m*** Hello Builder ! \e[0m"
+sleep 0.5
+
+cd /tmp
+Script=$( cat /proc/cmdline | tr ' ' '\n' | grep build_script | awk -F= '{print $2}' )
+wget $Script -O build.sh
+chmod 750 build.sh
+./build.sh

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+echo -e "\n\n\e[36mDoing a build of ROCKY ...\e[0m"
+
+cd /tmp
+wget http://{{bob_listen_address}}/images/{{rocky_image_file}}.raw.gz
+
+echo -e "\n\n\e[36mPlease wait while image is written to {{disk}} ...\e[0m"
+gunzip < {{rocky_image_file}}.raw.gz | dd of={{disk}} bs=4M
+partprobe {{disk}}
+
+## Cloud stuff
+echo -e "\n\n\e[36mConfiguring cloud-init ...\e[0m"
+mkdosfs -n CIDATA {{disk}}1
+mount -t vfat {{disk}}1 /mnt
+cd /mnt
+
+wget http://{{bob_listen_address}}/builder/meta-data
+wget http://{{bob_listen_address}}/builder/user-data
+
+wget http://{{bob_listen_address}}/wendy/complete/{{mac}}
+
+echo -e "\n\nSleeping 5 ..."
+sleep 1
+echo "Sleeping 4 ..."
+sleep 1
+echo "Sleeping 3 ..."
+sleep 1
+echo "Sleeping 2 ..."
+sleep 1
+echo "Sleeping 1 ..."
+sleep 1
+
+reboot
