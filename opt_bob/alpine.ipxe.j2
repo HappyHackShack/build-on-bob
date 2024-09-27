@@ -1,0 +1,11 @@
+#!ipxe
+
+set mirror {{alpine_base_url}}/main/x86_64/
+set bob http://{{bob_listen_address}}/alpine
+set alpine ${bob}/v3.20/main
+set flavor lts
+
+kernel ${bob}/vmlinuz-${flavor} console=tty0 modules=loop,squashfs quiet nomodeset modloop=${bob}/modloop-${flavor} alpine_repo=${mirror} initrd=initramfs-${flavor}
+initrd ${bob}/initramfs-${flavor}
+
+boot

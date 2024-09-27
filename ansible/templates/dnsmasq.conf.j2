@@ -1,0 +1,23 @@
+# BOB SErver config 
+
+# Don't do DNS
+port=0
+
+# Just listen on a specific address
+bind-interfaces
+listen-address={{ BOB_LISTEN_ADDRESS }}
+
+domain={{ BOB_DNS_DOMAIN }}
+
+# TFTP
+enable-tftp 
+tftp-root={{ BOB_TFTP_DIRECTORY }}
+
+# Set a tag for a user-class
+dhcp-userclass=set:ipxe,iPXE
+dhcp-boot=ipxe-x86_64.efi
+dhcp-boot=tag:ipxe,http://{{ BOB_LISTEN_ADDRESS }}/ipxe.cfg
+
+dhcp-range={{ BOB_LISTEN_ADDRESS }},static,24h
+dhcp-option=option:router,{{ BOB_GATEWAY_ADDRESS }}
+dhcp-option=option:dns-server,{{ BOB_DNS_SERVER }}

@@ -1,0 +1,120 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+  # - name: Install required packages
+  #   ansible.builtin.package:
+  #     name:
+  #     - dnsmasq
+  #     - ipxe-bootimgs-x86
+  #     - nginx 
+
+  - name: Make the required directories
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+    loop:
+    - "{{ BOB_ETC_DIRECTORY }}"
+    - "{{ BOB_HOME_DIRECTORY }}"
+    - "{{ BOB_TFTP_DIRECTORY }}"
+    - "{{ BOB_HTML_DIRECTORY }}/ipxe"
+    - "{{ BOB_HTML_DIRECTORY }}/alpine"
+    - "{{ BOB_HTML_DIRECTORY }}/fcos"
+    - "{{ BOB_HTML_DIRECTORY }}/fedora"
+    - "{{ BOB_HTML_DIRECTORY }}/rocky"
+    - "{{ BOB_HTML_DIRECTORY }}/ubuntu"
+
+  # BOB Engine
+  - name: The bob engine block
+    block:
+    - name: Put the bob script into place
+      ansible.builtin.copy:
+        src: "../bob.sh"
+        dest: /usr/local/sbin/bob
+        owner: root
+        mode: '0755'
+
+    - name: Put the bob engine bash config in place
+      ansible.builtin.template:
+        src: "engine.sh.j2"
+        dest: "{{ BOB_ETC_DIRECTORY }}/engine.sh"
+        force: true
+        owner: root
+        mode: '0644'
+
+    - name: Put the bob engine yaml config in place
+      ansible.builtin.template:
+        src: "engine.yaml.j2"
+        dest: "{{ BOB_ETC_DIRECTORY }}/engine.yaml"
+        force: true
+        owner: root
+        mode: '0644'
+
+    - name: Put the bob host config in place
+      ansible.builtin.copy:
+        content: "---\n  hosts: []\n"
+        dest: "{{ BOB_ETC_DIRECTORY }}/hosts.yaml"
+        force: false
+        owner: root
+        mode: '0644'
+
+    - name: Put the bob man page into place
+      ansible.builtin.copy:
+        src: "../bob.1.man"
+        dest: /usr/share/man/man1/bob.1
+        owner: root
+        mode: '0644'
+
+    - name: Put the bob (python) engine into place
+      ansible.builtin.copy:
+        src: "../opt_bob/bob.py"
+        dest: "{{ BOB_HOME_DIRECTORY }}/bob.py"
+        owner: root
+        mode: '0755'
+
+  # DNSMASQ
+  - name: The DNSMASQ block
+    block:
+    - name: Put the DNSMASQ config in place
+      ansible.builtin.template:
+        src: dnsmasq.conf.j2
+        dest: "{{BOB_DNSMASQ_DIRECTORY}}/bob.conf"
+        owner: root
+        mode: '0644'
+      notify: Restart DNSMASQ
+
+    - name: Enable the dnsmasq service
+      ansible.builtin.service:
+        name: dnsmasq
+        enabled: true
+
+  # TFTP
+  - name: Any TFTP stuff block
+    block:
+    - name: Put the iPXE EFI module in place
+      ansible.builtin.copy:
+        src: /usr/share/ipxe/ipxe-x86_64.efi
+        dest: "{{ BOB_TFTP_DIRECTORY }}/"
+
+  # NGINX
+  - name: Any NGINX stuff block
+    block:
+    - name: Put the generic ipxe.cfg in place
+      ansible.builtin.template:
+        src: ipxe.cfg.j2
+        dest: "{{BOB_HTML_DIRECTORY}}/ipxe.cfg"
+
+    - name: Enable the NGINX service
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+      
+  handlers:
+  - name: Restart DNSMASQ
+    ansible.builtin.service:
+      name: dnsmasq
+      state: restarted
+    

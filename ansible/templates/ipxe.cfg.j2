@@ -1,0 +1,4 @@
+#!ipxe
+
+echo "My MAC is ${mac} - chaining onto my specific config"
+chain http://{{ BOB_LISTEN_ADDRESS }}/ipxe/${mac}.cfg

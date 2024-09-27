@@ -1,0 +1,27 @@
+---
+all:
+  hosts:
+    localhost:
+  vars:
+    ansible_become_pass: "{{ lookup('ansible.builtin.env', 'BECOME_PASS') }}"
+    ansible_connection: local
+
+    # What IP address do you want to use (MUST already be on one of your interfaces)
+    BOB_LISTEN_ADDRESS: '172.16.0.10'
+    BOB_GATEWAY_ADDRESS: '172.16.0.254'
+    BOB_DNS_SERVER: '172.16.0.254'
+
+    # Local DNS Domain
+    BOB_DNS_DOMAIN: 'home.lab'
+    # Where to share the TFTP files from
+    BOB_TFTP_DIRECTORY: '/var/lib/tftp'
+    # Bob's home
+    BOB_HOME_DIRECTORY: '/opt/bob'
+
+    # Mirrors
+    BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v3.20'
+
+    # DO NOT CHANGE BELOW HERE, unless you know what you are doing
+    BOB_DNSMASQ_DIRECTORY: '/etc/dnsmasq.d'
+    BOB_ETC_DIRECTORY: '/etc/bob'
+    BOB_HTML_DIRECTORY: '/usr/share/nginx/html'

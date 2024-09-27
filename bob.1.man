@@ -1,0 +1,81 @@
+.TH BOB 1 2024-09-26
+
+.SH NAME
+.B bob
+- (the workman) your gateway to automated OS deployments on Physicals (and virtuals)
+
+.SH SYNOPSIS
+.B bob build
+<object>
+.br
+.B bob complete
+<object>
+.br
+.B bob create
+<object> [<parameters> ...]
+.br
+.B bob delete
+<object> [<parameters> ...]
+.br
+.B bob edit
+<object> [<parameters> ...]
+.br
+.B bob help
+<object> [<parameters> ...]
+.br
+.B bob list
+<object> [<parameters> ...]
+.br
+.B bob test
+<object> [<parameters> ...]
+
+.SH CONFIGURATION
+Lorem
+
+.SH DESCRIPTION
+.B Bob 
+is a tool for automating the deployment of operating systems to servers over PXE.
+.br
+It is aimed at deploying pre-built cloud images to bare metal with the potential of configuring with cloud-init.
+
+.SH OPTIONS
+.SS build
+Put a target host into build mode ...
+
+.SS complete
+Complete the build of a target host and return the config to local boot.
+
+.SS create
+Create the config for a target host.
+
+.SS delete
+Delete the config of a target host.
+
+.SS edit
+Edit the configuration of a target hots.
+
+.SS help
+Show the built-in summary help details
+
+.SS list
+List objects that are configured.
+
+.SS test
+A simple test function (written for developers)
+
+.SH FILES
+.SS /etc/bob/*
+Internal system configuration files.
+.SS /etc/dnsmasq.d/*
+Configuration files for DNSMASQ.
+.SS /usr/share/nginx/html/*
+Document root for NGINX
+.SS /var/lib/tftp/*
+Root directory for the TFTP service
+
+
+.SH EXAMPLE
+Lorem
+
+.SH SEE ALSO
+.URL https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html "dnsmasq manual"
