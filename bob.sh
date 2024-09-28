@@ -191,8 +191,14 @@ case $VERB in
     list)
         do_List $*
         ;;
+    tail)
+        tail -f /var/log/nginx/access.log
+        ;;
     test)
         tester
+        ;;
+    watch)
+        watch -cn 1 cat /tmp/build_status
         ;;
     *)
         log $ERROR "What do you want me to do ?"

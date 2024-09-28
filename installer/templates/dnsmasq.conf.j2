@@ -16,7 +16,7 @@ tftp-root={{ BOB_TFTP_DIRECTORY }}
 # Set a tag for a user-class
 dhcp-userclass=set:ipxe,iPXE
 dhcp-boot=ipxe-x86_64.efi
-dhcp-boot=tag:ipxe,http://{{ BOB_LISTEN_ADDRESS }}/ipxe.cfg
+dhcp-boot=tag:ipxe,http://{{ BOB_LISTEN_ADDRESS }}/ipxe/stage1.cfg
 
 dhcp-range={{ BOB_LISTEN_ADDRESS }},static,24h
 dhcp-option=option:router,{{ BOB_GATEWAY_ADDRESS }}

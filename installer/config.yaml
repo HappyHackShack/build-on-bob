@@ -15,8 +15,9 @@ all:
     BOB_DNS_DOMAIN: 'home.lab'
     # Where to share the TFTP files from
     BOB_TFTP_DIRECTORY: '/var/lib/tftp'
-    # Bob's home
-    BOB_HOME_DIRECTORY: '/opt/bob'
+    # Builder SSH key (to be put onto deployed images)
+    BUILDER_SSH_KEY_FILE: '~/.ssh/id_rsa.pub'
+    BUILDER_SSH_KEY: "{{ lookup('ansible.builtin.file', ''+BUILDER_SSH_KEY_FILE) }}"
 
     # Mirrors
     BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v3.20'
@@ -26,7 +27,10 @@ all:
     ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'
 
+    #-----------------------------------------------------------------------------------------------------------------------
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing
     BOB_DNSMASQ_DIRECTORY: '/etc/dnsmasq.d'
     BOB_ETC_DIRECTORY: '/etc/bob'
     BOB_HTML_DIRECTORY: '/usr/share/nginx/html'
+    # Bob's home
+    BOB_HOME_DIRECTORY: '/opt/bob'

@@ -41,7 +41,7 @@
     ansible.builtin.shell: ./mk-overlay.sh
     when: not overlay.stat.exists
 
-  # Shoudl this be in a bob fetch ? (so that they can be changed)
+  # Should this be in a bob fetch ? (so that they can be changed)
   - name: Cloud Image block
     block:
     - name: Get status of cloud QCOW
@@ -115,6 +115,8 @@
         src: "../opt_bob/"
         dest: "{{ BOB_HOME_DIRECTORY }}/"
         owner: root
+        mode: preserve
+      notify: Restart WENDY
 
   # Wendy
   - name: Wendy API block
@@ -160,16 +162,22 @@
   # NGINX
   - name: Any NGINX stuff block
     block:
+    - name: Configure Wendy log format
+      ansible.builtin.template:
+        src: ng-wendy-log.conf.j2
+        dest: "/etc/nginx/conf.d/wendy-log.conf"
+      notify: Restart NGINX
+
     - name: Put the Wendy proxy in place
       ansible.builtin.template:
-        src: nginx-wendy.conf.j2
+        src: ng-wendy.conf.j2
         dest: "/etc/nginx/default.d/wendy.conf"
       notify: Restart NGINX
 
-    - name: Put the generic ipxe.cfg in place
+    - name: Put the stage1 ipxe.cfg in place
       ansible.builtin.template:
-        src: ipxe.cfg.j2
-        dest: "{{BOB_HTML_DIRECTORY}}/ipxe.cfg"
+        src: ipxe-stage1.cfg.j2
+        dest: "{{BOB_HTML_DIRECTORY}}/ipxe/stage1.cfg"
 
     - name: Copy the overlay
       ansible.builtin.copy:

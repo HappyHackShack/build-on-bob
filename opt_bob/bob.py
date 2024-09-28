@@ -22,6 +22,14 @@ L_BLUE = '\x1b[94m'
 L_MAGENTA = '\x1b[95m'
 L_CYAN = '\x1b[96m'
 WHITE = '\x1b[97m'
+BG_BLACK = '\x1b[40m'
+BG_RED = '\x1b[41;30m'
+BG_GREEN = '\x1b[42;30m'
+BG_YELLOW = '\x1b[43;30m'
+BG_BLUE = '\x1b[44;30m'
+BG_MAGENTA = '\x1b[45;30m'
+BG_CYAN = '\x1b[46;30m'
+BG_GRAY = '\x1b[47;30m'
 END = '\x1b[0m'
 
 Config_File = '/etc/bob/engine.yaml'
@@ -36,7 +44,7 @@ with open(Config_File,'rt') as cfg:
     Config = yaml.safe_load(cfg)
 # print(Config)
 
-def add_host(Hostname, IP, MAC, OS='alpine'):
+def add_host(Hostname, IP, MAC, OS='rescue'):
     Hosts = load_hosts_yaml()
     # Check IP address not already allocated
     for host in Hosts:
@@ -50,24 +58,30 @@ def add_host(Hostname, IP, MAC, OS='alpine'):
     # Now re-write the dnsmasq data
     write_dnsmasq_hosts(Hosts)
     write_host_ipxe_cfg(new_host)
+    print(f"{GREEN}New host '{WHITE}{Hostname}{GREEN}' added{END}")
 
 
 def build_host(Hostname):
     Hosts, host = load_hosts_yaml(Hostname)
-    if host:
-        host['target'] = 'build'
-        write_host_ipxe_cfg(host)
-        write_host_build_script(host)
-        save_hosts_yaml()
+    if not host:
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        return
+    host['target'] = 'build'
+    write_host_ipxe_cfg(host)
+    write_host_build_scripts(host)
+    save_hosts_yaml()
+    print(f"{CYAN}Host '{Hostname}' set to BUILD mode")
 
 
 def complete_host(Host_or_MAC):
     Hosts, host = load_hosts_yaml(Host_or_MAC, Host_or_MAC)
-    if host:
-        host['target'] = 'local'
-        print(host)
-        save_hosts_yaml()
-        write_host_ipxe_cfg(host)
+    if not host:
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        return
+    host['target'] = 'local'
+    save_hosts_yaml()
+    write_host_ipxe_cfg(host)
+    print(f"{CYAN}Host '{Host_or_MAC}' set to LOCAL boot mode")
 
 
 def delete_host(Hostname):
@@ -88,10 +102,13 @@ def delete_host(Hostname):
 
 def edit_host(Hostname, New_OS):
     Hosts, host = load_hosts_yaml(Hostname)
-    if host:
-        host['os'] = New_OS
-        save_hosts_yaml()
-        write_host_build_script(host)
+    if not host:
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        return
+    host['os'] = New_OS
+    save_hosts_yaml()
+    write_host_build_scripts(host)
+    print(f"{CYAN}Host '{Hostname}' set to be '{New_OS}' at next build")
 
 
 def load_hosts_yaml(Hostname=None, MAC=None):
@@ -111,10 +128,10 @@ def load_hosts_yaml(Hostname=None, MAC=None):
 
 def list_hosts():
     Hosts = load_hosts_yaml()
-    print(f'{WHITE}Hostname        MAC               / IP              OS        Disk        Build ?{END}')
+    print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Disk        Build ?   {END}')
     for h in Hosts:
         bld = GRAY if h['target'] == 'local' else RED
-        print(f"{h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
+        print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
 
 
 def render_template(Template, Config, Target):
@@ -139,9 +156,16 @@ def write_dnsmasq_hosts(Hosts):
             dns.write(f"dhcp-host={host['mac']},{host['ip_addr']},{host['hostname']}\n")
 
 
-def write_host_build_script(Host):
-    fname = f"{Build_Script_Dir}/{Host['mac']}.sh"
-    render_template( f"{Host['os']}.sh.j2", Config|Host, fname)
+def write_host_build_scripts(Host):
+    # Build script
+    script = f"{Build_Script_Dir}/{Host['mac']}.sh"
+    render_template( f"{Host['os']}.sh.j2", Config|Host, script)
+    # Meta-data
+    meta = f"{Build_Script_Dir}/meta-{Host['mac']}"
+    render_template( f"ci-meta-data.j2", Config|Host, meta)
+    # User-data
+    user = f"{Build_Script_Dir}/user-{Host['mac']}"
+    render_template( f"ci-user-data.j2", Config|Host, user)
 
 
 def write_host_ipxe_cfg(Host):
