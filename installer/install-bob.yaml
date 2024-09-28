@@ -41,34 +41,6 @@
     ansible.builtin.shell: ./mk-overlay.sh
     when: not overlay.stat.exists
 
-  # Should this be in a bob fetch ? (so that they can be changed)
-  - name: Cloud Image block
-    block:
-    - name: Get status of cloud QCOW
-      ansible.builtin.stat:
-        path: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.qcow2"
-      register: cloud_qcow
-
-    - name: Fetch the cloud images
-      ansible.builtin.get_url:
-        url: "{{ ROCKY_QCOW_URL }}"
-        dest: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.qcow2"
-      when: not cloud_qcow.stat.exists
-
-    - name: Get status of cloud RAW
-      ansible.builtin.stat:
-        path: "{{ BOB_HTML_DIRECTORY }}/images/{{ ROCKY_IMAGE_FILE }}.raw.gz"
-      register: cloud_raw_gz
-    
-    - name: Convert qcow to raw
-      ansible.builtin.shell:
-        chdir: "{{ BOB_HTML_DIRECTORY }}/images"
-        cmd: |
-          qemu-img convert -O raw {{ROCKY_IMAGE_FILE}}.qcow2 {{ROCKY_IMAGE_FILE}}.raw
-          gzip {{ROCKY_IMAGE_FILE}}.raw
-      when: not cloud_raw_gz.stat.exists
-
-
   # BOB Engine
   - name: The bob engine block
     block:

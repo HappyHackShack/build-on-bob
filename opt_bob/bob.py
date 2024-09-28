@@ -162,10 +162,12 @@ def write_host_build_scripts(Host):
     render_template( f"{Host['os']}.sh.j2", Config|Host, script)
     # Meta-data
     meta = f"{Build_Script_Dir}/meta-{Host['mac']}"
-    render_template( f"ci-meta-data.j2", Config|Host, meta)
+    #render_template( f"ci-meta-data.j2", Config|Host, meta)
+    with open(meta,'wt') as opf:
+        opf.write('---\n')
     # User-data
     user = f"{Build_Script_Dir}/user-{Host['mac']}"
-    render_template( f"ci-user-data.j2", Config|Host, user)
+    render_template( f"{Host['os']}-ci-user.j2", Config|Host, user)
 
 
 def write_host_ipxe_cfg(Host):

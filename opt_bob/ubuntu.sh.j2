@@ -1,0 +1,37 @@
+#!/bin/sh
+
+INFO='\e[36m'
+WARN='\e[32m'
+ERROR='\e[31m'
+END='\e[0m'
+
+echo -e "\n\n${INFO}Doing a build of UBUNTU ...${END}"
+
+cd /tmp
+wget http://{{bob_listen_address}}/images/{{ubuntu_image_file}}.raw.gz
+
+echo -e "\n\n${INFO}Please wait while image is written to {{disk}} ...${END}"
+gunzip < {{ubuntu_image_file}}.raw.gz | dd of={{disk}} bs=4M
+
+# We seem to be having issues with sda1 appearing
+partprobe {{disk}}
+
+## Cloud stuff
+echo -e "\n\n${INFO}Configuring cloud-init ...${END}"
+
+mkdosfs -n CIDATA {{disk}}14 || { echo -e "${ERROR}FAILED to make filesystem on {{disk}}1${END}"; exit 1; }
+#
+mount -t vfat {{disk}}14 /mnt || { echo -e "${ERROR}FAILED to mount {{disk}}1${END}"; exit 1; }
+cd /mnt
+
+wget http://{{bob_listen_address}}/builder/meta-{{mac}} -O meta-data
+wget http://{{bob_listen_address}}/builder/user-{{mac}} -O user-data
+
+wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
+
+echo -e "\n\nSleeping 5 ..."; sleep 1
+echo "Sleeping 4 ..."; sleep 1
+echo "Sleeping 3 ..."; sleep 1
+echo "Sleeping 2 ..."; sleep 1
+echo "Sleeping 1 ..."; sleep 1
+reboot

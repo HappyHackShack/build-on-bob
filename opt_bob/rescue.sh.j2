@@ -1,0 +1,11 @@
+#!/bin/sh
+
+INFO='\e[36m'
+WARN='\e[32m'
+ERROR='\e[31m'
+END='\e[0m'
+
+echo -e "\n\n${INFO}Doing a RESCUE ...${END}"
+apk add lsblk
+
+wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null

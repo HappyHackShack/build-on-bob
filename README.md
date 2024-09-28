@@ -14,3 +14,21 @@ export BECOME_PASS='<your password>'
 # Run the ansible installer
 ansible-playbook install-bob.yaml
 ```
+
+## Issues
+
+* Rocky seems to have an issue if the drive was already partitioned
+* Check the 'edit' is valid (exists)
+
+## Ideas To-Do
+
+* Test of second machine
+
+* Fix the fetcher
+
+* Deploy
+  * FCOS
+  * Fedora
+  * Ubuntu
+
+* Build the Wendy Web interface

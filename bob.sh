@@ -104,21 +104,45 @@ do_Edit() {
 }
 
 do_Fetch() {
-    NOUN="$1"
-    shift
+    # Start with the alpine boot files
     flavor='lts'
-
     cd ${BOB_HTML_DIRECTORY}/alpine
-    for file in initramfs modloop vmlinuz
-    do
+    for file in initramfs modloop vmlinuz; do
+        echo -n -e "${GRAY}ALPINE.${file}: $END"
         wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot/${file}-${flavor}
     done
+
+    # Now get each of the cloud images
+    cd ../images
+    fetch_Cloud_Image "$ROCKY_QCOW_URL" "$ROCKY_IMAGE_FILE"
+    fetch_Cloud_Image "$UBUNTU_QCOW_URL" "$UBUNTU_IMAGE_FILE"
 }
 
 do_List() {
     NOUN="$1"
     # Assume hosts (for now)
     ${OPT_BOB}/bob.py list hosts
+}
+
+
+fetch_Cloud_Image() {
+    URL="$1"
+    FILE="$2"
+    QCOW="${FILE}.qcow2"
+    RAW="${FILE}.raw"
+    RAW_GZ="${RAW}.gz"
+    #
+    echo -e "${CYAN}Checking $FILE"
+    [ -f ${QCOW} ] || {
+        echo -e "${YELLOW}Fetching $FILE"
+        wget "$URL" -O "${QCOW}"
+    }
+    [ -f ${RAW}.gz ] || {
+        echo -e "${YELLOW}Converting $FILE ..."
+        qemu-img convert -O raw "${QCOW}" "${RAW}"
+        echo -e "${YELLOW}and gzipping $FILE ..."
+        gzip "${RAW}"
+    }
 }
 
 
@@ -192,7 +216,7 @@ case $VERB in
         do_List $*
         ;;
     tail)
-        tail -f /var/log/nginx/access.log
+        tail -n 3 -f /var/log/nginx/access.log
         ;;
     test)
         tester

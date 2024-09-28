@@ -6,11 +6,8 @@ users:
 - name: rocky
   ssh_authorized_keys:
   - {{ builder_ssh_key }}
-  # plain_text_passwd: Rocky123
-  # lock_passwd: False
-  # sudo: ALL=(ALL) NOPASSWD:ALL
 
 runcmd:
 - touch /etc/cloud/cloud-init.disabled
-- echo "dd if=/dev/zero of=/dev/sda bs=4M count=499 ; reboot" > /usr/local/sbin/SPLAT.sh
+- echo "dd if=/dev/zero of=/dev/sda bs=4M count=99 ; reboot" > /usr/local/sbin/SPLAT.sh
 - chmod 750 /usr/local/sbin/SPLAT.sh

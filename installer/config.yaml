@@ -26,6 +26,9 @@ all:
     ROCKY_QCOW_URL0: 'https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'
+    UBUNTU_QCOW_URL0: 'https://cloud-images.ubuntu.com/oracular/20240927/oracular-server-cloudimg-amd64.img'
+    UBUNTU_QCOW_URL: 'http://sponge/cloud/oracular-server-cloudimg-amd64.img'
+    UBUNTU_IMAGE_FILE: 'Ubuntu-22.10-server-20240927'
 
     #-----------------------------------------------------------------------------------------------------------------------
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing
