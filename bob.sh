@@ -68,6 +68,15 @@ log() {
     [[ $LEVEL -le $SYSLOG_LEVEL ]] && logger -t $SYSLOG_TAG -p $LEVEL "${TITLE}: ${MSG}"
 }
 
+do_Add() {
+    HOST="$1"
+    IP="$2"
+    MAC="$3"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py add host $HOST $IP $MAC
+    systemctl restart dnsmasq
+}
+
 do_Build() {
     HOST="$1"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; exit 1; }
@@ -78,15 +87,6 @@ do_Complete() {
     HOST="$1"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; exit 1; }
     ${OPT_BOB}/bob.py complete host $HOST
-}
-
-do_Create() {
-    MAC="$1"
-    IP="$2"
-    HOST="$3"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to create ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py create host $MAC $IP $HOST
-    systemctl restart dnsmasq
 }
 
 do_Delete() {
@@ -128,11 +128,14 @@ show_Help() {
     Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}
     The following ${WHITE}Actions${END} are possible:
 
-    ${WHITE}create${END} - you can create ${MAGENTA}hosts${END}.\n
-    ${WHITE}delete${END} - you can delete ${MAGENTA}hosts${END}.\n
+    ${WHITE}add${END} - you can add a new ${MAGENTA}<Host>${END}. <IP> <MAC>\n
+    ${WHITE}build${END} - you can put a ${MAGENTA}host${END} into build mode.\n
+    ${WHITE}complete${END} - you can complete the build of a ${MAGENTA}host${END}.\n
+    ${WHITE}delete${END} - you can delete a ${MAGENTA}host${END}.\n
     ${WHITE}edit${END} - ???????\n
     ${WHITE}help${END} - show this help :)\n
     ${WHITE}list${END} - you can list ${MAGENTA}hosts${END}.\n
+    ${WHITE}tail${END} - tail all the logs.\n
     ${WHITE}test${END} - run the developer test function.\n
     For more details, run : ${CYAN}man bob${END}
     """
@@ -164,14 +167,14 @@ VERB="$1"
 shift
 
 case $VERB in
+    add)
+        do_Add $*
+        ;;
     build)
         do_Build $*
         ;;
     complete)
         do_Complete $*
-        ;;
-    create)
-        do_Create $*
         ;;
     delete)
         do_Delete $*

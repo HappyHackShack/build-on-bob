@@ -5,14 +5,14 @@
 - (the workman) your gateway to automated OS deployments on Physicals (and virtuals)
 
 .SH SYNOPSIS
+.B bob add
+<object> [<parameters> ...]
+.br
 .B bob build
 <object>
 .br
 .B bob complete
 <object>
-.br
-.B bob create
-<object> [<parameters> ...]
 .br
 .B bob delete
 <object> [<parameters> ...]
@@ -24,6 +24,9 @@
 <object> [<parameters> ...]
 .br
 .B bob list
+<object> [<parameters> ...]
+.br
+.B bob tail
 <object> [<parameters> ...]
 .br
 .B bob test
@@ -39,14 +42,14 @@ is a tool for automating the deployment of operating systems to servers over PXE
 It is aimed at deploying pre-built cloud images to bare metal with the potential of configuring with cloud-init.
 
 .SH OPTIONS
+.SS add
+Add the config for a new target host.
+
 .SS build
 Put a target host into build mode ...
 
 .SS complete
 Complete the build of a target host and return the config to local boot.
-
-.SS create
-Create the config for a target host.
 
 .SS delete
 Delete the config of a target host.
@@ -59,6 +62,9 @@ Show the built-in summary help details
 
 .SS list
 List objects that are configured.
+
+.SS tail
+Tail the logs (all in one place)
 
 .SS test
 A simple test function (written for developers)

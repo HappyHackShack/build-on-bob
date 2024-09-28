@@ -116,6 +116,23 @@
         dest: "{{ BOB_HOME_DIRECTORY }}/"
         owner: root
 
+  # Wendy
+  - name: Wendy API block
+    block:
+    - name: Wendy service file
+      ansible.builtin.template:
+        src: "wendy.service.j2"
+        dest: "/etc/systemd/system/wendy.service"
+        owner: root
+        mode: '0644'
+      notify: Restart WENDY
+
+    - name: Enable the Wendy service
+      ansible.builtin.service:
+        name: wendy
+        enabled: true
+        state: started
+
   # DNSMASQ
   - name: The DNSMASQ block
     block:
@@ -176,4 +193,9 @@
   - name: Restart NGINX
     ansible.builtin.service:
       name: nginx
+      state: restarted
+
+  - name: Restart WENDY
+    ansible.builtin.service:
+      name: wendy
       state: restarted
