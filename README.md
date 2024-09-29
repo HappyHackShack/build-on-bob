@@ -51,7 +51,7 @@ bob build example rocky
 
 - Deploy
   - [ ] Alpine
-  - [ ] FCOS
+  - [?] FCOS
   - [ ] Fedora
   - [x] Ubuntu
 

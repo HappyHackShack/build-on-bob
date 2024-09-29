@@ -50,7 +50,7 @@ with open(Recipe_File,'rt') as rcp:
 
 
 
-def add_host(Hostname, IP, MAC, OS='rescue'):
+def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
     Hosts = load_hosts_yaml()
     # Check IP address not already allocated
     for host in Hosts:
@@ -58,7 +58,7 @@ def add_host(Hostname, IP, MAC, OS='rescue'):
             print(f"{RED}FAILED to add{END}: IP address is already allocated to {WHITE}{host['hostname']}{END}")
             return
     # All OK
-    new_host = {'mac':MAC, 'ip_addr':IP, 'hostname':Hostname, 'os':OS, 'disk':'/dev/sda', 'target':'local'}
+    new_host = {'mac':MAC, 'ip_addr':IP, 'hostname':Hostname, 'os':OS, 'version':Version, 'disk':'/dev/sda', 'target':'local'}
     Hosts.append(new_host)
     save_hosts_yaml()
     # Now re-write the dnsmasq and host data
@@ -109,7 +109,7 @@ def edit_host(Hostname, Key, Value):
     if not host:
         print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
-    if Key not in ['hostname', 'mac', 'ip_addr', 'disk']:
+    if Key not in ['hostname', 'mac', 'ip_addr', 'version', 'disk']:
         print(f"{YELLOW}WARNING: I don't know the key '{Key}'{END}")
         return
     host[Key] = Value
@@ -139,10 +139,10 @@ def list_hosts():
     if len(Hosts) == 0:
         print(f"{YELLOW}You don't have any hosts yet{END}")
     else:
-        print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Disk        Build ?   {END}')
+        print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Version          Disk        Build ?   {END}')
         for h in Hosts:
             bld = GRAY if h['target'] == 'local' else RED
-            print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
+            print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['version']:16} {h['disk']:11} {bld}{h['target']}{END}")
 
 
 def list_recipes():

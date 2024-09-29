@@ -6,29 +6,27 @@ ERROR='\e[31m'
 END='\e[0m'
 
 echo -e "\n\n${INFO}Doing a build of ROCKY ...${END}"
+# Clean the disk first
+dd if=/dev/zero of={{disk}} bs=8M count=8
+partprobe {{disk}}
 
 cd /tmp
 wget http://{{bob_listen_address}}/images/{{rocky_image_file}}.raw.gz
 
 echo -e "\n\n${INFO}Please wait while image is written to {{disk}} ...${END}"
 gunzip < {{rocky_image_file}}.raw.gz | dd of={{disk}} bs=4M
-
-# We seem to be having issues with sda1 appearing
 partprobe {{disk}}
-cd /dev
-[[ -e {{disk}}1 ]] || { echo -e "${WARN}No {{disk}}1 device => Trying to create ${END}"; mknod {{disk}}1 b 8 1; }
-[[ -e {{disk}}1 ]] || { echo -e "${ERROR}Device {{disk}}1 still doesn't exist${END}"; exit 1; }
 
 ## Cloud stuff
 echo -e "\n\n${INFO}Configuring cloud-init ...${END}"
 mkdosfs -n CIDATA {{disk}}1 || { echo -e "${ERROR}FAILED to make filesystem on {{disk}}1${END}"; exit 1; }
-#
 mount -t vfat {{disk}}1 /mnt || { echo -e "${ERROR}FAILED to mount {{disk}}1${END}"; exit 1; }
-cd /mnt
 
+cd /mnt
 wget http://{{bob_listen_address}}/build/meta-{{mac}} -O meta-data
 wget http://{{bob_listen_address}}/build/user-{{mac}} -O user-data
 
+# Notify Completion and count down to reboot
 wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
 
 echo -e "\n\nSleeping 5 ..."; sleep 1

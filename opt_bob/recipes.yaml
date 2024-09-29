@@ -23,6 +23,10 @@ fedora:
     output: ipxe/MAC.cfg
   - name: fedora.sh.j2
     output: build/MAC.sh
+  - name: empty-ci-meta.j2
+    output: build/meta-MAC
+  - name: fedora-ci-user.j2
+    output: build/user-MAC
 
 rescue:
   templates:
@@ -37,7 +41,7 @@ rocky:
     output: ipxe/MAC.cfg
   - name: rocky.sh.j2
     output: build/MAC.sh
-  - name: rocky-ci-meta.j2
+  - name: empty-ci-meta.j2
     output: build/meta-MAC
   - name: rocky-ci-user.j2
     output: build/user-MAC
@@ -48,7 +52,7 @@ ubuntu:
     output: ipxe/MAC.cfg
   - name: ubuntu.sh.j2
     output: build/MAC.sh
-  - name: ubuntu-ci-meta.j2
+  - name: empty-ci-meta.j2
     output: build/meta-MAC
   - name: ubuntu-ci-user.j2
     output: build/user-MAC
