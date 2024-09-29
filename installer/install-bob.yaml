@@ -73,7 +73,7 @@
 
     - name: Put the bob host config in place
       ansible.builtin.copy:
-        content: "---\n"
+        content: "[]\n"
         dest: "{{ BOB_ETC_DIRECTORY }}/hosts.yaml"
         force: false
         owner: root

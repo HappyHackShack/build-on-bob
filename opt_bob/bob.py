@@ -95,7 +95,7 @@ def complete_host(Host_or_MAC):
 def delete_host(Hostname):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
-        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname${END}")
         return
     Hosts.remove(host)
     wipe_host_build_files(host)
@@ -136,13 +136,13 @@ def load_hosts_yaml(Hostname=None, MAC=None):
 
 def list_hosts():
     Hosts = load_hosts_yaml()
-    if Hosts:
+    if len(Hosts) == 0:
+        print(f"{YELLOW}You don't have any hosts yet{END}")
+    else:
         print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Disk        Build ?   {END}')
         for h in Hosts:
             bld = GRAY if h['target'] == 'local' else RED
             print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
-    else:
-        print(f"{YELLOW}You don't have any hosts yet{END}")
 
 
 def list_recipes():
