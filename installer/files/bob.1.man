@@ -5,32 +5,31 @@
 - (the workman) your gateway to automated OS deployments on Physicals (and virtuals)
 
 .SH SYNOPSIS
-.B bob add
-<object> [<parameters> ...]
+.B bob a | add
+<hostname> <IP-address> <MAC-Address>
 .br
-.B bob build
-<object>
+.B bob b | build
+<hostname> [<new-OS>]
 .br
-.B bob complete
-<object>
+.B bob c | complete
+<hostname> | <MAC-Address>
 .br
-.B bob delete
-<object> [<parameters> ...]
+.B bob d | delete
+<hostname>
 .br
-.B bob edit
-<object> [<parameters> ...]
+.B bob e | edit
+<hostname> <hostname|mac|ip_addr|disk> <value>
 .br
-.B bob help
-<object> [<parameters> ...]
+.B bob h | help
 .br
-.B bob list
-<object> [<parameters> ...]
+.B bob l | list
+[<hosts|recipes>]
 .br
-.B bob tail
-<object> [<parameters> ...]
+.B bob s | status
 .br
-.B bob test
-<object> [<parameters> ...]
+.B bob t | tail
+.br
+.B bob w | watch
 
 .SH CONFIGURATION
 Lorem
@@ -61,13 +60,16 @@ Edit the configuration of a target hots.
 Show the built-in summary help details
 
 .SS list
-List objects that are configured.
+List hosts (the default option) or recipes that are configured.
+
+.SS status
+Show a summary of all the relevant system services
 
 .SS tail
-Tail the logs (all in one place)
+Tail the web logs
 
-.SS test
-A simple test function (written for developers)
+.SS watch
+Start watch the build-status file
 
 .SH FILES
 .SS /etc/bob/*

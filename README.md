@@ -19,6 +19,18 @@ export BECOME_PASS='<your password>'
 # Run the ansible installer
 ansible-playbook install-bob.yaml --tags pre-req
 ansible-playbook install-bob.yaml
+# Finally fetch the cloud images
+bob fetch
+```
+
+## Usage
+
+You are now ready to start deploying hosts; e,g,
+```bash
+# Create a host
+bob add example 192.168.0.99 00:00:00:00:00:00
+# Put it into build mode
+bob build example rocky
 ```
 
 ## Issues

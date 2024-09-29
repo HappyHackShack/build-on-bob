@@ -221,7 +221,11 @@ case $VERB in
         do_List $*
         ;;
     s|status)
-        systemctl status wendy
+        export SYSTEMD_COLORS=1
+        for SVC in dnsmasq nginx wendy; do 
+          echo -e "${CYAN}-----------------------------------------  ${SVC}  ------------------------------------------${END}"
+          systemctl status $SVC | head -n 9
+        done
         ;;
     t|tail)
         tail -n 3 -f /var/log/nginx/access.log
