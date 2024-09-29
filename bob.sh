@@ -150,7 +150,7 @@ fetch_Cloud_Image() {
 
 
 show_Help() {
-    echo -e """\nBOB the workman - your gateway to automated builds of Physicals (and virtuals)
+    echo -e """\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)
     
     Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}
     The following ${WHITE}Actions${END} are possible:
@@ -162,6 +162,7 @@ show_Help() {
     ${WHITE}e | edit${END}     - set the ${MAGENTA}<host> <hostname|mac|ip_addr|disk> <value>${END}
     ${WHITE}h | help${END}     - show this help :)
     ${WHITE}l | list${END}     - you can list ${MAGENTA}h|hosts | r|recipes${END}.
+    ${WHITE}s | status${END}   - show the status of BoB.
     ${WHITE}t | tail${END}     - tail the web (Wendy) logs.
     ${WHITE}    test${END}     - run the developer test function.
     ${WHITE}w | watch${END}    - start watching the build status file.\n
@@ -218,6 +219,9 @@ case $VERB in
         ;;
     l|list)
         do_List $*
+        ;;
+    s|status)
+        systemctl status wendy
         ;;
     t|tail)
         tail -n 3 -f /var/log/nginx/access.log

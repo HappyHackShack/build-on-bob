@@ -19,6 +19,7 @@
       ansible.builtin.pip:
         name:
         - flask
+        - gunicorn
 
     - name: Make the required directories
       ansible.builtin.file:
