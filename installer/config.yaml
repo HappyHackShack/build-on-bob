@@ -26,9 +26,26 @@ all:
     ALPINE_QCOW_URL0: 'https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
     ALPINE_QCOW_URL: 'http://sponge/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
     ALPINE_IMAGE_FILE: 'alpine-generic-3.20.3'
+    
+    FCOS_STREAM: 'stable'
+    FCOS_VERSION: '40.20240906.3.0'
+    FCOS_BASE_URL0: 'https://builds.coreos.fedoraproject.org/prod/streams/{{FCOS_STREAM}}/builds/{{FCOS_VERSION}}/x86_64'
+    FCOS_BASE_URL: 'http://sponge/cloud'
+    FCOS_KERNEL_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-kernel-x86_64'
+    FCOS_KERNEL_FILE: 'fcos-{{FCOS_VERSION}}-kernel'
+    FCOS_INITRD_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-initramfs.x86_64.img'
+    FCOS_INITRD_FILE: 'fcos-{{FCOS_VERSION}}-initramfs.img'
+    FCOS_ROOTFS_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-rootfs.x86_64.img'
+    FCOS_ROOTFS_FILE: 'fcos-{{FCOS_VERSION}}-rootfs.img'
+    
+    FEDORA_QCOW_URL0: 'https://download.fedoraproject.org/pub/fedora/linux/releases/40/Cloud/x86_64/images/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2'
+    FEDORA_QCOW_URL: 'http://sponge/cloud/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2'
+    FEDORA_IMAGE_FILE: 'Fedora-40-1.14-Base-Generic'
+
     ROCKY_QCOW_URL0: 'https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'
+    
     UBUNTU_QCOW_URL0: 'https://cloud-images.ubuntu.com/oracular/20240927/oracular-server-cloudimg-amd64.img'
     UBUNTU_QCOW_URL: 'http://sponge/cloud/oracular-server-cloudimg-amd64.img'
     UBUNTU_IMAGE_FILE: 'Ubuntu-22.10-server-20240927'

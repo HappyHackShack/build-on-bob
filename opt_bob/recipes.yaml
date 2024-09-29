@@ -12,6 +12,11 @@ alpine:
   - name: alpine.sh.j2
     output: build/MAC.sh
 
+fcos:
+  templates:
+  - name: fcos.ipxe.j2
+    output: ipxe/MAC.cfg
+
 fedora:
   templates:
   - name: build.ipxe.j2

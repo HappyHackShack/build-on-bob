@@ -114,9 +114,20 @@ do_Fetch() {
         wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot/${file}-${flavor}
     done
 
+    # Fetch the FCOS files
+    cd ../fcos
+    echo -e "${CYAN}Checking FCOS files ${END}"
+    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_KERNEL_GET} --> ${FCOS_KERNEL_FILE}${END}"
+    [ -f "${FCOS_KERNEL_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_KERNEL_GET}" -O "${FCOS_KERNEL_FILE}"
+    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_INITRD_GET} --> ${FCOS_INITRD_FILE}${END}"
+    [ -f "${FCOS_INITRD_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_INITRD_GET}" -O "${FCOS_INITRD_FILE}"
+    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_ROOTFS_GET} --> ${FCOS_ROOTFS_FILE}${END}"
+    [ -f "${FCOS_ROOTFS_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_ROOTFS_GET}" -O "${FCOS_ROOTFS_FILE}"
+
     # Now get each of the cloud images
     cd ../images
     fetch_Cloud_Image "$ALPINE_QCOW_URL" "$ALPINE_IMAGE_FILE"
+    fetch_Cloud_Image "$FEDORA_QCOW_URL" "$FEDORA_IMAGE_FILE"
     fetch_Cloud_Image "$ROCKY_QCOW_URL" "$ROCKY_IMAGE_FILE"
     fetch_Cloud_Image "$UBUNTU_QCOW_URL" "$UBUNTU_IMAGE_FILE"
 }

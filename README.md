@@ -4,7 +4,7 @@ An automated deployment system.
 
 ## Installation
 
-Once you have cloned this repo onto the machine that you want to be the BOB server and ***you have sudo rights***.
+Once you have cloned this repo onto the machine that you want to be the BoB server and ***you have sudo rights***.
 
 ```bash
 # Install ansible (from PIP)
