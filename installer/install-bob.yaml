@@ -4,42 +4,45 @@
   gather_facts: false
 
   tasks:
-  # - name: Install required packages
-  #   ansible.builtin.package:
-  #     name:
-  #     - dnsmasq
-  #     - ipxe-bootimgs-x86
-  #     - nginx
-  #     - python3-pip
-  #     - qemu-img
+  - name: Pre-Req Packages and directories block
+    block:
+    - name: Install required packages
+      ansible.builtin.package:
+        name:
+        - dnsmasq
+        - ipxe-bootimgs-x86
+        - nginx
+        - python3-pip
+        - qemu-img
 
-  # - name: Install any Python requirements
-  #   ansible.builtin.pip:
-  #     name:
-  #     - flask
+    - name: Install any Python requirements
+      ansible.builtin.pip:
+        name:
+        - flask
 
-  # - name: Make the required directories
-  #   ansible.builtin.file:
-  #     path: "{{ item }}"
-  #     state: directory
-  #   loop:
-  #   - "{{ BOB_ETC_DIRECTORY }}"
-  #   - "{{ BOB_HOME_DIRECTORY }}"
-  #   - "{{ BOB_TFTP_DIRECTORY }}"
-  #   - "{{ BOB_HTML_DIRECTORY }}/ipxe"
-  #   - "{{ BOB_HTML_DIRECTORY }}/build"
-  #   - "{{ BOB_HTML_DIRECTORY }}/alpine"
-  #   - "{{ BOB_HTML_DIRECTORY }}/fcos"
-  #   - "{{ BOB_HTML_DIRECTORY }}/images"
+    - name: Make the required directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+      - "{{ BOB_ETC_DIRECTORY }}"
+      - "{{ BOB_HOME_DIRECTORY }}"
+      - "{{ BOB_TFTP_DIRECTORY }}"
+      - "{{ BOB_HTML_DIRECTORY }}/ipxe"
+      - "{{ BOB_HTML_DIRECTORY }}/build"
+      - "{{ BOB_HTML_DIRECTORY }}/alpine"
+      - "{{ BOB_HTML_DIRECTORY }}/fcos"
+      - "{{ BOB_HTML_DIRECTORY }}/images"
 
-  - name: Get status of Overlay
-    ansible.builtin.stat:
-      path: builder.apkovl.tar.gz
-    register: overlay
+    - name: Get status of Overlay
+      ansible.builtin.stat:
+        path: builder.apkovl.tar.gz
+      register: overlay
 
-  - name: Build the overlay
-    ansible.builtin.shell: ./mk-overlay.sh
-    when: not overlay.stat.exists
+    - name: Build the overlay
+      ansible.builtin.shell: ./mk-overlay.sh
+      when: not overlay.stat.exists
+    tags: pre-req
 
   # BOB Engine
   - name: The bob engine block

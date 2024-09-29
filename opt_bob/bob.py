@@ -136,10 +136,13 @@ def load_hosts_yaml(Hostname=None, MAC=None):
 
 def list_hosts():
     Hosts = load_hosts_yaml()
-    print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Disk        Build ?   {END}')
-    for h in Hosts:
-        bld = GRAY if h['target'] == 'local' else RED
-        print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
+    if Hosts:
+        print(f'{BG_GRAY}  Hostname        MAC               / IP              OS        Disk        Build ?   {END}')
+        for h in Hosts:
+            bld = GRAY if h['target'] == 'local' else RED
+            print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
+    else:
+        print(f"{YELLOW}You don't have any hosts yet{END}")
 
 
 def list_recipes():

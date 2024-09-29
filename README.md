@@ -13,6 +13,7 @@ vi config.yaml
 # Set your environment ready for ansible
 export BECOME_PASS='<your password>'
 # Run the ansible installer
+ansible-playbook install-bob.yaml --tags pre-req
 ansible-playbook install-bob.yaml
 ```
 
@@ -24,7 +25,7 @@ ansible-playbook install-bob.yaml
 ## Ideas To-Do
 
 - Bugs
-  - ?
+  - [x] List hosts with empty list
 
 - Main
   - [ ] Test of second machine
@@ -37,6 +38,7 @@ ansible-playbook install-bob.yaml
   - [x] Ubuntu
 
 - Miscellaneous
-  - Improve the build status
+  - [x] Move some of the installer into a 'pre-req' phase
+  - [ ] Improve the build status
 
 - Build the Wendy Web interface
