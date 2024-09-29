@@ -54,6 +54,12 @@
     - name: Apply new SELinux file context to TFTP area
       ansible.builtin.command: "restorecon -irv {{ BOB_TFTP_DIRECTORY }}"
 
+    - name: Set SE:httpd_can_network_connect flag ON
+      ansible.posix.seboolean:
+        name: httpd_can_network_connect
+        state: true
+        persistent: true
+
     - name: Get status of Overlay
       ansible.builtin.stat:
         path: builder.apkovl.tar.gz

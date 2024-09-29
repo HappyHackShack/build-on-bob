@@ -41,11 +41,12 @@ bob build example rocky
 ## Ideas To-Do
 
 - Bugs
+  - [x] Nginx --> Wendy blocked by SELinux
   - [x] Add gunicorn to installer
   - [x] List hosts with empty list
 
 - Main
-  - [ ] Test of second machine
+  - [x] Test of second machine - seems to deploy well (once I got the up-to-date ipxe)
   - [x] Fix the fetcher
 
 - Deploy
