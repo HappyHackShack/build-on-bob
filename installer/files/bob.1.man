@@ -1,4 +1,4 @@
-.TH BOB 1 2024-09-26
+.TH BoB 1 2024-09-26
 
 .SH NAME
 .B bob

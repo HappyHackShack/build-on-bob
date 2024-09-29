@@ -10,6 +10,7 @@
       ansible.builtin.package:
         name:
         - dnsmasq
+        # A new version of this is needed (e.g. Fedora-40) | Rocky 9.4 is 4 years too old
         - ipxe-bootimgs-x86
         - nginx
         - python3-pip
@@ -35,6 +36,23 @@
       - "{{ BOB_HTML_DIRECTORY }}/alpine"
       - "{{ BOB_HTML_DIRECTORY }}/fcos"
       - "{{ BOB_HTML_DIRECTORY }}/images"
+
+    - name: Put the iPXE EFI module in place
+      ansible.builtin.copy:
+        # If you are on Fedora, you can this proper source:
+        # src: /usr/share/ipxe/ipxe-x86_64.efi
+        # But for Rocky, use:
+        src: ipxe-x86_64.efi
+        dest: "{{ BOB_TFTP_DIRECTORY }}/"
+
+    - name: Allow dnsmasq to serve files
+      community.general.sefcontext:
+        target: '{{ BOB_TFTP_DIRECTORY }}(/.*)?'
+        setype: public_content_t
+        state: present
+
+    - name: Apply new SELinux file context to TFTP area
+      ansible.builtin.command: "restorecon -irv {{ BOB_TFTP_DIRECTORY }}"
 
     - name: Get status of Overlay
       ansible.builtin.stat:
@@ -129,14 +147,6 @@
       ansible.builtin.service:
         name: dnsmasq
         enabled: true
-
-  # TFTP
-  - name: Any TFTP stuff block
-    block:
-    - name: Put the iPXE EFI module in place
-      ansible.builtin.copy:
-        src: /usr/share/ipxe/ipxe-x86_64.efi
-        dest: "{{ BOB_TFTP_DIRECTORY }}/"
 
   # NGINX
   - name: Any NGINX stuff block
