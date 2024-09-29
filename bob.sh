@@ -110,7 +110,7 @@ do_Fetch() {
     flavor='lts'
     cd ${BOB_HTML_DIRECTORY}/alpine
     for file in initramfs modloop vmlinuz; do
-        echo -n -e "${GRAY}ALPINE.${file}: $END"
+        echo -n -e "${GRAY}ALPINE.${file}: ${END}"
         wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot/${file}-${flavor}
     done
 
@@ -135,15 +135,15 @@ fetch_Cloud_Image() {
     RAW="${FILE}.raw"
     RAW_GZ="${RAW}.gz"
     #
-    echo -e "${CYAN}Checking $FILE"
+    echo -e "${CYAN}Checking ${FILE}${END}"
     [ -f ${QCOW} ] || {
-        echo -e "${YELLOW}Fetching $FILE"
+        echo -e "${YELLOW}Fetching ${FILE}${END}"
         wget "$URL" -O "${QCOW}"
     }
     [ -f ${RAW}.gz ] || {
-        echo -e "${YELLOW}Converting $FILE ..."
+        echo -e "${YELLOW}Converting ${FILE} ...${END}"
         qemu-img convert -O raw "${QCOW}" "${RAW}"
-        echo -e "${YELLOW}and gzipping $FILE ..."
+        echo -e "${YELLOW}and gzipping ${FILE} ...${END}"
         gzip "${RAW}"
     }
 }

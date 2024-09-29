@@ -14,6 +14,7 @@
         - nginx
         - python3-pip
         - qemu-img
+        - wget
 
     - name: Install any Python requirements
       ansible.builtin.pip:
@@ -43,7 +44,9 @@
     - name: Build the overlay
       ansible.builtin.shell: ./mk-overlay.sh
       when: not overlay.stat.exists
-    tags: pre-req
+    tags: 
+    - never
+    - pre-req
 
   # BOB Engine
   - name: The bob engine block

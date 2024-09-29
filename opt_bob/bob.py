@@ -70,7 +70,7 @@ def add_host(Hostname, IP, MAC, OS='rescue'):
 def build_host(Hostname, New_OS):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
-        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
     if New_OS:
         host['os'] = New_OS
@@ -78,45 +78,45 @@ def build_host(Hostname, New_OS):
     #
     save_hosts_yaml()
     write_host_build_files(host)
-    print(f"{CYAN}Host '{Hostname}' set to BUILD mode")
+    print(f"{CYAN}Host '{Hostname}' set to BUILD mode{END}")
 
 
 def complete_host(Host_or_MAC):
     Hosts, host = load_hosts_yaml(Host_or_MAC, Host_or_MAC)
     if not host:
-        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
     host['target'] = 'local'
     save_hosts_yaml()
     write_host_build_files(host)
-    print(f"{CYAN}Host '{Host_or_MAC}' set to LOCAL boot mode")
+    print(f"{CYAN}Host '{Host_or_MAC}' set to LOCAL boot mode{END}")
 
 
 def delete_host(Hostname):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
-        print(f"{YELLOW}WARNING: I didn't recognize that hostname${END}")
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
     Hosts.remove(host)
     wipe_host_build_files(host)
     write_dnsmasq_hosts(Hosts)
     save_hosts_yaml()
-    print(f"{CYAN}Host '{Hostname}' deleted")
+    print(f"{CYAN}Host '{Hostname}' deleted{END}")
 
 
 def edit_host(Hostname, Key, Value):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
-        print(f"{YELLOW}WARNING: I didn't recognize that hostname")
+        print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
     if Key not in ['hostname', 'mac', 'ip_addr', 'disk']:
-        print(f"{YELLOW}WARNING: I don't know the key '{Key}'")
+        print(f"{YELLOW}WARNING: I don't know the key '{Key}'{END}")
         return
     host[Key] = Value
     save_hosts_yaml()
     if host['target'] == 'build':
         write_host_build_files(host)
-    print(f"{CYAN}Host '{Hostname}' set '{Key}' to be '{Value}' at next build")
+    print(f"{CYAN}Host '{Hostname}' set '{Key}' to be '{Value}' at next build{END}")
 
 
 def load_hosts_yaml(Hostname=None, MAC=None):
