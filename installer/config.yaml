@@ -23,6 +23,9 @@ all:
     BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v3.20'
 
     # Cloud Images
+    ALPINE_QCOW_URL0: 'https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
+    ALPINE_QCOW_URL: 'http://sponge/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
+    ALPINE_IMAGE_FILE: 'alpine-generic-3.20.3'
     ROCKY_QCOW_URL0: 'https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
     ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'

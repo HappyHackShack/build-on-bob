@@ -73,26 +73,27 @@ do_Add() {
     IP="$2"
     MAC="$3"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py add host $HOST $IP $MAC
+    ${OPT_BOB}/bob.py add host "$HOST" "$IP" "$MAC"
     systemctl restart dnsmasq
 }
 
 do_Build() {
     HOST="$1"
+    OS="$2"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py build host $HOST
+    ${OPT_BOB}/bob.py build host "$HOST" "$OS"
 }
 
 do_Complete() {
     HOST="$1"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py complete host $HOST
+    ${OPT_BOB}/bob.py complete host "$HOST"
 }
 
 do_Delete() {
     HOST="$1"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to delete ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py delete host $HOST
+    ${OPT_BOB}/bob.py delete host "$HOST"
     systemctl restart dnsmasq
 }
 
@@ -100,7 +101,7 @@ do_Edit() {
     HOST="$1"
     OS="$2"
     [[ $OS == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py edit host $HOST $OS 
+    ${OPT_BOB}/bob.py edit host "$HOST" "$OS" 
 }
 
 do_Fetch() {
@@ -114,6 +115,7 @@ do_Fetch() {
 
     # Now get each of the cloud images
     cd ../images
+    fetch_Cloud_Image "$ALPINE_QCOW_URL" "$ALPINE_IMAGE_FILE"
     fetch_Cloud_Image "$ROCKY_QCOW_URL" "$ROCKY_IMAGE_FILE"
     fetch_Cloud_Image "$UBUNTU_QCOW_URL" "$UBUNTU_IMAGE_FILE"
 }
@@ -121,7 +123,7 @@ do_Fetch() {
 do_List() {
     NOUN="$1"
     # Assume hosts (for now)
-    ${OPT_BOB}/bob.py list hosts
+    ${OPT_BOB}/bob.py list "$NOUN"
 }
 
 
@@ -152,15 +154,16 @@ show_Help() {
     Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}
     The following ${WHITE}Actions${END} are possible:
 
-    ${WHITE}add${END} - you can add a new ${MAGENTA}<Host>${END}. <IP> <MAC>\n
-    ${WHITE}build${END} - you can put a ${MAGENTA}host${END} into build mode.\n
-    ${WHITE}complete${END} - you can complete the build of a ${MAGENTA}host${END}.\n
-    ${WHITE}delete${END} - you can delete a ${MAGENTA}host${END}.\n
-    ${WHITE}edit${END} - ???????\n
-    ${WHITE}help${END} - show this help :)\n
-    ${WHITE}list${END} - you can list ${MAGENTA}hosts${END}.\n
-    ${WHITE}tail${END} - tail all the logs.\n
-    ${WHITE}test${END} - run the developer test function.\n
+    ${WHITE}a | add${END}      - you can add a new ${MAGENTA}<Host>${END}. <IP> <MAC>
+    ${WHITE}b | build${END}    - you can put a ${MAGENTA}host${END} into build mode.
+    ${WHITE}c | complete${END} - you can complete the build of a ${MAGENTA}host${END}.
+    ${WHITE}d | delete${END}   - you can delete a ${MAGENTA}host${END}.
+    ${WHITE}e | edit${END}     - set the host OS of the next build
+    ${WHITE}h | help${END}     - show this help :)
+    ${WHITE}l | list${END}     - you can list ${MAGENTA}h|hosts | r|recipes${END}.
+    ${WHITE}t | tail${END}     - tail all the logs.
+    ${WHITE}    test${END}     - run the developer test function.
+    ${WHITE}w | watch${END}    - start watching the build status file.\n
     For more details, run : ${CYAN}man bob${END}
     """
 }
@@ -191,37 +194,37 @@ VERB="$1"
 shift
 
 case $VERB in
-    add)
+    a|add)
         do_Add $*
         ;;
-    build)
+    b|build)
         do_Build $*
         ;;
-    complete)
+    c|complete)
         do_Complete $*
         ;;
-    delete)
+    d|delete)
         do_Delete $*
         ;;
-    edit)
+    e|edit)
         do_Edit $*
         ;;
-    fetch)
+    f|fetch)
         do_Fetch $*
         ;;
-    help)
+    h|help)
         show_Help
         ;;
-    list)
+    l|list)
         do_List $*
         ;;
-    tail)
+    t|tail)
         tail -n 3 -f /var/log/nginx/access.log
         ;;
     test)
         tester
         ;;
-    watch)
+    w|watch)
         watch -cn 1 cat /tmp/build_status
         ;;
     *)

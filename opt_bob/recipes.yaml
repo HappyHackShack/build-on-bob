@@ -1,0 +1,49 @@
+---
+
+local:
+  templates:
+  - name: local.ipxe.j2
+    output: ipxe/MAC.cfg
+
+alpine:
+  templates:
+  - name: build.ipxe.j2
+    output: ipxe/MAC.cfg
+  - name: alpine.sh.j2
+    output: build/MAC.sh
+
+fedora:
+  templates:
+  - name: build.ipxe.j2
+    output: ipxe/MAC.cfg
+  - name: fedora.sh.j2
+    output: build/MAC.sh
+
+rescue:
+  templates:
+  - name: build.ipxe.j2
+    output: ipxe/MAC.cfg
+  - name: rescue.sh.j2
+    output: build/MAC.sh
+
+rocky:
+  templates:
+  - name: build.ipxe.j2
+    output: ipxe/MAC.cfg
+  - name: rocky.sh.j2
+    output: build/MAC.sh
+  - name: rocky-ci-meta.j2
+    output: build/meta-MAC
+  - name: rocky-ci-user.j2
+    output: build/user-MAC
+
+ubuntu:
+  templates:
+  - name: build.ipxe.j2
+    output: ipxe/MAC.cfg
+  - name: ubuntu.sh.j2
+    output: build/MAC.sh
+  - name: ubuntu-ci-meta.j2
+    output: build/meta-MAC
+  - name: ubuntu-ci-user.j2
+    output: build/user-MAC

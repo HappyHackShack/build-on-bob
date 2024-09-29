@@ -1,8 +1,0 @@
-#!/bin/sh
-
-echo "Doing a build of ALPINE ..."
-
-apk add --no-cache curl lsblk openssh
-echo "-e PasswordAuthentication yes\nPermitRootLogin yes\n" >> /etc/ssh/sshd_config
-rc-update add sshd
-service sshd start

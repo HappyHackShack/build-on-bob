@@ -48,7 +48,7 @@ def follow(filename):
                         stage = 4
                     if 'modloop' in url:
                         stage = 6
-                if 'builder' in url:
+                if 'build' in url:
                     if 'apkovl' in url:
                         stage = 5
                     if ':' in url and url[-2:] == 'sh':

@@ -32,17 +32,23 @@ BG_CYAN = '\x1b[46;30m'
 BG_GRAY = '\x1b[47;30m'
 END = '\x1b[0m'
 
+My_Dir = os.path.dirname(__file__)
 Config_File = '/etc/bob/engine.yaml'
+Recipe_File = f'{My_Dir}/recipes.yaml'
 Hosts_File = '/etc/bob/hosts.yaml'
-IPXE_Host_Dir = '/usr/share/nginx/html/ipxe'
-Build_Script_Dir = '/usr/share/nginx/html/builder'
-My_dir = os.path.dirname(__file__)
+Nginx_Base_Dir = '/usr/share/nginx/html'
+Nginx_Ipxe_Dir = f'{Nginx_Base_Dir}/ipxe'
+Nginx_Build_Dir = f'{Nginx_Base_Dir}/build'
+Template_Dir = f"{My_Dir}/templates"
 Etc_Bob_Hosts = {}
 
 #print('Starting the BOB engine ...')
 with open(Config_File,'rt') as cfg:
     Config = yaml.safe_load(cfg)
-# print(Config)
+with open(Recipe_File,'rt') as rcp:
+    Recipes = yaml.safe_load(rcp)
+
+
 
 def add_host(Hostname, IP, MAC, OS='rescue'):
     Hosts = load_hosts_yaml()
@@ -55,21 +61,23 @@ def add_host(Hostname, IP, MAC, OS='rescue'):
     new_host = {'mac':MAC, 'ip_addr':IP, 'hostname':Hostname, 'os':OS, 'disk':'/dev/sda', 'target':'local'}
     Hosts.append(new_host)
     save_hosts_yaml()
-    # Now re-write the dnsmasq data
+    # Now re-write the dnsmasq and host data
     write_dnsmasq_hosts(Hosts)
-    write_host_ipxe_cfg(new_host)
+    write_host_build_files(new_host)
     print(f"{GREEN}New host '{WHITE}{Hostname}{GREEN}' added{END}")
 
 
-def build_host(Hostname):
+def build_host(Hostname, New_OS):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
         print(f"{YELLOW}WARNING: I didn't recognize that hostname")
         return
+    if New_OS:
+        host['os'] = New_OS
     host['target'] = 'build'
-    write_host_ipxe_cfg(host)
-    write_host_build_scripts(host)
+    #
     save_hosts_yaml()
+    write_host_build_files(host)
     print(f"{CYAN}Host '{Hostname}' set to BUILD mode")
 
 
@@ -80,7 +88,7 @@ def complete_host(Host_or_MAC):
         return
     host['target'] = 'local'
     save_hosts_yaml()
-    write_host_ipxe_cfg(host)
+    write_host_build_files(host)
     print(f"{CYAN}Host '{Host_or_MAC}' set to LOCAL boot mode")
 
 
@@ -90,13 +98,9 @@ def delete_host(Hostname):
         print(f"{YELLOW}WARNING: I didn't recognize that hostname")
         return
     Hosts.remove(host)
-    save_hosts_yaml()
+    wipe_host_build_files(host)
     write_dnsmasq_hosts(Hosts)
-    #
-    mac = host['mac']
-    ipxe_cfg = f"{IPXE_Host_Dir}/{mac}.cfg"
-    if os.path.exists(ipxe_cfg):
-        os.remove(ipxe_cfg)
+    save_hosts_yaml()
     print(f"{CYAN}Host '{Hostname}' deleted")
 
 
@@ -105,9 +109,13 @@ def edit_host(Hostname, New_OS):
     if not host:
         print(f"{YELLOW}WARNING: I didn't recognize that hostname")
         return
+    if New_OS not in Recipes:
+        print(f"{YELLOW}WARNING: I don't have a recipe for '{New_OS}'")
+        return
     host['os'] = New_OS
     save_hosts_yaml()
-    write_host_build_scripts(host)
+    if host['target'] == 'build':
+        write_host_build_files(host)
     print(f"{CYAN}Host '{Hostname}' set to be '{New_OS}' at next build")
 
 
@@ -117,7 +125,7 @@ def load_hosts_yaml(Hostname=None, MAC=None):
     
     with open(Hosts_File, 'rt') as ipf:
         Etc_Bob_Hosts = yaml.safe_load(ipf)
-    Hosts = Etc_Bob_Hosts['hosts']
+    Hosts = Etc_Bob_Hosts
     if Hostname or MAC:
         for host in Hosts:
             if (host['hostname'] == Hostname) or (host['mac'] == MAC):
@@ -134,13 +142,18 @@ def list_hosts():
         print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['disk']:11} {bld}{h['target']}{END}")
 
 
-def render_template(Template, Config, Target):
-    environment = Environment(loader=FileSystemLoader(My_dir))
-    template_name = f"{Template}"
-    template = environment.get_template(template_name)
+def list_recipes():
+    print('I know about the following recipes:')
+    for recipe in Recipes:
+        print(f"{CYAN}    {recipe}{END}")
+
+
+def render_template(Template_Filename, Config, Target_Filename):
+    environment = Environment(loader=FileSystemLoader(Template_Dir))
+    template = environment.get_template(Template_Filename)
     rendered = template.render(Config)
 
-    with open(Target, 'wt') as cfg:
+    with open(Target_Filename, 'wt') as cfg:
         cfg.write(rendered)
         cfg.write('\n')
 
@@ -150,29 +163,27 @@ def save_hosts_yaml():
         yaml.dump(Etc_Bob_Hosts, opf)
 
 
+def wipe_host_build_files(Host):
+    for directory in [ Nginx_Ipxe_Dir, Nginx_Ipxe_Dir]:
+        for filename in os.listdir(directory):
+            if Host['mac'] in filename:
+                os.unlink(f"{directory}/{filename}")
+
+
 def write_dnsmasq_hosts(Hosts):
     with open('/etc/dnsmasq.d/hosts.conf','wt') as dns:
         for host in Hosts:
             dns.write(f"dhcp-host={host['mac']},{host['ip_addr']},{host['hostname']}\n")
 
 
-def write_host_build_scripts(Host):
-    # Build script
-    script = f"{Build_Script_Dir}/{Host['mac']}.sh"
-    render_template( f"{Host['os']}.sh.j2", Config|Host, script)
-    # Meta-data
-    meta = f"{Build_Script_Dir}/meta-{Host['mac']}"
-    #render_template( f"ci-meta-data.j2", Config|Host, meta)
-    with open(meta,'wt') as opf:
-        opf.write('---\n')
-    # User-data
-    user = f"{Build_Script_Dir}/user-{Host['mac']}"
-    render_template( f"{Host['os']}-ci-user.j2", Config|Host, user)
-
-
-def write_host_ipxe_cfg(Host):
-    fname = f"{IPXE_Host_Dir}/{Host['mac']}.cfg"
-    render_template( f"{Host['target']}.ipxe.j2", Config, fname)
+def write_host_build_files(Host):
+    wipe_host_build_files(Host)
+    recipe = Recipes['local'] if Host['target'] == 'local' else Recipes[Host['os']]
+    for template in recipe['templates']:
+        tpl_name = template['name']
+        output = template['output'].replace('MAC', Host['mac'])
+        print(f'{GRAY}Writing template {tpl_name} --> {output}{END}')
+        render_template( tpl_name, Config|Host, f"{Nginx_Base_Dir}/{output}")
 
 
 ##---------------------------------------------------------------------------------------------------------------------
@@ -180,21 +191,23 @@ def write_host_ipxe_cfg(Host):
 Action = sys.argv[1]
 if len(sys.argv) > 2:
     Noun = sys.argv[2]
-if Action == 'add':
-    if Noun == 'host':
+if Action in ['a', 'add']:
+    if Noun in ['h', 'host']:
         add_host(sys.argv[3],sys.argv[4],sys.argv[5])
-if Action == 'build':
-    if Noun == 'host':
-        build_host(sys.argv[3])
-if Action == 'complete':
-    if Noun == 'host':
+if Action in ['b', 'build']:
+    if Noun in ['h', 'host']:
+        build_host(sys.argv[3], sys.argv[4])
+if Action in ['c', 'complete']:
+    if Noun in ['h', 'host']:
         complete_host(sys.argv[3])
-if Action == 'delete':
-    if Noun == 'host':
+if Action in ['d', 'delete']:
+    if Noun in ['h', 'host']:
         delete_host(sys.argv[3])
-if Action == 'edit':
-    if Noun == 'host':
+if Action in ['e', 'edit']:
+    if Noun in ['h', 'host']:
         edit_host(sys.argv[3],sys.argv[4])
-if Action == 'list':
-    if Noun == 'hosts':
+if Action in ['l', 'list']:
+    if Noun in ['h', 'host', '']:
         list_hosts()
+    if Noun in ['r', 'recipes']:
+        list_recipes()

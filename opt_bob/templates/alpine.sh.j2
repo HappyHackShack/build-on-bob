@@ -1,0 +1,14 @@
+#!/bin/sh
+
+INFO='\e[36m'
+WARN='\e[32m'
+ERROR='\e[31m'
+END='\e[0m'
+
+echo -e "\n\n${INFO}Doing a build of ALPINE ...${END}"
+
+apk add --no-cache curl lsblk
+
+echo "dd if=/dev/zero of=/dev/sda bs=4M count=99 ; reboot" > /usr/local/bin/SPLAT.sh
+chmod 750 /usr/local/bin/SPLAT.sh
+wget -q http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null

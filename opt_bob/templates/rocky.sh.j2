@@ -26,8 +26,8 @@ mkdosfs -n CIDATA {{disk}}1 || { echo -e "${ERROR}FAILED to make filesystem on {
 mount -t vfat {{disk}}1 /mnt || { echo -e "${ERROR}FAILED to mount {{disk}}1${END}"; exit 1; }
 cd /mnt
 
-wget http://{{bob_listen_address}}/builder/meta-{{mac}} -O meta-data
-wget http://{{bob_listen_address}}/builder/user-{{mac}} -O user-data
+wget http://{{bob_listen_address}}/build/meta-{{mac}} -O meta-data
+wget http://{{bob_listen_address}}/build/user-{{mac}} -O user-data
 
 wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
 

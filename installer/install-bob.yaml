@@ -27,7 +27,7 @@
   #   - "{{ BOB_HOME_DIRECTORY }}"
   #   - "{{ BOB_TFTP_DIRECTORY }}"
   #   - "{{ BOB_HTML_DIRECTORY }}/ipxe"
-  #   - "{{ BOB_HTML_DIRECTORY }}/builder"
+  #   - "{{ BOB_HTML_DIRECTORY }}/build"
   #   - "{{ BOB_HTML_DIRECTORY }}/alpine"
   #   - "{{ BOB_HTML_DIRECTORY }}/fcos"
   #   - "{{ BOB_HTML_DIRECTORY }}/images"
@@ -69,7 +69,7 @@
 
     - name: Put the bob host config in place
       ansible.builtin.copy:
-        content: "---\n  hosts: []\n"
+        content: "---\n"
         dest: "{{ BOB_ETC_DIRECTORY }}/hosts.yaml"
         force: false
         owner: root
@@ -154,7 +154,7 @@
     - name: Copy the overlay
       ansible.builtin.copy:
         src: "builder.apkovl.tar.gz"
-        dest: "{{ BOB_HTML_DIRECTORY }}/builder"
+        dest: "{{ BOB_HTML_DIRECTORY }}/build"
         owner: root
         mode: '0644'
 
