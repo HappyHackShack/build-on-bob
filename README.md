@@ -31,9 +31,12 @@ ansible-playbook install-bob.yaml
   - [x] Fix the fetcher
 
 - Deploy
-  - [ ] Alpine from https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2
+  - [ ] Alpine
   - [ ] FCOS
   - [ ] Fedora
   - [x] Ubuntu
+
+- Miscellaneous
+  - Improve the build status
 
 - Build the Wendy Web interface

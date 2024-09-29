@@ -104,19 +104,19 @@ def delete_host(Hostname):
     print(f"{CYAN}Host '{Hostname}' deleted")
 
 
-def edit_host(Hostname, New_OS):
+def edit_host(Hostname, Key, Value):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
         print(f"{YELLOW}WARNING: I didn't recognize that hostname")
         return
-    if New_OS not in Recipes:
-        print(f"{YELLOW}WARNING: I don't have a recipe for '{New_OS}'")
+    if Key not in ['hostname', 'mac', 'ip_addr', 'disk']:
+        print(f"{YELLOW}WARNING: I don't know the key '{Key}'")
         return
-    host['os'] = New_OS
+    host[Key] = Value
     save_hosts_yaml()
     if host['target'] == 'build':
         write_host_build_files(host)
-    print(f"{CYAN}Host '{Hostname}' set to be '{New_OS}' at next build")
+    print(f"{CYAN}Host '{Hostname}' set '{Key}' to be '{Value}' at next build")
 
 
 def load_hosts_yaml(Hostname=None, MAC=None):
@@ -205,7 +205,7 @@ if Action in ['d', 'delete']:
         delete_host(sys.argv[3])
 if Action in ['e', 'edit']:
     if Noun in ['h', 'host']:
-        edit_host(sys.argv[3],sys.argv[4])
+        edit_host(sys.argv[3], sys.argv[4], sys.argv[5])
 if Action in ['l', 'list']:
     if Noun in ['h', 'host', '']:
         list_hosts()

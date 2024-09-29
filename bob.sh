@@ -99,9 +99,10 @@ do_Delete() {
 
 do_Edit() {
     HOST="$1"
-    OS="$2"
-    [[ $OS == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py edit host "$HOST" "$OS" 
+    KEY="$2"
+    VALUE="$3"
+    [[ $VALUE == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
+    ${OPT_BOB}/bob.py edit host "$HOST" "$KEY" "$VALUE"
 }
 
 do_Fetch() {
@@ -158,10 +159,10 @@ show_Help() {
     ${WHITE}b | build${END}    - you can put a ${MAGENTA}host${END} into build mode.
     ${WHITE}c | complete${END} - you can complete the build of a ${MAGENTA}host${END}.
     ${WHITE}d | delete${END}   - you can delete a ${MAGENTA}host${END}.
-    ${WHITE}e | edit${END}     - set the host OS of the next build
+    ${WHITE}e | edit${END}     - set the ${MAGENTA}<host> <hostname|mac|ip_addr|disk> <value>${END}
     ${WHITE}h | help${END}     - show this help :)
     ${WHITE}l | list${END}     - you can list ${MAGENTA}h|hosts | r|recipes${END}.
-    ${WHITE}t | tail${END}     - tail all the logs.
+    ${WHITE}t | tail${END}     - tail the web (Wendy) logs.
     ${WHITE}    test${END}     - run the developer test function.
     ${WHITE}w | watch${END}    - start watching the build status file.\n
     For more details, run : ${CYAN}man bob${END}
