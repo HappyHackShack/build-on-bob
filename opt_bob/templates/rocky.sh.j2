@@ -29,9 +29,9 @@ wget http://{{bob_listen_address}}/build/user-{{mac}} -O user-data
 # Notify Completion and count down to reboot
 wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
 
-echo -e "\n\nSleeping 5 ..."; sleep 1
-echo "Sleeping 4 ..."; sleep 1
-echo "Sleeping 3 ..."; sleep 1
-echo "Sleeping 2 ..."; sleep 1
-echo "Sleeping 1 ..."; sleep 1
+echo -e "\n\nRebooting in 5 ..."; sleep 1
+echo "Rebooting in 4 ..."; sleep 1
+echo "Rebooting in 3 ..."; sleep 1
+echo "Rebooting in 2 ..."; sleep 1
+echo "Rebooting in 1 ..."; sleep 1
 reboot

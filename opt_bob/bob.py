@@ -1,9 +1,11 @@
 #!/bin/env python3
 
 from jinja2 import Environment, FileSystemLoader
+import netaddr
 import os
 from pprint import pprint
 import sys
+import traceback
 import yaml
 
 BLACK = '\x1b[30m'
@@ -51,6 +53,9 @@ with open(Recipe_File,'rt') as rcp:
 
 
 def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
+    validate_ip_addr(IP)
+    validate_mac_addr(MAC)
+
     Hosts = load_hosts_yaml()
     # Check IP address not already allocated
     for host in Hosts:
@@ -58,7 +63,7 @@ def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
             print(f"{RED}FAILED to add{END}: IP address is already allocated to {WHITE}{host['hostname']}{END}")
             return
     # All OK
-    new_host = {'mac':MAC, 'ip_addr':IP, 'hostname':Hostname, 'os':OS, 'version':Version, 'disk':'/dev/sda', 'target':'local'}
+    new_host = {'mac':MAC.lower(), 'ip_addr':IP, 'hostname':Hostname.lower(), 'os':OS, 'version':Version, 'disk':'/dev/sda', 'target':'local'}
     Hosts.append(new_host)
     save_hosts_yaml()
     # Now re-write the dnsmasq and host data
@@ -112,10 +117,23 @@ def edit_host(Hostname, Key, Value):
     if Key not in ['hostname', 'mac', 'ip_addr', 'version', 'disk']:
         print(f"{YELLOW}WARNING: I don't know the key '{Key}'{END}")
         return
-    host[Key] = Value
+    if Key == 'ip_addr':
+        validate_ip_addr(Value)
+    if Key == 'mac':
+        Value = Value.replace('-',':')
+        validate_mac_addr(Value)
+    # Make the change
+    wipe_host_build_files(host)
+    if Key in ['hostname', 'mac']:
+        host[Key] = Value.lower()
+    else:
+        host[Key] = Value
     save_hosts_yaml()
-    if host['target'] == 'build':
-        write_host_build_files(host)
+    # Post processing
+    if Key in ['hostname', 'ip_addr', 'mac']:
+        write_dnsmasq_hosts(Hosts)
+    # Always write (local is handled)
+    write_host_build_files(host)
     print(f"{CYAN}Host '{Hostname}' set '{Key}' to be '{Value}' at next build{END}")
 
 
@@ -166,8 +184,24 @@ def save_hosts_yaml():
         yaml.dump(Etc_Bob_Hosts, opf)
 
 
+def validate_ip_addr(IP):
+    try:
+        dummy = netaddr.IPAddress(IP)
+    except:
+        print(f"{RED}That is not a valid IP address{END}")
+        sys.exit()
+
+
+def validate_mac_addr(MAC):
+    try:
+        dummy = netaddr.EUI(MAC)
+    except:
+        print(f"{RED}That is not a valid MAC address{END}")
+        sys.exit()
+
+
 def wipe_host_build_files(Host):
-    for directory in [ Nginx_Ipxe_Dir, Nginx_Ipxe_Dir]:
+    for directory in [ Nginx_Build_Dir, Nginx_Ipxe_Dir]:
         for filename in os.listdir(directory):
             if Host['mac'] in filename:
                 os.unlink(f"{directory}/{filename}")
@@ -191,26 +225,32 @@ def write_host_build_files(Host):
 
 ##---------------------------------------------------------------------------------------------------------------------
 
-Action = sys.argv[1]
-if len(sys.argv) > 2:
-    Noun = sys.argv[2]
-if Action in ['a', 'add']:
-    if Noun in ['h', 'host']:
-        add_host(sys.argv[3],sys.argv[4],sys.argv[5])
-if Action in ['b', 'build']:
-    if Noun in ['h', 'host']:
-        build_host(sys.argv[3], sys.argv[4])
-if Action in ['c', 'complete']:
-    if Noun in ['h', 'host']:
-        complete_host(sys.argv[3])
-if Action in ['d', 'delete']:
-    if Noun in ['h', 'host']:
-        delete_host(sys.argv[3])
-if Action in ['e', 'edit']:
-    if Noun in ['h', 'host']:
-        edit_host(sys.argv[3], sys.argv[4], sys.argv[5])
-if Action in ['l', 'list']:
-    if Noun in ['h', 'host', '']:
-        list_hosts()
-    if Noun in ['r', 'recipes']:
-        list_recipes()
+try:
+    Action = sys.argv[1]
+    if len(sys.argv) > 2:
+        Noun = sys.argv[2]
+    if Action in ['a', 'add']:
+        if Noun in ['h', 'host']:
+            add_host(sys.argv[3],sys.argv[4],sys.argv[5])
+    if Action in ['b', 'build']:
+        if Noun in ['h', 'host']:
+            build_host(sys.argv[3], sys.argv[4])
+    if Action in ['c', 'complete']:
+        if Noun in ['h', 'host']:
+            complete_host(sys.argv[3])
+    if Action in ['d', 'delete']:
+        if Noun in ['h', 'host']:
+            delete_host(sys.argv[3])
+    if Action in ['e', 'edit']:
+        if Noun in ['h', 'host']:
+            edit_host(sys.argv[3], sys.argv[4], sys.argv[5])
+    if Action in ['l', 'list']:
+        if Noun in ['h', 'host', '']:
+            list_hosts()
+        if Noun in ['r', 'recipes']:
+            list_recipes()
+except Exception as e:
+    print(f"{BG_RED}We caught an exception:{END}")
+    print(f"{RED}")
+    traceback.print_exc()
+    print(f"{END}")

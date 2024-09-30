@@ -26,6 +26,7 @@ bob fetch
 ## Usage
 
 You are now ready to start deploying hosts; e,g,
+
 ```bash
 # Create a host
 bob add example 192.168.0.99 00:00:00:00:00:00
@@ -41,6 +42,7 @@ bob build example rocky
 ## Ideas To-Do
 
 - Bugs
+  - [x] Build fails when the disk is dirty (already partitioned);
   - [x] Nginx --> Wendy blocked by SELinux
   - [x] Add gunicorn to installer
   - [x] List hosts with empty list
@@ -56,7 +58,6 @@ bob build example rocky
   - [x] Ubuntu
 
 - Miscellaneous
-  - [ ] Check that you are root (in bob)
   - [x] Move some of the installer into a 'pre-req' phase
   - [ ] Improve the build status
 

@@ -52,6 +52,8 @@ OPT_BOB='/opt/bob'
 MY_DIR=$( dirname `realpath $0` )
 [[ $MY_DIR =~ ^/usr/local/sbin$ ]] || OPT_BOB="${MY_DIR}/opt_bob"
 
+[ "$UID" == "0" ] || { echo -e "${YELLOW}You need to be root to do this${END}"; exit 1; }
+
 ###====================================================================================================================
 ### FUNCTIONS
 
