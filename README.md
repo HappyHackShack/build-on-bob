@@ -33,32 +33,3 @@ bob add example 192.168.0.99 00:00:00:00:00:00
 # Put it into build mode
 bob build example rocky
 ```
-
-## Issues
-
-- Rocky seems to have an issue if the drive was already partitioned
-- Check the 'edit' is valid (exists)
-
-## Ideas To-Do
-
-- Bugs
-  - [x] Build fails when the disk is dirty (already partitioned);
-  - [x] Nginx --> Wendy blocked by SELinux
-  - [x] Add gunicorn to installer
-  - [x] List hosts with empty list
-
-- Main
-  - [x] Test of second machine - seems to deploy well (once I got the up-to-date ipxe)
-  - [x] Fix the fetcher
-
-- Deploy
-  - [ ] Alpine
-  - [?] FCOS
-  - [ ] Fedora
-  - [x] Ubuntu
-
-- Miscellaneous
-  - [x] Move some of the installer into a 'pre-req' phase
-  - [ ] Improve the build status
-
-- Build the Wendy Web interface

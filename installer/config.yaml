@@ -20,12 +20,15 @@ all:
     BUILDER_SSH_KEY: "{{ lookup('ansible.builtin.file', ''+BUILDER_SSH_KEY_FILE) }}"
 
     # Mirrors
-    BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v3.20'
+    BOB_ALPINE_MAJOR_VER: '3.20'
+    BOB_ALPINE_MINOR_VER: '3'
+    BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v{{BOB_ALPINE_MAJOR_VER}}'
+    BOB_ALPINE_VERSION: '{{BOB_ALPINE_MAJOR_VER}}.{{BOB_ALPINE_MINOR_VER}}'
 
     # Cloud Images
-    ALPINE_QCOW_URL0: 'https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
-    ALPINE_QCOW_URL: 'http://sponge/cloud/generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2'
-    ALPINE_IMAGE_FILE: 'alpine-generic-3.20.3'
+    ALPINE_QCOW_URL0: '{{BOB_ALPINE_BASE_URL}}/releases/cloud/generic_alpine-{{BOB_ALPINE_VERSION}}-x86_64-uefi-cloudinit-metal-r0.qcow2'
+    ALPINE_QCOW_URL: 'http://sponge/cloud/generic_alpine-{{BOB_ALPINE_VERSION}}-x86_64-uefi-cloudinit-metal-r0.qcow2'
+    ALPINE_IMAGE_FILE: 'alpine-generic-{{BOB_ALPINE_VERSION}}'
     
     FCOS_STREAM: 'stable'
     FCOS_VERSION: '40.20240906.3.0'

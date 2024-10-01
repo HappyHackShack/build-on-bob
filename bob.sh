@@ -113,7 +113,7 @@ do_Fetch() {
     cd ${BOB_HTML_DIRECTORY}/alpine
     for file in initramfs modloop vmlinuz; do
         echo -n -e "${GRAY}ALPINE.${file}: ${END}"
-        wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot/${file}-${flavor}
+        wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot-${ALPINE_VERSION}/${file}-${flavor}
     done
 
     # Fetch the FCOS files
