@@ -19,39 +19,64 @@ all:
     BUILDER_SSH_KEY_FILE: '~/.ssh/id_rsa.pub'
     BUILDER_SSH_KEY: "{{ lookup('ansible.builtin.file', ''+BUILDER_SSH_KEY_FILE) }}"
 
-    # Mirrors
-    BOB_ALPINE_MAJOR_VER: '3.20'
-    BOB_ALPINE_MINOR_VER: '3'
-    BOB_ALPINE_BASE_URL: 'https://uk.alpinelinux.org/alpine/v{{BOB_ALPINE_MAJOR_VER}}'
-    BOB_ALPINE_VERSION: '{{BOB_ALPINE_MAJOR_VER}}.{{BOB_ALPINE_MINOR_VER}}'
+    LOCAL_CACHE: 'http://sponge/cache'
+    # External Sites
+    ALPINE_SITE: 'https://uk.alpinelinux.org/alpine'
+    RESCUE_VERSION: '3.20'
+    RESCUE_MINOR_VER: '3'
 
-    # Cloud Images
-    ALPINE_QCOW_URL0: '{{BOB_ALPINE_BASE_URL}}/releases/cloud/generic_alpine-{{BOB_ALPINE_VERSION}}-x86_64-uefi-cloudinit-metal-r0.qcow2'
-    ALPINE_QCOW_URL: 'http://sponge/cloud/generic_alpine-{{BOB_ALPINE_VERSION}}-x86_64-uefi-cloudinit-metal-r0.qcow2'
-    ALPINE_IMAGE_FILE: 'alpine-generic-{{BOB_ALPINE_VERSION}}'
-    
-    FCOS_STREAM: 'stable'
-    FCOS_VERSION: '40.20240906.3.0'
-    FCOS_BASE_URL0: 'https://builds.coreos.fedoraproject.org/prod/streams/{{FCOS_STREAM}}/builds/{{FCOS_VERSION}}/x86_64'
-    FCOS_BASE_URL: 'http://sponge/cloud'
-    FCOS_KERNEL_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-kernel-x86_64'
-    FCOS_KERNEL_FILE: 'fcos-{{FCOS_VERSION}}-kernel'
-    FCOS_INITRD_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-initramfs.x86_64.img'
-    FCOS_INITRD_FILE: 'fcos-{{FCOS_VERSION}}-initramfs.img'
-    FCOS_ROOTFS_GET: 'fedora-coreos-{{FCOS_VERSION}}-live-rootfs.x86_64.img'
-    FCOS_ROOTFS_FILE: 'fcos-{{FCOS_VERSION}}-rootfs.img'
-    
-    FEDORA_QCOW_URL0: 'https://download.fedoraproject.org/pub/fedora/linux/releases/40/Cloud/x86_64/images/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2'
-    FEDORA_QCOW_URL: 'http://sponge/cloud/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2'
-    FEDORA_IMAGE_FILE: 'Fedora-40-1.14-Base-Generic'
+    FCOS_SITE: 'https://builds.coreos.fedoraproject.org/prod/streams/stable/builds'
+    FEDORA_SITE: 'https://download.fedoraproject.org/pub/fedora/linux/releases'
+    ROCKY_SITE: 'https://dl.rockylinux.org/pub/rocky'
+    UBUNTU_SITE: 'https://cloud-images.ubuntu.com/releases'
 
-    ROCKY_QCOW_URL0: 'https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
-    ROCKY_QCOW_URL: 'http://sponge/cloud/Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2'
-    ROCKY_IMAGE_FILE: 'Rocky-9.4-Generic-Base-20240609'
-    
-    UBUNTU_QCOW_URL0: 'https://cloud-images.ubuntu.com/oracular/20240927/oracular-server-cloudimg-amd64.img'
-    UBUNTU_QCOW_URL: 'http://sponge/cloud/oracular-server-cloudimg-amd64.img'
-    UBUNTU_IMAGE_FILE: 'Ubuntu-22.10-server-20240927'
+    os_cache:
+      - name: rescue
+        url: '{{ ALPINE_SITE }}/'
+        versions:
+          - tag: '{{ RESCUE_VERSION }}.{{ RESCUE_MINOR_VER }}'
+            url: 'v{{ RESCUE_VERSION }}/releases/x86_64/netboot-{{ RESCUE_VERSION }}.{{ RESCUE_MINOR_VER }}'
+            files:
+              - vmlinuz-lts
+              - initramfs-lts
+              - modloop-lts
+      - name: fcos
+        url: "{{ FCOS_SITE }}/"
+        versions:
+          - tag: '37-221127'
+            url: '37.20221127.3.0/x86_64'
+            files:
+              - 'fedora-coreos-37.20221127.3.0-live-kernel-x86_64'
+              - 'fedora-coreos-37.20221127.3.0-live-initramfs.x86_64.img'
+              - 'fedora-coreos-37.20221127.3.0-live-rootfs.x86_64.img'
+          - tag: '40-240906'
+            url: '40.20240906.3.0/x86_64'
+            files:
+              - 'fedora-coreos-40.20240906.3.0-live-kernel-x86_64'
+              - 'fedora-coreos-40.20240906.3.0-live-initramfs.x86_64.img'
+              - 'fedora-coreos-40.20240906.3.0-live-rootfs.x86_64.img'
+      - name: fedora
+        url: '{{ FEDORA_SITE }}/'
+        versions:
+          - tag: '40-1.14'
+            url: '40/Cloud/x86_64/images'
+            files:
+              - Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2
+      - name: rocky
+        url: '{{ ROCKY_SITE }}/'
+        versions:
+          - tag: '9.4-240609'
+            url: '9/images/x86_64'
+            files:
+              - Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
+      - name: ubuntu
+        url: '{{ UBUNTU_SITE }}/'
+        versions:
+          - tag: '24.04-240911'
+            url: '24.04/release-20240911'
+            files:
+              - ubuntu-24.04-server-cloudimg-amd64.img
+
 
     #-----------------------------------------------------------------------------------------------------------------------
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing

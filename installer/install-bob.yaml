@@ -5,6 +5,18 @@
   gather_facts: false
 
   tasks:
+    - name: Write the populate cache script
+      ansible.builtin.template:
+        src: populate-cache.sh.j2
+        dest: "{{ BOB_HOME_DIRECTORY }}/populate-cache.sh"
+        mode: '0750'
+
+    - name: Write the fetch from cache script
+      ansible.builtin.template:
+        src: fetch-from-cache.sh.j2
+        dest: "{{ BOB_HOME_DIRECTORY }}/fetch-from-cache.sh"
+        mode: '0750'
+
     - name: Pre-Req Packages and directories block
       tags:
         - never

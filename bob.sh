@@ -82,8 +82,9 @@ do_Add() {
 do_Build() {
     HOST="$1"
     OS="$2"
+    VER="$3"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py build host "$HOST" "$OS"
+    ${OPT_BOB}/bob.py build host "$HOST" "$OS" "$VER"
 }
 
 do_Complete() {
@@ -108,57 +109,14 @@ do_Edit() {
 }
 
 do_Fetch() {
-    # Start with the alpine boot files
-    flavor='lts'
-    cd ${BOB_HTML_DIRECTORY}/alpine
-    for file in initramfs modloop vmlinuz; do
-        echo -n -e "${GRAY}ALPINE.${file}: ${END}"
-        wget -nc ${ALPINE_BASE_URL}/releases/x86_64/netboot-${ALPINE_VERSION}/${file}-${flavor}
-    done
-
-    # Fetch the FCOS files
-    cd ../fcos
-    echo -e "${CYAN}Checking FCOS files ${END}"
-    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_KERNEL_GET} --> ${FCOS_KERNEL_FILE}${END}"
-    [ -f "${FCOS_KERNEL_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_KERNEL_GET}" -O "${FCOS_KERNEL_FILE}"
-    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_INITRD_GET} --> ${FCOS_INITRD_FILE}${END}"
-    [ -f "${FCOS_INITRD_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_INITRD_GET}" -O "${FCOS_INITRD_FILE}"
-    echo -e "${GRAY}${FCOS_BASE_URL}/${FCOS_ROOTFS_GET} --> ${FCOS_ROOTFS_FILE}${END}"
-    [ -f "${FCOS_ROOTFS_FILE}" ] || wget -nc "${FCOS_BASE_URL}/${FCOS_ROOTFS_GET}" -O "${FCOS_ROOTFS_FILE}"
-
-    # Now get each of the cloud images
-    cd ../images
-    fetch_Cloud_Image "$ALPINE_QCOW_URL" "$ALPINE_IMAGE_FILE"
-    fetch_Cloud_Image "$FEDORA_QCOW_URL" "$FEDORA_IMAGE_FILE"
-    fetch_Cloud_Image "$ROCKY_QCOW_URL" "$ROCKY_IMAGE_FILE"
-    fetch_Cloud_Image "$UBUNTU_QCOW_URL" "$UBUNTU_IMAGE_FILE"
+    cd ${BOB_HTML_DIRECTORY}
+    ${BOB_HOME_DIRECTORY/}/fetch-from-cache.sh   
 }
 
 do_List() {
     NOUN="$1"
     # Assume hosts (for now)
     ${OPT_BOB}/bob.py list "$NOUN"
-}
-
-
-fetch_Cloud_Image() {
-    URL="$1"
-    FILE="$2"
-    QCOW="${FILE}.qcow2"
-    RAW="${FILE}.raw"
-    RAW_GZ="${RAW}.gz"
-    #
-    echo -e "${CYAN}Checking ${FILE}${END}"
-    [ -f ${QCOW} ] || {
-        echo -e "${YELLOW}Fetching ${FILE}${END}"
-        wget "$URL" -O "${QCOW}"
-    }
-    [ -f ${RAW}.gz ] || {
-        echo -e "${YELLOW}Converting ${FILE} ...${END}"
-        qemu-img convert -O raw "${QCOW}" "${RAW}"
-        echo -e "${YELLOW}and gzipping ${FILE} ...${END}"
-        gzip "${RAW}"
-    }
 }
 
 

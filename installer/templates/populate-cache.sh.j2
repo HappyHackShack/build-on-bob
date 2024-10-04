@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# This is an optional file that can pre-populate a cache if you:
+#  - are developing BoB, and need to keep downloading files
+#  - run multiple BoB's
+#  - have BoB servers that cannot access the Internet
+
+CYAN='\e[36m'
+END='\e[0m'
+{% for os in os_cache %}
+
+{% for ver in os.versions %}
+echo -e "${CYAN}Fetching {{os.name}} v {{ver.tag}} ...${END}"
+mkdir -p {{os.name}}/{{ver.tag}}
+(
+  cd {{os.name}}/{{ver.tag}}
+{% for file in ver.files %}
+  wget -nc {{os.url}}{{ver.url}}/{{file}}
+{% endfor %}
+)
+{% endfor %}
+{% endfor %}
