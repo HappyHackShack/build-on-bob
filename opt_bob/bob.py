@@ -71,11 +71,15 @@ with open(Recipe_File,'rt') as rcp:
 
 
 
-def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
+def add_host(Hostname, IP, MAC, OS, Version):
     validate_ip_addr(IP)
     validate_mac_addr(MAC)
 
     Hosts = load_hosts_yaml()
+    if not OS:
+        OS = 'rescue'
+    if not Version:
+        Version = Config.get_os(OS)['versions'][0]['tag']
     # Check IP address not already allocated
     for host in Hosts:
         if IP == host['ip_addr']:
@@ -271,7 +275,7 @@ try:
         Noun = sys.argv[2]
     if Action in ['a', 'add']:
         if Noun in ['h', 'host']:
-            add_host(sys.argv[3],sys.argv[4],sys.argv[5])
+            add_host(sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7] )
     if Action in ['b', 'build']:
         if Noun in ['h', 'host']:
             build_host(sys.argv[3], sys.argv[4], sys.argv[5])
@@ -287,7 +291,7 @@ try:
     if Action in ['l', 'list']:
         if Noun in ['h', 'host', '']:
             list_hosts()
-        if Noun in ['o', 'os', '']:
+        if Noun in ['o', 'os']:
             list_op_sys()
         if Noun in ['r', 'recipes']:
             list_recipes()

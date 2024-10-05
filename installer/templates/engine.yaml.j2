@@ -2,10 +2,12 @@
 
 bob_listen_address: "{{ BOB_LISTEN_ADDRESS }}"
 bob_html_directory: "{{ BOB_HTML_DIRECTORY }}"
+bob_netboot_path: "rescue/{{ RESCUE_VERSION }}.{{ RESCUE_MINOR_VER }}"
 builder_ssh_key: "{{ BUILDER_SSH_KEY }}"
 dns_domain: "{{ BOB_DNS_DOMAIN }}"
 
-alpine_base_url: "{{ ALPINE_SITE }}/{{ RESCUE_VERSION }}"
+
+alpine_base_url: "{{ ALPINE_SITE }}/v{{ RESCUE_VERSION }}"
 
 os_cache:
 {{ os_cache | to_yaml | indent(2,true) }}

@@ -11,7 +11,7 @@ dd if=/dev/zero of={{disk}} bs=8M count=8
 partprobe {{disk}}
 
 cd /tmp
-wget http://{{bob_listen_address}}/images/{{ files.0 | replace("qcow2","raw.gz") }}
+wget http://{{bob_listen_address}}/{{ os }}/{{ version }}/{{ files.0 | replace("qcow2","raw.gz") }}
 
 echo -e "\n\n${INFO}Please wait while image is written to {{disk}} ...${END}"
 gunzip < {{ files.0 | replace("qcow2","raw.gz") }} | dd of={{disk}} bs=4M

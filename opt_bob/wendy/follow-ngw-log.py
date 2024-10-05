@@ -57,7 +57,7 @@ def follow(filename):
                         stage = 9
                     if 'user' in url:
                         stage = 10 
-                if 'images' in url:
+                if 'raw.gz' in url:
                     stage = 8
                 if 'api/complete' in url:
                     stage = 11

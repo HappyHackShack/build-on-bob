@@ -74,8 +74,10 @@ do_Add() {
     HOST="$1"
     IP="$2"
     MAC="$3"
+    OS="$4"
+    VER="$5"
     [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py add host "$HOST" "$IP" "$MAC"
+    ${OPT_BOB}/bob.py add host "$HOST" "$IP" "$MAC" "$OS" "$VER"
     systemctl restart dnsmasq
 }
 
@@ -106,6 +108,8 @@ do_Edit() {
     VALUE="$3"
     [[ $VALUE == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
     ${OPT_BOB}/bob.py edit host "$HOST" "$KEY" "$VALUE"
+    # Slight overkill to do this for every edit
+    systemctl restart dnsmasq
 }
 
 do_Fetch() {
