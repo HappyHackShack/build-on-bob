@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# This is an optional file that can fetch from a pre-populated cache; e.g. if you:
+#  - are developing BoB, and need to keep downloading files
+#  - run multiple BoB's
+#  - have BoB servers that cannot access the Internet
+
+CYAN='\e[36m'
+BLUE='\e[34m'
+END='\e[0m'
+{% for os in os_cache %}
+
+{% for ver in os.versions %}
+echo -e "${CYAN}Fetching {{os.name}} v {{ver.tag}} ...${END}"
+mkdir -p {{os.name}}/{{ver.tag}}
+(
+  cd {{os.name}}/{{ver.tag}}
+{% for file in ver.files %}
+  FILE="{{file}}"
+  wget -nc {{LOCAL_CACHE}}/{{os.name}}/{{ver.tag}}/${FILE}
+  file "${FILE}" | grep 'QCOW Image' > /dev/null && {
+    echo -e "${BLUE}QCOW Image detected${END}"
+    RAW="${FILE%.*}.raw"
+    [[ -f "${RAW}.gz" ]] || {
+      echo -e "${CYAN}  ... converting QCOW to RAW${END}"
+      qemu-img convert -O raw "${FILE}" "${RAW}"
+      echo -e "${CYAN}  ... and then compressing${END}"
+      gzip "${RAW}"
+    }
+  }
+{% endfor %}
+)
+{% endfor %}
+{% endfor %}

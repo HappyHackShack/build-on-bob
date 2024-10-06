@@ -45,18 +45,41 @@ Template_Dir = f"{My_Dir}/templates"
 Etc_Bob_Hosts = {}
 
 #print('Starting the BOB engine ...')
+class Bob_Config(dict):
+    def get_os(self, osName):
+        for os in self['os_cache']:
+            if os['name'] == osName:
+                return os
+        return None
+    
+    def get_os_list(self):
+        return [ os['name'] for os in self['os_cache'] ]
+
+    def get_os_version(self, osName, verTag):
+        for os in self['os_cache']:
+            if os['name'] == osName:
+                for version in os['versions']:
+                    if version['tag'] == verTag:
+                        return version
+        return None
+
+
 with open(Config_File,'rt') as cfg:
-    Config = yaml.safe_load(cfg)
+    Config = Bob_Config( yaml.safe_load(cfg) )
 with open(Recipe_File,'rt') as rcp:
     Recipes = yaml.safe_load(rcp)
 
 
 
-def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
+def add_host(Hostname, IP, MAC, OS, Version):
     validate_ip_addr(IP)
     validate_mac_addr(MAC)
 
     Hosts = load_hosts_yaml()
+    if not OS:
+        OS = 'rescue'
+    if not Version:
+        Version = Config.get_os(OS)['versions'][0]['tag']
     # Check IP address not already allocated
     for host in Hosts:
         if IP == host['ip_addr']:
@@ -72,13 +95,25 @@ def add_host(Hostname, IP, MAC, OS='rescue', Version='-'):
     print(f"{GREEN}New host '{WHITE}{Hostname}{GREEN}' added{END}")
 
 
-def build_host(Hostname, New_OS):
+def build_host(Hostname, New_OS, New_version):
     Hosts, host = load_hosts_yaml(Hostname)
     if not host:
         print(f"{YELLOW}WARNING: I didn't recognize that hostname{END}")
         return
     if New_OS:
+        if New_OS not in Config.get_os_list():
+            print(f"{RED}That's not a valid OS...{END}")
+            list_op_sys()
+            return
+        if New_version:
+            version = Config.get_os_version(New_OS, New_version)
+            if not version:
+                print(f"{RED}That's not a valid version for {New_OS} ...{END}")
+                return
+        else:
+            version = Config.get_os(New_OS)['versions'][0]
         host['os'] = New_OS
+        host['version'] = version['tag']
     host['target'] = 'build'
     #
     save_hosts_yaml()
@@ -163,6 +198,14 @@ def list_hosts():
             print(f"  {h['hostname']:15} {BLUE}{h['mac']} / {CYAN}{h['ip_addr']:15}{END} {h['os']:9} {h['version']:16} {h['disk']:11} {bld}{h['target']}{END}")
 
 
+def list_op_sys():
+    print('I know about the following operating systems:')
+    for os in Config.get_os_list():
+        print(f"{CYAN}  {os}{END}")
+        for version in Config.get_os(os)['versions']:
+            print(f"{MAGENTA}      {version['tag']}{END}")
+
+
 def list_recipes():
     print('I know about the following recipes:')
     for recipe in Recipes:
@@ -216,11 +259,12 @@ def write_dnsmasq_hosts(Hosts):
 def write_host_build_files(Host):
     wipe_host_build_files(Host)
     recipe = Recipes['local'] if Host['target'] == 'local' else Recipes[Host['os']]
+    OS_ver = Config.get_os_version(Host['os'], Host['version'])
     for template in recipe['templates']:
         tpl_name = template['name']
         output = template['output'].replace('MAC', Host['mac'])
         print(f'{GRAY}Writing template {tpl_name} --> {output}{END}')
-        render_template( tpl_name, Config|Host, f"{Nginx_Base_Dir}/{output}")
+        render_template( tpl_name, Config|Host|OS_ver, f"{Nginx_Base_Dir}/{output}")
 
 
 ##---------------------------------------------------------------------------------------------------------------------
@@ -231,10 +275,10 @@ try:
         Noun = sys.argv[2]
     if Action in ['a', 'add']:
         if Noun in ['h', 'host']:
-            add_host(sys.argv[3],sys.argv[4],sys.argv[5])
+            add_host(sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7] )
     if Action in ['b', 'build']:
         if Noun in ['h', 'host']:
-            build_host(sys.argv[3], sys.argv[4])
+            build_host(sys.argv[3], sys.argv[4], sys.argv[5])
     if Action in ['c', 'complete']:
         if Noun in ['h', 'host']:
             complete_host(sys.argv[3])
@@ -247,6 +291,8 @@ try:
     if Action in ['l', 'list']:
         if Noun in ['h', 'host', '']:
             list_hosts()
+        if Noun in ['o', 'os']:
+            list_op_sys()
         if Noun in ['r', 'recipes']:
             list_recipes()
 except Exception as e:

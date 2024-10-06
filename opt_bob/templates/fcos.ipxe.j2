@@ -3,9 +3,9 @@
 # Taken directly from: https://docs.fedoraproject.org/en-US/fedora-coreos/bare-metal/
 
 set ignition http://{{bob_listen_address}}/fcos/bootstrap.ign
-set bob http://{{bob_listen_address}}/fcos
+set bob http://{{bob_listen_address}}/{{os}}/{{version}}
 
-kernel ${bob}/{{fcos_kernel_file}} initrd=main coreos.live.rootfs_url=${bob}/{{fcos_rootfs_file}} coreos.inst.install_dev={{disk}} coreos.inst.ignition_url=${ignition}
-initrd --name main ${bob}/{{fcos_initrd_file}}
+kernel ${bob}/{{files.0}} initrd=main coreos.live.rootfs_url=${bob}/{{files.2}} coreos.inst.install_dev={{disk}} coreos.inst.ignition_url=${ignition}
+initrd --name main ${bob}/{{files.1}}
 
 boot

@@ -4,7 +4,7 @@ RED=''
 GREEN=''
 BLUE=''
 
-hostname conan
+hostname roley
 
 echo -e "\n\n\e[36m*** Hello Builder ! \e[0m"
 sleep 0.5
