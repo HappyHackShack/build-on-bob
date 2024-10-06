@@ -55,6 +55,18 @@ all:
               - 'fedora-coreos-40.20240906.3.0-live-kernel-x86_64'
               - 'fedora-coreos-40.20240906.3.0-live-initramfs.x86_64.img'
               - 'fedora-coreos-40.20240906.3.0-live-rootfs.x86_64.img'
+      
+      - name: alpine
+        url: "{{ ALPINE_SITE }}/"
+        versions:
+          - tag: '3.19.4'
+            url: 'v3.19/releases/cloud'
+            files:
+              - nocloud_alpine-3.19.4-x86_64-uefi-cloudinit-r0.qcow2
+          - tag: '3.20.3'
+            url: 'v3.20/releases/cloud'
+            files:
+              - generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2
       - name: fedora
         url: '{{ FEDORA_SITE }}/'
         versions:
@@ -69,6 +81,10 @@ all:
             url: '9/images/x86_64'
             files:
               - Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
+          - tag: '9.4-240509L'
+            url: '9/images/x86_64'
+            files:
+              - Rocky-9-GenericCloud-LVM-9.4-20240509.0.x86_64.qcow2
       - name: ubuntu
         url: '{{ UBUNTU_SITE }}/'
         versions:
@@ -76,6 +92,10 @@ all:
             url: '24.04/release-20240911'
             files:
               - ubuntu-24.04-server-cloudimg-amd64.img
+          - tag: '23.10-240710'
+            url: '23.10/release-20240710'
+            files:
+              - ubuntu-23.10-server-cloudimg-amd64.img
 
 
     #-----------------------------------------------------------------------------------------------------------------------

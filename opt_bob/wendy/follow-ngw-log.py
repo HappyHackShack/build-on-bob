@@ -41,7 +41,7 @@ def follow(filename):
                 url = bits[4]
                 if 'ipxe' in url:
                     stage = 1 if 'stage1' in url else 2
-                if 'alpine' in url:
+                if 'rescue' in url:
                     if 'vmlinuz' in url:
                         stage = 3
                     if 'initr' in url:
