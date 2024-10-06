@@ -41,7 +41,6 @@
             - "{{ BOB_HTML_DIRECTORY }}/build"
             - "{{ BOB_HTML_DIRECTORY }}/alpine"
             - "{{ BOB_HTML_DIRECTORY }}/fcos"
-            - "{{ BOB_HTML_DIRECTORY }}/images"
 
         - name: Put the iPXE EFI module in place
           ansible.builtin.copy:
@@ -60,21 +59,19 @@
 
         - name: Apply new SELinux file context to TFTP area
           ansible.builtin.command: "restorecon -irv {{ BOB_TFTP_DIRECTORY }}"
+          changed_when: true
+
+        - name: Build the overlay
+          ansible.builtin.command:
+            cmd: ./mk-overlay.sh
+            creates: builder.apkovl.tar.gz
+          changed_when: true
 
         - name: Set SE:httpd_can_network_connect flag ON
           ansible.posix.seboolean:
             name: httpd_can_network_connect
             state: true
             persistent: true
-
-        - name: Get status of Overlay
-          ansible.builtin.stat:
-            path: builder.apkovl.tar.gz
-          register: overlay
-
-        - name: Build the overlay
-          ansible.builtin.shell: ./mk-overlay.sh
-          when: not overlay.stat.exists
 
         - name: Ensure the Wendy log exists
           ansible.builtin.copy:
