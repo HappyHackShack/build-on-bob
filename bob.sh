@@ -53,6 +53,8 @@ MY_DIR=$( dirname `realpath $0` )
 [[ $MY_DIR =~ ^/usr/local/sbin$ ]] || OPT_BOB="${MY_DIR}/opt_bob"
 
 [ "$UID" == "0" ] || { echo -e "${YELLOW}You need to be root to do this${END}"; exit 1; }
+# If help invoked from command line
+SHOW_HELP_BANNER=1
 
 ###====================================================================================================================
 ### FUNCTIONS
@@ -70,77 +72,172 @@ log() {
     [[ $LEVEL -le $SYSLOG_LEVEL ]] && logger -t $SYSLOG_TAG -p $LEVEL "${TITLE}: ${MSG}"
 }
 
-do_Add() {
+do_Command() {
+    OBJ="$1"
+    shift
+
+    case $OBJ in
+        "")
+            CONTEXT='_SHELL_'
+            ;;
+        h|host)
+            do_Host_Command $*
+            ;;
+        f|fetch)
+            cd ${BOB_HTML_DIRECTORY}
+            ${BOB_HOME_DIRECTORY/}/fetch-from-cache.sh   
+            ;;
+        ?|help)
+            show_Help
+            ;;
+        i|ipam)
+            CONTEXT='ipam'
+            ;;              
+        o|os)
+            do_OS_Command $*
+            ;;
+        s|status)
+            export SYSTEMD_COLORS=1
+            for SVC in dnsmasq nginx wendy; do 
+            echo -e "${CYAN}-----------------------------------------  ${SVC}  ------------------------------------------${END}"
+            systemctl status $SVC | head -n 9
+            done
+            ;;
+        sn|subnet)
+            CONTEXT='subnet'
+            ;;              
+        t|tail)
+            tail -n 3 -f /var/log/nginx/access.log
+            ;;
+        test)
+            tester
+            ;;
+        w|watch)
+            watch -cn 1 cat /tmp/build_status
+            ;;
+        *)
+            log $ERROR "What do you want me to do ?"
+            show_Help
+            ;;
+    esac
+}
+
+do_Host_Command() {
+    ACTION="$1"
+    shift
+
+    case $ACTION in
+        "")
+            CONTEXT='host'
+            ;;
+        a|add)
+            host_Add $*
+            ;;
+        b|build)
+            host_Build $*
+            ;;
+        c|complete)
+            host_Complete $*
+            ;;
+        d|delete)
+            host_Delete $*
+            ;;
+        e|edit)
+            host_Edit $*
+            ;;
+        l|list)
+            host_List $*
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
+}
+
+do_OS_Command() {
+    ACTION="$1"
+    shift
+
+    case $ACTION in
+        "")
+            CONTEXT='os'
+            ;;
+        l|list)
+            os_List $*
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
+}
+
+host_Add() {
     HOST="$1"
     IP="$2"
     MAC="$3"
     OS="$4"
     VER="$5"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py add host "$HOST" "$IP" "$MAC" "$OS" "$VER"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; return; }
+    ${OPT_BOB}/bob.py host add "$HOST" "$IP" "$MAC" "$OS" "$VER"
     systemctl restart dnsmasq
 }
 
-do_Build() {
+host_Build() {
     HOST="$1"
     OS="$2"
     VER="$3"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py build host "$HOST" "$OS" "$VER"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; return; }
+    ${OPT_BOB}/bob.py host build "$HOST" "$OS" "$VER"
 }
 
-do_Complete() {
+host_Complete() {
     HOST="$1"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py complete host "$HOST"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; return; }
+    ${OPT_BOB}/bob.py host complete "$HOST"
 }
 
-do_Delete() {
+host_Delete() {
     HOST="$1"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to delete ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py delete host "$HOST"
+    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to delete ?${END}"; return; }
+    ${OPT_BOB}/bob.py host delete "$HOST"
     systemctl restart dnsmasq
 }
 
-do_Edit() {
+host_Edit() {
     HOST="$1"
     KEY="$2"
     VALUE="$3"
-    [[ $VALUE == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; exit 1; }
-    ${OPT_BOB}/bob.py edit host "$HOST" "$KEY" "$VALUE"
+    [[ $VALUE == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; return; }
+    ${OPT_BOB}/bob.py host edit "$HOST" "$KEY" "$VALUE"
     # Slight overkill to do this for every edit
     systemctl restart dnsmasq
 }
 
-do_Fetch() {
-    cd ${BOB_HTML_DIRECTORY}
-    ${BOB_HOME_DIRECTORY/}/fetch-from-cache.sh   
+host_List() {
+    ${OPT_BOB}/bob.py host list "$1"
 }
 
-do_List() {
-    NOUN="$1"
-    # Assume hosts (for now)
-    ${OPT_BOB}/bob.py list "$NOUN"
+os_List() {
+    ${OPT_BOB}/bob.py os list "$1"
 }
-
 
 show_Help() {
-    echo -e """\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)
+    [[ $SHOW_HELP_BANNER == 0 ]] || {
+        echo -e """\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)
     
-    Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}
-    The following ${WHITE}Actions${END} are possible:
+    Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}"""
+    }
+    echo -e """    The following ${WHITE}Actions${END} are possible:
 
-    ${WHITE}a | add${END}      - you can add a new ${MAGENTA}<Host>${END}. <IP> <MAC>
-    ${WHITE}b | build${END}    - you can put a ${MAGENTA}host${END} into build mode.
-    ${WHITE}c | complete${END} - you can complete the build of a ${MAGENTA}host${END}.
-    ${WHITE}d | delete${END}   - you can delete a ${MAGENTA}host${END}.
-    ${WHITE}e | edit${END}     - set the ${MAGENTA}<host> <hostname|mac|ip_addr|disk> <value>${END}
-    ${WHITE}h | help${END}     - show this help :)
-    ${WHITE}l | list${END}     - you can list ${MAGENTA}h|hosts | r|recipes${END}.
-    ${WHITE}s | status${END}   - show the status of BoB.
-    ${WHITE}t | tail${END}     - tail the web (Wendy) logs.
-    ${WHITE}    test${END}     - run the developer test function.
-    ${WHITE}w | watch${END}    - start watching the build status file.\n
+    ${WHITE}f  | fetch${END}   - perform a fetch
+    ${WHITE}h  | host${END}    - perform ${MAGENTA}host${END} actions
+    ${WHITE}?  | help${END}    - show this help :)
+    ${WHITE}i  | ipam${END}    - perform ${MAGENTA}ipam${END} actions
+    ${WHITE}o  | os${END}      - perform ${MAGENTA}ipam${END} actions
+    ${WHITE}s  | status${END}  - show the status of Bob components
+    ${WHITE}sn | subnet${END}  - perform ${MAGENTA}ipam${END} actions
+    ${WHITE}t  | tail${END}    - tail the web (Wendy) logs.
+    ${WHITE}w  | watch${END}   - start watching the build status file.\n
     For more details, run : ${CYAN}man bob${END}
     """
 }
@@ -155,64 +252,41 @@ tester() {
     log $WARN "Oh dear"
     log $ERROR "wen't wrong"
     log $CRIT "badly"
-    log $ALERT "v serious"
-    log $EMERG "P A N I C"
+    # log $ALERT "v serious"
+    # log $EMERG "P A N I C"
 
     echo -e "$RED RED $GREEN GRN $YELLOW YELL $BLUE BLUE $MAGENTA MAG $CYAN CYAN $GRAY GRAY $BLACK BLK $END."
     echo -e "$L_RED RED $L_GREEN GRN $L_YELLOW YELL $L_BLUE BLUE $L_MAGENTA MAG $L_CYAN CYAN $L_GRAY GRAY $WHITE WHT $END."
     echo -e "$BG_RED RED $BG_GREEN GRN $BG_YELLOW YELL $BG_BLUE BLUE $BG_MAGENTA MAG $BG_CYAN CYAN $BG_GRAY GRAY $BG_WHITE BLK $END."
+}
 
+bob_shell() {
+    SHOW_HELP_BANNER=0
+
+    [[ $CONTEXT == '_SHELL_' ]] && CONTEXT=''
+    while :
+    do
+        echo -n "Bob"
+        [[ $CONTEXT == '' ]] || echo -n " "
+        echo -n "$CONTEXT> "
+        read NOUN
+
+        case $NOUN in
+            "")
+                CONTEXT=''
+                ;;
+            q|quit)
+                break
+                ;;
+            *)
+                do_Command $CONTEXT $NOUN
+                ;;
+        esac
+    done
 }
 
 ###====================================================================================================================
 ### MAIN
 
-VERB="$1"
-shift
-
-case $VERB in
-    a|add)
-        do_Add $*
-        ;;
-    b|build)
-        do_Build $*
-        ;;
-    c|complete)
-        do_Complete $*
-        ;;
-    d|delete)
-        do_Delete $*
-        ;;
-    e|edit)
-        do_Edit $*
-        ;;
-    f|fetch)
-        do_Fetch $*
-        ;;
-    h|help)
-        show_Help
-        ;;
-    l|list)
-        do_List $*
-        ;;
-    s|status)
-        export SYSTEMD_COLORS=1
-        for SVC in dnsmasq nginx wendy; do 
-          echo -e "${CYAN}-----------------------------------------  ${SVC}  ------------------------------------------${END}"
-          systemctl status $SVC | head -n 9
-        done
-        ;;
-    t|tail)
-        tail -n 3 -f /var/log/nginx/access.log
-        ;;
-    test)
-        tester
-        ;;
-    w|watch)
-        watch -cn 1 cat /tmp/build_status
-        ;;
-    *)
-        log $ERROR "What do you want me to do ?"
-        show_Help
-        ;;
-esac
+do_Command $*
+[[ "$CONTEXT" == '' ]] || bob_shell

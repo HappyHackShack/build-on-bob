@@ -1,0 +1,27 @@
+{% extends 'plain.htm' %}
+
+{% block Content %}
+<p class="mb-3">There are some hosts</p>
+<table class="table table-striped">
+    <tr class="table-primary">
+        <th>Hostname</th>
+        <th>IP Addrress</th>
+        <th>MAC Address</th>
+        <th>OS</th>
+        <th>Version</th>
+        <th>Disk</th>
+        <th>Mode</th>
+    </tr>
+    {% for host in ctx.hosts %}
+    <tr>
+        <td>{{host.hostname}}</td>
+        <td>{{host.ip_addr}}</td>
+        <td>{{host.mac}}</td>
+        <td>{{host.os}}</td>
+        <td>{{host.version}}</td>
+        <td>{{host.disk}}</td>
+        <td>{{host.target}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

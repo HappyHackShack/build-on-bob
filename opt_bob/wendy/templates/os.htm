@@ -1,0 +1,21 @@
+{% extends 'plain.htm' %}
+
+{% block Content %}
+<p class="mb-3">There are some OSes</p>
+
+<div class="row">
+{% for os in ctx.opsystems %}
+  <div class="col-3 mb-4">
+    <div class="card">
+      <div class="card-header bg-primary-subtle">{{os.name}}</div>
+      <div class="card-body">
+        {% for ver in os.versions %}
+        <p class="card-text">{{ver.tag}}</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+{% endblock %}

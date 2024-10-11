@@ -1,0 +1,19 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+header { 
+    height: 116px;
+}
+header img { max-height: 84px; }
+
+main { 
+    min-height: 525px;
+}
+
+footer{
+    min-height: 125px;
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en-UK">
+<head>
+<meta charset="UTF-8" />
+<title>BoB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="stylesheet" href="/static/bs-5.3.3/bootstrap.min.css">
+<link rel='stylesheet' href='/static/fa-6.6.0/all.min.css'>
+<link rel='stylesheet' href='/static/bob.css' type='text/css' media='all' />
+</head>
+
+<body>
+<header class="container-fluid p-3 bg-primary"><div class="row">
+    <div class="col-2"><img src='/static/hb-logo.png' ></div>
+    <div class="col-8 pt-2 text-white text-center"><h1>Build on BoB</h1></div>
+    <div class="col-2 pt-4"> </div>
+</div></header>
+
+<main class='d-flex flex-nowrap'>
+    <div class="d-flex flex-column flex-shrink-0 p-2 bg-secondary-subtle">
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a href="/wendy/" class="nav-link {%if ctx.page_title=='Home'%}active{%endif%}" aria-current="page">
+                <i class="fa fa-home"></i> Home
+              </a>
+            </li>
+            <li>
+              <a href="/wendy/hosts" class="nav-link {%if ctx.page_title=='Hosts'%}active{%endif%}">
+                <i class="fa fa-server"></i> Hosts
+              </a>
+            </li>
+            <li>
+              <a href="/wendy/os" class="nav-link {%if ctx.page_title=='OS'%}active{%endif%}">
+                <i class="fa fa-compact-disc"></i> OSs
+              </a>
+            </li>
+            <li>
+                <a href="/wendy/ipam" class="nav-link {%if ctx.page_title=='IPAM'%}active{%endif%}">
+                  <i class="fa fa-location-dot"></i> IPAM
+                </a>
+              </li>
+              <li>
+              <a href="/wendy/subnets" class="nav-link {%if ctx.page_title=='Subnets'%}active{%endif%}">
+                <i class="fa fa-network-wired"></i> Subnets
+              </a>
+            </li>
+            <li>
+              <a href="/wendy/nodes" class="nav-link {%if ctx.page_title=='Nodes'%}active{%endif%}">
+                <i class="fa fa-helmet-safety"></i> Nodes
+              </a>
+            </li>
+          </ul>
+    </div>
+
+    <div class="container-fluid bg-light-subtle">
+        <div class="col-12 p-3">
+            <h5>{{ctx.page_title}}</h5>
+            {% block Content %}{%endblock%}
+        </div>
+    </div>
+</main>
+
+<footer class="container-fluid p-3 bg-secondary-subtle"><div class="row">
+    <div class="col-3">
+    </div>
+    <div class="col-6">
+    </div>
+    <div class="col-3">
+    </div>
+</div></footer>
+
+</body>
+</html>

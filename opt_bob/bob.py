@@ -270,30 +270,27 @@ def write_host_build_files(Host):
 ##---------------------------------------------------------------------------------------------------------------------
 
 try:
-    Action = sys.argv[1]
+    Noun = sys.argv[1]
     if len(sys.argv) > 2:
-        Noun = sys.argv[2]
-    if Action in ['a', 'add']:
-        if Noun in ['h', 'host']:
+        Action = sys.argv[2]
+    if Noun in ['h', 'host']:
+        if Action in ['a', 'add']:
             add_host(sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7] )
-    if Action in ['b', 'build']:
-        if Noun in ['h', 'host']:
+        if Action in ['b', 'build']:
             build_host(sys.argv[3], sys.argv[4], sys.argv[5])
-    if Action in ['c', 'complete']:
-        if Noun in ['h', 'host']:
+        if Action in ['c', 'complete']:
             complete_host(sys.argv[3])
-    if Action in ['d', 'delete']:
-        if Noun in ['h', 'host']:
+        if Action in ['d', 'delete']:
             delete_host(sys.argv[3])
-    if Action in ['e', 'edit']:
-        if Noun in ['h', 'host']:
+        if Action in ['e', 'edit']:
             edit_host(sys.argv[3], sys.argv[4], sys.argv[5])
-    if Action in ['l', 'list']:
-        if Noun in ['h', 'host', '']:
+        if Action in ['l', 'list']:
             list_hosts()
-        if Noun in ['o', 'os']:
+    if Noun in ['o', 'os']:
+        if Action in ['l', 'list']:
             list_op_sys()
-        if Noun in ['r', 'recipes']:
+    if Noun in ['r', 'recipes']:
+        if Action in ['l', 'list']:
             list_recipes()
 except Exception as e:
     print(f"{BG_RED}We caught an exception:{END}")
