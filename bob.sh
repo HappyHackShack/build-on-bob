@@ -1,13 +1,13 @@
 #!/bin/bash
 
-source /etc/bob/engine.sh
-
 # What level do you want to log to teh screen
 DEBUG_LEVEL=5
 # What level do you want to log to syslog
 SYSLOG_LEVEL=3
 # The tag to apply to any syslog messages
 SYSLOG_TAG='BOB'
+#
+WENDY_CLI='http://localhost:5000/cli'
 
 # Logging Levels (from syslog)
 EMERG=0
@@ -48,9 +48,12 @@ END='\e[0m'
 LOG_LEVEL_NAMES=( "EMERG" "ALERT" "CRIT" "ERROR" "WARN" "NOTICE" "INFO" "DEBUG" )
 LOG_LEVEL_COLOURS=( "${BG_RED}${WHITE}" "${BG_RED}" "${L_RED}" "${RED}" "${L_YELLOW}" "${CYAN}" "${BLUE}" "${GRAY}" )
 
-OPT_BOB='/opt/bob'
+# Get the two directories from the YAML config
+BOB_HOME_DIRECTORY=$( grep bob_home_directory /etc/bob/config.yaml | awk '{ print $2 }' )
+BOB_HTML_DIRECTORY=$( grep bob_html_directory /etc/bob/config.yaml | awk '{ print $2 }' )
+OPT_BOB="$BOB_HOME_DIRECTORY"
 MY_DIR=$( dirname `realpath $0` )
-[[ $MY_DIR =~ ^/usr/local/sbin$ ]] || OPT_BOB="${MY_DIR}/opt_bob"
+[[ $MY_DIR =~ ^/home/ ]] && OPT_BOB="${MY_DIR}/opt_bob"
 
 [ "$UID" == "0" ] || { echo -e "${YELLOW}You need to be root to do this${END}"; exit 1; }
 # If help invoked from command line
@@ -80,21 +83,21 @@ do_Command() {
         "")
             CONTEXT='_SHELL_'
             ;;
-        h|host)
-            do_Host_Command $*
-            ;;
         f|fetch)
             cd ${BOB_HTML_DIRECTORY}
             ${BOB_HOME_DIRECTORY/}/fetch-from-cache.sh   
             ;;
-        ?|help)
-            show_Help
+        h|host)
+            do_Host_Command $*
             ;;
         i|ipam)
-            CONTEXT='ipam'
+            do_IPAM_Command $*
             ;;              
         o|os)
             do_OS_Command $*
+            ;;
+        r|recipe)
+            do_Recipe_Command $*
             ;;
         s|status)
             export SYSTEMD_COLORS=1
@@ -104,8 +107,8 @@ do_Command() {
             done
             ;;
         sn|subnet)
-            CONTEXT='subnet'
-            ;;              
+            do_Subnet_Command $*
+            ;;
         t|tail)
             tail -n 3 -f /var/log/nginx/access.log
             ;;
@@ -114,6 +117,9 @@ do_Command() {
             ;;
         w|watch)
             watch -cn 1 cat /tmp/build_status
+            ;;
+        "?"|help)
+            show_Help
             ;;
         *)
             log $ERROR "What do you want me to do ?"
@@ -131,22 +137,39 @@ do_Host_Command() {
             CONTEXT='host'
             ;;
         a|add)
-            host_Add $*
+            curl -X POST "${WENDY_CLI}/host/add?name=${1}&ip=${2}&mac=${3}&os=${4}&version=${5}"
             ;;
         b|build)
-            host_Build $*
+            curl -X PATCH "${WENDY_CLI}/host/build?name=${1}&os=${2}&version=${3}"
             ;;
         c|complete)
-            host_Complete $*
+            curl -X PATCH "${WENDY_CLI}/host/complete?name=${1}&mac=${1}"
             ;;
         d|delete)
-            host_Delete $*
+            curl -X DELETE "${WENDY_CLI}/host/delete?name=${1}"
             ;;
         e|edit)
-            host_Edit $*
+            curl -X PATCH "${WENDY_CLI}/host/edit?name=${1}&${2}&${3}&${4}&${5}&${6}&${7}"
             ;;
         l|list)
-            host_List $*
+            curl "${WENDY_CLI}/host/list?filter=$1"
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
+}
+
+do_IPAM_Command() {
+    ACTION="$1"
+    shift
+
+    case $ACTION in
+        "")
+            CONTEXT='ipam'
+            ;;
+        l|list)
+            curl "${WENDY_CLI}/ipam/list"
             ;;
         *)
             echo "What ?"
@@ -163,7 +186,7 @@ do_OS_Command() {
             CONTEXT='os'
             ;;
         l|list)
-            os_List $*
+            curl "${WENDY_CLI}/os/list"
             ;;
         *)
             echo "What ?"
@@ -171,54 +194,38 @@ do_OS_Command() {
     esac
 }
 
-host_Add() {
-    HOST="$1"
-    IP="$2"
-    MAC="$3"
-    OS="$4"
-    VER="$5"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to add ?${END}"; return; }
-    ${OPT_BOB}/bob.py host add "$HOST" "$IP" "$MAC" "$OS" "$VER"
-    systemctl restart dnsmasq
+do_Recipe_Command() {
+    ACTION="$1"
+    shift
+
+    case $ACTION in
+        "")
+            CONTEXT='recipe'
+            ;;
+        l|list)
+            curl "${WENDY_CLI}/recipe/list"
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
 }
 
-host_Build() {
-    HOST="$1"
-    OS="$2"
-    VER="$3"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to build ?${END}"; return; }
-    ${OPT_BOB}/bob.py host build "$HOST" "$OS" "$VER"
-}
+do_Subnet_Command() {
+    ACTION="$1"
+    shift
 
-host_Complete() {
-    HOST="$1"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to complete ?${END}"; return; }
-    ${OPT_BOB}/bob.py host complete "$HOST"
-}
-
-host_Delete() {
-    HOST="$1"
-    [[ $HOST == "" ]] && { echo -e "${YELLOW}What do you want me to delete ?${END}"; return; }
-    ${OPT_BOB}/bob.py host delete "$HOST"
-    systemctl restart dnsmasq
-}
-
-host_Edit() {
-    HOST="$1"
-    KEY="$2"
-    VALUE="$3"
-    [[ $VALUE == "" ]] && { echo -e "${YELLOW}What do you want me to edit ?${END}"; return; }
-    ${OPT_BOB}/bob.py host edit "$HOST" "$KEY" "$VALUE"
-    # Slight overkill to do this for every edit
-    systemctl restart dnsmasq
-}
-
-host_List() {
-    ${OPT_BOB}/bob.py host list "$1"
-}
-
-os_List() {
-    ${OPT_BOB}/bob.py os list "$1"
+    case $ACTION in
+        "")
+            CONTEXT='subnet'
+            ;;
+        l|list)
+            curl "${WENDY_CLI}/subnet/list"
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
 }
 
 show_Help() {
@@ -227,18 +234,19 @@ show_Help() {
     
     Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}"""
     }
-    echo -e """    The following ${WHITE}Actions${END} are possible:
-
-    ${WHITE}f  | fetch${END}   - perform a fetch
+    echo -e """  The following ${WHITE}Objects${END} can be worked with:
     ${WHITE}h  | host${END}    - perform ${MAGENTA}host${END} actions
-    ${WHITE}?  | help${END}    - show this help :)
-    ${WHITE}i  | ipam${END}    - perform ${MAGENTA}ipam${END} actions
-    ${WHITE}o  | os${END}      - perform ${MAGENTA}ipam${END} actions
-    ${WHITE}s  | status${END}  - show the status of Bob components
-    ${WHITE}sn | subnet${END}  - perform ${MAGENTA}ipam${END} actions
-    ${WHITE}t  | tail${END}    - tail the web (Wendy) logs.
-    ${WHITE}w  | watch${END}   - start watching the build status file.\n
-    For more details, run : ${CYAN}man bob${END}
+    ${WHITE}i  | ipam${END}    - perform ${MAGENTA}IPAM${END} actions
+    ${WHITE}o  | os${END}      - perform ${MAGENTA}OS${END} actions
+    ${WHITE}r  | recipes${END} - perform ${MAGENTA}recipe${END} actions
+    ${WHITE}sn | subnet${END}  - perform ${MAGENTA}subnet${END} actions
+  The following ${WHITE}System Actions${END} can be performed:
+    ${WHITE}f  | fetch${END}  - perform a fetch
+    ${WHITE}?  | help${END}   - show this help :)
+    ${WHITE}s  | status${END} - show the status of Bob components
+    ${WHITE}t  | tail${END}   - tail the web (Wendy) logs.
+    ${WHITE}w  | watch${END}  - start watching the build status file.
+  For more details, run : ${CYAN}man bob${END}
     """
 }
 
@@ -269,11 +277,12 @@ bob_shell() {
         echo -n "Bob"
         [[ $CONTEXT == '' ]] || echo -n " "
         echo -n "$CONTEXT> "
-        read NOUN
+        read -e NOUN
 
         case $NOUN in
             "")
                 CONTEXT=''
+                echo
                 ;;
             q|quit)
                 break

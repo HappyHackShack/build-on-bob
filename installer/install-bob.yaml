@@ -102,18 +102,10 @@
             owner: root
             mode: '0750'
 
-        - name: Put the bob engine bash config in place
-          ansible.builtin.template:
-            src: engine.sh.j2
-            dest: "{{ BOB_ETC_DIRECTORY }}/engine.sh"
-            force: true
-            owner: root
-            mode: '0644'
-
         - name: Put the bob engine yaml config in place
           ansible.builtin.template:
             src: engine.yaml.j2
-            dest: "{{ BOB_ETC_DIRECTORY }}/engine.yaml"
+            dest: "{{ BOB_ETC_DIRECTORY }}/config.yaml"
             force: true
             owner: root
             mode: '0644'
@@ -132,6 +124,11 @@
             dest: /usr/share/man/man1/bob.1
             owner: root
             mode: '0644'
+
+        - name: Remove any Wendy pycache before copying the engine
+          ansible.builtin.file:
+            path: ../opt_bob/wendy/__pycache__
+            state: absent
 
         - name: Put the bob (python) engine into place
           ansible.builtin.copy:
