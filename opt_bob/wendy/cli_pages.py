@@ -6,41 +6,30 @@ from wendy import app
 
 @app.route("/cli/host/add", methods=['POST'])
 def cli_host_add():
-    Hostname = request.args.get('name').lower()
-    IP = request.args.get('ip')
-    MAC = request.args.get('mac')
-    OS = request.args.get('os')
-    Version = request.args.get('version')
-    if not Hostname:
-        return f"{RED}Please specify a host to add{END}\n"
+    Host = HostClass()
+    OS = request.args.get('os') if request.args.get('os') else 'rescue'
+    Version = request.args.get('version') if request.args.get('version') else Config.get_os(OS)['versions'][0]['tag']
     try:
-        validate_ip_addr(IP)
-        validate_mac_addr(MAC)
+        Host.name = request.args.get('name').lower()
+        Host.ip = request.args.get('ip')
+        Host.mac = request.args.get('mac')
+        Host.os = OS
+        Host.version = Version
     except ValueError as ve:
         return str(ve)
 
-    Hosts = load_hosts_yaml()
-    print('H:', Hosts)
-    if not OS:
-        OS = 'rescue'
-    if OS not in Config.get_os_list():
-        return f"{RED}That's not a valid OS...{END}\n"
-    if not Version:
-        Version = Config.get_os(OS)['versions'][0]['tag']
-    if not Config.get_os_version(OS,Version):
-        return f"{RED}That's not a valid version for {OS} ...{END}\n"
     # Check IP address not already allocated
-    for host in Hosts:
-        if IP == host['ip']:
-            return f"{RED}FAILED to add{END}: IP address is already allocated to {WHITE}{host['name']}{END}\n"
+    Hosts.load()
+    for hh in Hosts:
+        if hh.ip == Host.ip:
+            return f"{RED}FAILED to add{END}: IP address is already allocated to {WHITE}{hh.name}{END}\n"
     # All OK
-    new_host = {'mac':MAC.lower(), 'ip':IP, 'name':Hostname, 'os':OS, 'version':Version, 'disk':'/dev/sda', 'target':'local'}
-    Hosts.append(new_host)
-    save_hosts_yaml()
+    Hosts.append(Host)
+    Hosts.save()
     # Now re-write the dnsmasq and host data
-    write_dnsmasq_hosts(Hosts)
-    write_host_build_files(new_host)
-    return f"{GREEN}New host '{WHITE}{Hostname}{GREEN}' added{END}\n"
+    Hosts.write_dnsmasq()
+    write_host_build_files(Host)
+    return f"{GREEN}New host '{WHITE}{Host.name}{GREEN}' added{END}\n"
 
 
 @app.route("/cli/host/build", methods=['PATCH'])
@@ -51,23 +40,20 @@ def cli_host_build():
     #
     if not Hostname:
         return f"{RED}Please specify a host to build{END}\n"
-    Hosts, host = load_hosts_yaml(Hostname)
-    if not host:
-        return f"{YELLOW}WARNING: I didn't recognize that hostname{END}\n"
-    if New_OS:
-        if New_OS not in Config.get_os_list():
-            return f"{RED}That's not a valid OS...{END}\n"
-        if New_version:
-            version = Config.get_os_version(New_OS, New_version)
-            if not version:
-                return f"{RED}That's not a valid version for {New_OS} ...{END}\n"
-        else:
-            version = Config.get_os(New_OS)['versions'][0]
-        host['os'] = New_OS
-        host['version'] = version['tag']
-    host['target'] = 'build'
+    Hosts.load()
+    try:
+        host = Hosts.find(Hostname)
+        if New_OS:
+            host.os = New_OS
+            if New_version:
+                host.version = New_version
+            else:
+                host.version = Config.get_os(New_OS)['versions'][0]
+    except ValueError as ve:
+        return str(ve)
+    host.target = 'build'
     #
-    save_hosts_yaml()
+    Hosts.save()
     write_host_build_files(host)
     return f"{CYAN}Host '{Hostname}' set to BUILD mode{END}\n"
 
@@ -78,11 +64,13 @@ def cli_host_compete():
     MAC = request.args.get('mac')
     if not Hostname and not MAC:
         return f"{RED}Please specify a host or MAC to complete{END}\n"
-    Hosts, host = load_hosts_yaml(Hostname, MAC)
-    if not host:
-        return f"{YELLOW}WARNING: I didn't recognize that hostname{END}\n"
-    host['target'] = 'local'
-    save_hosts_yaml()
+    Hosts.load()
+    try:
+        host = Hosts.find(Hostname, MAC)
+    except ValueError as ve:
+        return str(ve)
+    host.target = 'local'
+    Hosts.save()
     write_host_build_files(host)
     return f"{CYAN}Host '{MAC}' set to LOCAL boot mode{END}\n"
 
@@ -92,13 +80,15 @@ def cli_host_delete():
     Hostname = request.args.get('name').lower()
     if not Hostname:
         return f"{RED}Please specify a host to delete{END}\n"
-    Hosts, host = load_hosts_yaml(Hostname)
-    if not host:
-        return f"{YELLOW}WARNING: I didn't recognize that hostname{END}\n"
+    Hosts.load()
+    try:
+        host = Hosts.find(Hostname)
+    except ValueError as ve:
+        return str(ve)
     Hosts.remove(host)
     wipe_host_build_files(host)
-    write_dnsmasq_hosts(Hosts)
-    save_hosts_yaml()
+    Hosts.save()
+    Hosts.write_dnsmasq()
     return f"{CYAN}Host '{Hostname}' deleted{END}\n"
 
 
@@ -107,51 +97,37 @@ def cls_host_edit():
     Hostname = request.args.get('name').lower()
     if not Hostname:
         return f"{RED}Please specify a host to edit{END}\n"
-    Hosts, host = load_hosts_yaml(Hostname)
-    if not host:
-        return f"{YELLOW}WARNING: I didn't recognize that hostname{END}\n"
-    host0 = host.copy()
+    Hosts.load()
+    try:
+        host = Hosts.find(Hostname)
+    except ValueError as ve:
+        return str(ve)
+    host0 = HostClass( host.as_dict() )
 
-    changed = False
-    if 'rename' in request.args:
-        Value = request.args.get('rename').lower()
-        host['name'] = Value
-    if 'ip' in request.args:
-        Value = request.args.get('ip')
-        try:
-            validate_ip_addr(Value)
-        except ValueError as ve:
-            return str(ve)
-        host['ip'] = Value
-    if 'mac' in request.args:
-        Value = request.args.get('mac').lower().replace('-',':')
-        try:
-            validate_mac_addr(Value)
-        except ValueError as ve:
-            return str(ve)
-        host['mac'] = Value
-    if 'os' in request.args:
-        Value = request.args.get('os')
-        if Value not in Config.get_os_list():
-            return f"{RED}That's not a valid OS...{END}\n"
-        host['os'] = Value
-        host['version'] = Config.get_os(Value)['versions'][0]['tag']
-    if 'version' in request.args:
-        Value = request.args.get('version')
-        if not Config.get_os_version(host['os'],Value):
-            return f"{RED}That's not a valid version for {host['os']} ...{END}\n"
-        host['version'] = Value
-    if 'disk' in request.args:
-        Value = request.args.get('disk')
-        host['disk'] = Value
+    try:
+        if 'rename' in request.args:
+            host.name = request.args.get('rename').lower()
+        if 'ip' in request.args:
+            host.ip = request.args.get('ip')
+        if 'mac' in request.args:
+            host.mac = request.args.get('mac').lower().replace('-',':')
+        if 'os' in request.args:
+            host.os = request.args.get('os')
+            host.version = Config.get_os(host.os)['versions'][0]['tag']
+        if 'version' in request.args:
+            host.version = request.args.get('version')
+        if 'disk' in request.args:
+            host.disk = request.args.get('disk')
+    except ValueError as ve:
+        return str(ve)
 
-    if host != host0:
+    if host.as_dict() != host0.as_dict():
         # Make the change
         wipe_host_build_files(host0)
-        save_hosts_yaml()
+        Hosts.save()
         # Post processing
         if 'rename' in request.args or 'ip' in request.args or 'mac' in request.args:
-            write_dnsmasq_hosts(Hosts)
+            Hosts.write_dnsmasq()
         # Always write (local is handled)
         write_host_build_files(host)
         return f"{CYAN}Host '{Hostname}' changed{END}\n"
@@ -161,14 +137,14 @@ def cls_host_edit():
 
 @app.route("/cli/host/list")
 def cli_host_list():
-    Hosts = load_hosts_yaml()
+    Hosts.load()
     if len(Hosts) == 0:
         return f"{YELLOW}You don't have any hosts yet{END}"
     else:
         stdout = [ f'{BG_GRAY}  Hostname        MAC               / IP              OS        Version          Disk        Build ?   {END}' ]
         for h in Hosts:
-            bld = GRAY if h['target'] == 'local' else RED
-            stdout.append(f"  {h['name']:15} {BLUE}{h['mac']} / {CYAN}{h['ip']:15}{END} {h['os']:9} {h['version']:16} {h['disk']:11} {bld}{h['target']}{END}")
+            bld = GRAY if h.target == 'local' else RED
+            stdout.append(f"  {h.name:15} {BLUE}{h.mac} / {CYAN}{h.ip:15}{END} {h.os:9} {h.version:16} {h.disk:11} {bld}{h.target}{END}")
         return '\n'.join(stdout) + '\n'
 
 
