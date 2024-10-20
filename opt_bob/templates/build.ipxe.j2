@@ -1,6 +1,6 @@
 #!ipxe
 
-set mirror {{alpine_base_url}}/main
+set mirror {{alpine_repo_url}}
 set bob http://{{bob_listen_address}}
 set netboot ${bob}/{{ bob_netboot_path }}
 set overlay ${bob}/build/builder.apkovl.tar.gz

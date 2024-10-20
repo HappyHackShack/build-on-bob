@@ -7,7 +7,7 @@ SYSLOG_LEVEL=3
 # The tag to apply to any syslog messages
 SYSLOG_TAG='BOB'
 #
-WENDY_CLI='http://localhost:5000/cli'
+CURTIS='http://localhost:8001'
 
 # Logging Levels (from syslog)
 EMERG=0
@@ -55,7 +55,8 @@ OPT_BOB="$BOB_HOME_DIRECTORY"
 MY_DIR=$( dirname `realpath $0` )
 [[ $MY_DIR =~ ^/home/ ]] && OPT_BOB="${MY_DIR}/opt_bob"
 
-[ "$UID" == "0" ] || { echo -e "${YELLOW}You need to be root to do this${END}"; exit 1; }
+#[ "$UID" == "0" ] || { echo -e "${YELLOW}You need to be root to do this${END}"; exit 1; }
+
 # If help invoked from command line
 SHOW_HELP_BANNER=1
 
@@ -93,6 +94,9 @@ do_Command() {
         i|ipam)
             do_IPAM_Command $*
             ;;              
+        n|node)
+            do_Node_Command $*
+            ;;              
         o|os)
             do_OS_Command $*
             ;;
@@ -118,7 +122,7 @@ do_Command() {
         w|watch)
             watch -cn 1 cat /tmp/build_status
             ;;
-        "?"|help)
+        '?'|help)
             show_Help
             ;;
         *)
@@ -137,22 +141,22 @@ do_Host_Command() {
             CONTEXT='host'
             ;;
         a|add)
-            curl -X POST "${WENDY_CLI}/host/add?name=${1}&ip=${2}&mac=${3}&os=${4}&version=${5}"
+            curl -X POST "${CURTIS}/host/add?name=${1}&ip=${2}&mac=${3}&os=${4}&version=${5}"
             ;;
         b|build)
-            curl -X PATCH "${WENDY_CLI}/host/build?name=${1}&os=${2}&version=${3}"
+            curl -X PATCH "${CURTIS}/host/build?name=${1}&os=${2}&version=${3}"
             ;;
         c|complete)
-            curl -X PATCH "${WENDY_CLI}/host/complete?name=${1}&mac=${1}"
+            curl -X PATCH "${CURTIS}/host/complete?name=${1}&mac=${1}"
             ;;
         d|delete)
-            curl -X DELETE "${WENDY_CLI}/host/delete?name=${1}"
+            curl -X DELETE "${CURTIS}/host/delete?name=${1}"
             ;;
         e|edit)
-            curl -X PATCH "${WENDY_CLI}/host/edit?name=${1}&${2}&${3}&${4}&${5}&${6}&${7}"
+            curl -X PATCH "${CURTIS}/host/edit?name=${1}&${2}&${3}&${4}&${5}&${6}&${7}"
             ;;
         l|list)
-            curl "${WENDY_CLI}/host/list?filter=$1"
+            curl "${CURTIS}/host/list?filter=$1"
             ;;
         *)
             echo "What ?"
@@ -169,7 +173,24 @@ do_IPAM_Command() {
             CONTEXT='ipam'
             ;;
         l|list)
-            curl "${WENDY_CLI}/ipam/list"
+            curl "${CURTIS}/ipam/list"
+            ;;
+        *)
+            echo "What ?"
+            ;;
+    esac
+}
+
+do_Node_Command() {
+    ACTION="$1"
+    shift
+
+    case $ACTION in
+        "")
+            CONTEXT='node'
+            ;;
+        l|list)
+            curl "${CURTIS}/node/list"
             ;;
         *)
             echo "What ?"
@@ -186,7 +207,7 @@ do_OS_Command() {
             CONTEXT='os'
             ;;
         l|list)
-            curl "${WENDY_CLI}/os/list"
+            curl "${CURTIS}/os/list"
             ;;
         *)
             echo "What ?"
@@ -203,7 +224,7 @@ do_Recipe_Command() {
             CONTEXT='recipe'
             ;;
         l|list)
-            curl "${WENDY_CLI}/recipe/list"
+            curl "${CURTIS}/recipe/list"
             ;;
         *)
             echo "What ?"
@@ -220,7 +241,7 @@ do_Subnet_Command() {
             CONTEXT='subnet'
             ;;
         l|list)
-            curl "${WENDY_CLI}/subnet/list"
+            curl "${CURTIS}/subnet/list"
             ;;
         *)
             echo "What ?"
@@ -232,11 +253,12 @@ show_Help() {
     [[ $SHOW_HELP_BANNER == 0 ]] || {
         echo -e """\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)
     
-    Call with: ${CYAN}$0 <action> [<object>] [<extra_parameters> ...]${END}"""
+Call with: ${CYAN}$0 <system-action> | <object> [<action>] [<extra_parameters> ...]${END}"""
     }
     echo -e """  The following ${WHITE}Objects${END} can be worked with:
     ${WHITE}h  | host${END}    - perform ${MAGENTA}host${END} actions
     ${WHITE}i  | ipam${END}    - perform ${MAGENTA}IPAM${END} actions
+    ${WHITE}n  | node${END}    - perform ${MAGENTA}node${END} actions
     ${WHITE}o  | os${END}      - perform ${MAGENTA}OS${END} actions
     ${WHITE}r  | recipes${END} - perform ${MAGENTA}recipe${END} actions
     ${WHITE}sn | subnet${END}  - perform ${MAGENTA}subnet${END} actions

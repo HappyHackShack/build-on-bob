@@ -17,7 +17,7 @@ mkdir -p {{os.name}}/{{ver.tag}}
   cd {{os.name}}/{{ver.tag}}
 {% for file in ver.files %}
   FILE="{{file}}"
-  wget -nc {{LOCAL_CACHE}}/{{os.name}}/{{ver.tag}}/${FILE}
+  wget -nc {{BOB_LOCAL_CACHE}}/{{os.name}}/{{ver.tag}}/${FILE}
   file "${FILE}" | grep 'QCOW Image' > /dev/null && {
     echo -e "${BLUE}QCOW Image detected${END}"
     RAW="${FILE%.*}.raw"

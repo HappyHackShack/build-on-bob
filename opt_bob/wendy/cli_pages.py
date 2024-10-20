@@ -1,6 +1,7 @@
 from flask import Flask, request
 
 from config import *
+from database import *
 from library import *
 from wendy import app
 

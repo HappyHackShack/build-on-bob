@@ -1,4 +1,4 @@
-# BOB SErver config 
+# BOB Server config 
 
 # Uncomment, if you don't want DNS
 #port=0
@@ -19,5 +19,5 @@ dhcp-boot=ipxe-x86_64.efi
 dhcp-boot=tag:ipxe,http://{{ BOB_LISTEN_ADDRESS }}/ipxe/stage1.cfg
 
 dhcp-range={{ BOB_LISTEN_ADDRESS }},static,24h
-dhcp-option=option:router,{{ BOB_GATEWAY_ADDRESS }}
-dhcp-option=option:dns-server,{{ BOB_DNS_SERVER }}
+dhcp-option=option:router,{{ BOB_DHCP_GATEWAY }}
+dhcp-option=option:dns-server,{{ BOB_DHCP_NAMESERVER }}

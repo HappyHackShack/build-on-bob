@@ -84,12 +84,18 @@
     - name: The bob engine block
       block:
         - name: Write the populate cache script
+          tags:
+            - never
+            - TODO
           ansible.builtin.template:
             src: populate-cache.sh.j2
             dest: "{{ BOB_HOME_DIRECTORY }}/populate-cache.sh"
             mode: '0755'
 
         - name: Write the fetch from cache script
+          tags:
+            - never
+            - TODO
           ansible.builtin.template:
             src: fetch-from-cache.sh.j2
             dest: "{{ BOB_HOME_DIRECTORY }}/fetch-from-cache.sh"
@@ -97,7 +103,7 @@
 
         - name: Put the bob script into place
           ansible.builtin.copy:
-            src: ../bob.sh
+            src: ../bob.py
             dest: /usr/local/sbin/bob
             owner: root
             mode: '0750'
@@ -131,6 +137,7 @@
             state: absent
 
         - name: Put the bob (python) engine into place
+          # TODO - what about b-o-b.db
           ansible.builtin.copy:
             src: ../opt_bob/
             dest: "{{ BOB_HOME_DIRECTORY }}/"
