@@ -1,66 +1,17 @@
 from fastapi import HTTPException, Query
-from jinja2 import Environment, FileSystemLoader
-import os
 from sqlmodel import select
 from typing import Annotated
 import yaml
 
 from database import SessionDep
+from library import *
 from main import app
 from models import *
 
-Config_File = '/etc/bob/config.yaml'
-with open(Config_File,'rt') as cfg:
-    Config = yaml.safe_load(cfg)
-
-My_Dir = os.path.dirname(__file__)
-Nginx_Base_Dir = '/usr/share/nginx/html'
-Nginx_Ipxe_Dir = f'{Nginx_Base_Dir}/ipxe'
-Nginx_Build_Dir = f'{Nginx_Base_Dir}/build'
-Template_Dir = f"{My_Dir}/../templates"
-
-
-def render_template(Template_Filename, Config, Target_Filename):
-    environment = Environment(loader=FileSystemLoader(Template_Dir))
-    template = environment.get_template(Template_Filename)
-    rendered = template.render(Config)
-
-    with open(Target_Filename, 'wt') as cfg:
-        cfg.write(rendered)
-        cfg.write('\n')
-
-
-def wipe_host_build_files(host):
-    for directory in [ Nginx_Build_Dir, Nginx_Ipxe_Dir]:
-        for filename in os.listdir(directory):
-            if host.mac in filename:
-                os.unlink(f"{directory}/{filename}")
-
-
-def write_Dnsmasq(session):
-    Hosts = session.exec(select(Host)).all()
-    with open('/etc/dnsmasq.d/hosts.conf','wt') as dns:
-        for host in Hosts:
-            dns.write(f"dhcp-host={host.mac},{host.ip},{host.name}\n")
-
-
-def write_Build_Files(host, session):
-    wipe_host_build_files(host)
-    Rname = 'local' if host.target == 'local' else host.os_name
-    Templates = session.exec(select(OsTemplate).where(OsTemplate.os_name==Rname)).all()
-    OS_Ver = session.exec(select(OsVersion).where(OsVersion.os_name==host.os_name,OsVersion.os_version==host.os_version)).one()
-    # OS_ver = Config.get_os_version(host.os_name, host.os_ver)
-    # print(OS_ver)
-    for template in Templates:
-        tpl_src = template.source
-        output = template.output.replace('MAC', host.mac)
-        print(f'Writing template {tpl_src} --> {output}')
-        Config['hostname'] = host.name # | Config | OsVer
-        render_template( tpl_src, Config|host.dict()|OS_Ver.dict(), f"{Nginx_Base_Dir}/{output}")
-
-
 @app.post("/host")
 def create_host(host: Host, session: SessionDep) -> Host:
+    """Create a new Host\n
+    Example text"""
     # Validations
     if session.get(Host, host.name):
         raise HTTPException(status_code=422, detail="Host already exists")
@@ -72,6 +23,8 @@ def create_host(host: Host, session: SessionDep) -> Host:
         raise HTTPException(status_code=422, detail="MAC already in use")
     # IP in a subnet
     # TODO
+    # Which subnet / Node
+
     # OK
     session.add(host)
     session.commit()
@@ -83,14 +36,15 @@ def create_host(host: Host, session: SessionDep) -> Host:
 
 
 @app.get("/host")
-def read_host_list(session: SessionDep, offset: int = 0,
+def read_list_of_hosts(session: SessionDep, offset: int = 0,
            limit: Annotated[int, Query(le=100)] = 100, ) -> list[Host]:
+    """Get a list of Hosts"""
     hosts = session.exec(select(Host).offset(offset).limit(limit)).all()
     return hosts
 
 
 @app.get("/host/{host_name}")
-def read_host(host_name: str, session: SessionDep) -> Host:
+def read_a_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
         raise HTTPException(status_code=404, detail="Host not found")
@@ -98,7 +52,7 @@ def read_host(host_name: str, session: SessionDep) -> Host:
 
 
 @app.patch("/host/{host_name}")
-def patch_hero(host_name: str, Patch:Host, session: SessionDep):
+def update_host(host_name: str, Patch:Host, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
         raise HTTPException(status_code=404, detail="Host not found")
@@ -157,7 +111,7 @@ def build_host(Params:dict, host_name: str, session: SessionDep) -> Host:
 
 
 @app.get("/host/{host_name}/complete")
-def build_host(host_name: str, session: SessionDep) -> Host:
+def complete_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
         raise HTTPException(status_code=404, detail="Host not found")

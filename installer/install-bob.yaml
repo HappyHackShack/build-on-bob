@@ -37,10 +37,10 @@
             - "{{ BOB_ETC_DIRECTORY }}"
             - "{{ BOB_HOME_DIRECTORY }}"
             - "{{ BOB_TFTP_DIRECTORY }}"
-            - "{{ BOB_HTML_DIRECTORY }}/ipxe"
-            - "{{ BOB_HTML_DIRECTORY }}/build"
-            - "{{ BOB_HTML_DIRECTORY }}/alpine"
-            - "{{ BOB_HTML_DIRECTORY }}/fcos"
+            - "{{ NGINX_BASE_DIRECTORY }}/ipxe"
+            - "{{ NGINX_BASE_DIRECTORY }}/build"
+            - "{{ NGINX_BASE_DIRECTORY }}/alpine"
+            - "{{ NGINX_BASE_DIRECTORY }}/fcos"
 
         - name: Put the iPXE EFI module in place
           ansible.builtin.copy:
@@ -198,13 +198,13 @@
         - name: Put the stage1 ipxe.cfg in place
           ansible.builtin.template:
             src: ipxe-stage1.cfg.j2
-            dest: "{{ BOB_HTML_DIRECTORY }}/ipxe/stage1.cfg"
+            dest: "{{ NGINX_BASE_DIRECTORY }}/ipxe/stage1.cfg"
             mode: '0644'
 
         - name: Copy the overlay
           ansible.builtin.copy:
             src: builder.apkovl.tar.gz
-            dest: "{{ BOB_HTML_DIRECTORY }}/build"
+            dest: "{{ NGINX_BASE_DIRECTORY }}/build"
             owner: root
             mode: '0644'
 

@@ -1,10 +1,13 @@
 ---
 
+dns_domain: "{{ BOB_DNS_DOMAIN }}"
 bob_home_directory: {{ BOB_HOME_DIRECTORY }}
-bob_html_directory: {{ BOB_HTML_DIRECTORY }}
 bob_listen_address: {{ BOB_LISTEN_ADDRESS }}
 bob_netboot_path: "rescue/{{ BOB_RESCUE_VERSION }}"
 builder_ssh_key: "{{ BUILDER_SSH_KEY }}"
-dns_domain: "{{ BOB_DNS_DOMAIN }}"
 
 alpine_repo_url: "{{ ALPINE_SITE }}/{{ BOB_RESCUE_VERSION }}/main"
+
+nginx_base_dir: {{ NGINX_BASE_DIRECTORY }}
+nginx_ipxe_dir: {{ NGINX_BASE_DIRECTORY }}/ipxe
+nginx_build_dir: {{ NGINX_BASE_DIRECTORY }}/build

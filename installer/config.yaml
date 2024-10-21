@@ -27,7 +27,8 @@ all:
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing
     BOB_DNSMASQ_DIRECTORY: '/etc/dnsmasq.d'
     BOB_ETC_DIRECTORY: '/etc/bob'
-    BOB_HTML_DIRECTORY: '/usr/share/nginx/html'
     # Bob's home
     BOB_HOME_DIRECTORY: '/opt/bob'
     BOB_RESCUE_VERSION: 'v3.20'
+    #
+    NGINX_BASE_DIRECTORY: '/usr/share/nginx/html'

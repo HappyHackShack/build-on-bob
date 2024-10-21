@@ -70,6 +70,29 @@ def do_Command(Args):
             show_Help()
 
 
+def bob_Shell():
+    global CONTEXT, SHOW_HELP_BANNER
+    SHOW_HELP_BANNER = 0
+
+    if CONTEXT == '_SHELL_':
+        CONTEXT = ''
+    while True:
+        ctx = '' if CONTEXT == '' else f' {CONTEXT}'
+        Noun = input(f'BoB{ctx}> ')
+
+        match Noun:
+            case '':
+                CONTEXT = ''
+                print()
+            case 'q' | 'quit':
+                break
+            case _:
+                if CONTEXT:
+                    do_Command([CONTEXT] + Noun.split(' '))
+                else:
+                    do_Command(Noun.split(' '))
+
+
 def show_Help():
     if SHOW_HELP_BANNER:
         print(f"""\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)\n
@@ -121,7 +144,8 @@ def do_Host_Command(Args):
             pass
         case 'l' | 'list':
             host_List()
-
+        case '?':
+            print(f'{CYAN}host {WHITE}a{END}dd | build | complete | delete | edit | list{END}')
 
 def host_Add(Args):
     host = {'name':Args.pop(0), 'ip':Args.pop(0), 'mac':Args.pop(0)}
@@ -211,7 +235,7 @@ def do_Ipam_Command(Args):
         case '':
             CONTEXT = 'ipam'
         case 'l' | 'list':
-            host_list()
+            ipam_List()
         case _:
             print(f"{RED}What ?{END}")
 
@@ -228,7 +252,7 @@ def do_Node_Command(Args):
         case '':
             CONTEXT = 'node'
         case 'l' | 'list':
-            host_list()
+            node_List()
         case _:
             print(f"{RED}What ?{END}")
 
@@ -289,31 +313,6 @@ def subnet_List():
         for sn in Subnets:
             net = f"{sn['network']} / {sn['cidr']}"
             print(f"  {net:26} {sn['gateway']:15} {sn['nameservers']:30} {sn['node']:24}{END}")
-
-
-###====================================================================================================================
-
-def bob_Shell():
-    global CONTEXT, SHOW_HELP_BANNER
-    SHOW_HELP_BANNER = 0
-
-    if CONTEXT == '_SHELL_':
-        CONTEXT = ''
-    while True:
-        ctx = '' if CONTEXT == '' else f' {CONTEXT}'
-        Noun = input(f'BoB{ctx}> ')
-
-        match Noun:
-            case '':
-                CONTEXT = ''
-                print()
-            case 'q' | 'quit':
-                break
-            case _:
-                if CONTEXT:
-                    do_Command([CONTEXT] + Noun.split(' '))
-                else:
-                    do_Command(Noun.split(' '))
 
 
 ###=======================================================================
