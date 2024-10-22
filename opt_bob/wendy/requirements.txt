@@ -1,4 +1,0 @@
-datalite
-fastapi[standard]
-sqlmodel
-# typing ?

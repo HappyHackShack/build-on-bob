@@ -1,7 +1,7 @@
 import netaddr
 from pydantic import field_validator, AfterValidator, ConfigDict
 from sqlmodel import Field, SQLModel
-from typing import Annotated
+from typing import Annotated, Optional
 
 from database import get_session
 
@@ -15,10 +15,10 @@ class HostModel(SQLModel):
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
     ip: str
     mac: str
-    os_name: str | None = Field(default='rescue')
-    os_version: str | None = Field(default='v3.20')
-    disk: str | None = Field(default='/dev/sda')
-    target: str | None = Field(default='local')
+    os_name: Optional[str] = Field(default='rescue')
+    os_version: Optional[str] = Field(default='v3.20')
+    disk: Optional[str] = Field(default='/dev/sda')
+    target: Optional[str] = Field(default='local')
 
     @field_validator('ip')
     @classmethod
@@ -51,7 +51,7 @@ class IPAM(SQLModel, table=True):
 
 class Node(SQLModel, table=True):
     name: str = Field(primary_key=True)
-    secret: str | None = Field(default=None)
+    secret: Optional[str] = Field(default=None)
 
 
 class OpSys(SQLModel, table=True):
@@ -60,14 +60,14 @@ class OpSys(SQLModel, table=True):
 
 
 class OsTemplate(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     os_name: str
     source: str
     output: str
 
 
 class OsVersion(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     os_name: str
     os_version: str
     url: str
@@ -78,5 +78,5 @@ class Subnet(SQLModel, table=True):
     network: str = Field(primary_key=True)
     cidr: int
     gateway: str
-    nameservers: str | None
+    nameservers: Optional[str]
     node: str

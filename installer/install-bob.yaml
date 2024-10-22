@@ -24,9 +24,13 @@
         - name: Install any Python requirements
           ansible.builtin.pip:
             name:
+              - datalite
+              - fastapi[standard]
               - flask
               - gunicorn
               - netaddr
+              - pyfiglet
+              - sqlmodel
 
         - name: Make the required directories
           ansible.builtin.file:

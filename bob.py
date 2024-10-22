@@ -1,5 +1,6 @@
 #!/bin/env python3
 
+from pyfiglet import figlet_format as figlet
 import os
 import requests
 import sys
@@ -40,34 +41,33 @@ def do_Command(Args):
 
     OBJ = Args.pop(0) if Args else ''
 
-    match OBJ:
-        case '':
-            CONTEXT = '_SHELL_'
-        case 'f' | 'fetch':
-            pass #run_Fetch_Command()
-        case 'h' | 'host':
-            do_Host_Command(Args)
-        case 'i' | 'ipam':
-            do_Ipam_Command(Args)
-        case 'n' | 'node':
-            do_Node_Command(Args)
-        case 'o' | 'os':
-            do_OS_Command(Args)
-        case 's' | 'status':
-            for svc in ['dnsmasq','nginx','wendy']: #run_Status_Command()
-                print(f"{CYAN}-----------------------------------------  {svc}  -----------------------------------------{END}")
-                os.system(f'SYSTEMD_COLORS=1 systemctl status {svc} | head -n 9')
-        case 'sn' | 'subnet':
-            do_Subnet_Command(Args)
-        case 't' | 'tail':
-            os.system('tail -n 3 -f /var/log/nginx/access.log')
-        case 'w' | 'watch':
-            pass
-        case '?' | 'help':
-            show_Help()
-        case _:
-            print(f"{RED}What do you want to do ?{END}")
-            show_Help()
+    if OBJ == '':
+        CONTEXT = '_SHELL_'
+    elif OBJ in ('f', 'fetch'):
+        pass #run_Fetch_Command()
+    elif OBJ in ('h', 'host'):
+        do_Host_Command(Args)
+    elif OBJ in ('i', 'ipam'):
+        do_Ipam_Command(Args)
+    elif OBJ in ('n', 'node'):
+        do_Node_Command(Args)
+    elif OBJ in ('o', 'os'):
+        do_OS_Command(Args)
+    elif OBJ in ('s', 'status'):
+        for svc in ['dnsmasq','nginx','wendy']: #run_Status_Command()
+            print(f"{CYAN}-----------------------------------------  {svc}  -----------------------------------------{END}")
+            os.system(f'SYSTEMD_COLORS=1 systemctl status {svc} | head -n 9')
+    elif OBJ in ('sn', 'subnet'):
+        do_Subnet_Command(Args)
+    elif OBJ in ('t', 'tail'):
+        os.system('tail -n 3 -f /var/log/nginx/access.log')
+    elif OBJ in ('w', 'watch'):
+        pass
+    elif OBJ in ('?', 'help'):
+        show_Help()
+    else:
+        print(f"{RED}What do you want to do ?{END}")
+        show_Help()
 
 
 def bob_Shell():
@@ -80,22 +80,22 @@ def bob_Shell():
         ctx = '' if CONTEXT == '' else f' {CONTEXT}'
         Noun = input(f'BoB{ctx}> ')
 
-        match Noun:
-            case '':
-                CONTEXT = ''
-                print()
-            case 'q' | 'quit':
-                break
-            case _:
-                if CONTEXT:
-                    do_Command([CONTEXT] + Noun.split(' '))
-                else:
-                    do_Command(Noun.split(' '))
+        if Noun == '':
+            CONTEXT = ''
+            print()
+        elif Noun in ('q', 'quit'):
+            break
+        else:
+            if CONTEXT:
+                do_Command([CONTEXT] + Noun.split(' '))
+            else:
+                do_Command(Noun.split(' '))
 
 
 def show_Help():
     if SHOW_HELP_BANNER:
-        print(f"""\nBoB the workman - your gateway to automated builds of Physicals (and virtuals)\n
+        bob = figlet('BoB the Workman', font='slant', width=120)
+        print(f"""{bob} - your gateway to automated builds of Physicals (and virtuals)\n
 Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> ...]{END}""")
     print(f"""  The following {WHITE}Objects{END} can be worked with:
     {WHITE}h  | host{END}    - perform {MAGENTA}host{END} actions
@@ -119,33 +119,33 @@ def do_Host_Command(Args):
     
     ACTION = Args.pop(0) if Args else ''
 
-    match ACTION:
-        case '':
-            CONTEXT = 'host'
-        case 'a' | 'add':
-            if len(Args) > 2:
-                host_Add(Args)
-            else:
-                print(f'{RED}Please specify at least <hostname> <IP> <MAC> {END}')
-        case 'b' | 'build':
-            if Args:
-                host_Build(Args)
-        case 'c' | 'complete':
-            if Args:
-                host_Complete(Args)
-            else:
-                print(f'{RED}Please specify host to complete{END}')
-        case 'd' | 'delete':
-            if Args:
-                host_Delete(Args)
-            else:
-                print(f'{RED}Please specify host to delete{END}')
-        case 'e' | 'edit':
+    if ACTION == '':
+        CONTEXT = 'host'
+    elif ACTION in ('a', 'add'):
+        if len(Args) > 2:
+            host_Add(Args)
+        else:
+            print(f'{RED}Please specify at least <hostname> <IP> <MAC> {END}')
+    elif ACTION in ('b', 'build'):
+        if Args:
+            host_Build(Args)
+    elif ACTION in ('c', 'complete'):
+        if Args:
+            host_Complete(Args)
+        else:
+            print(f'{RED}Please specify host to complete{END}')
+    elif ACTION in ('d', 'delete'):
+        if Args:
+            host_Delete(Args)
+        else:
+            print(f'{RED}Please specify host to delete{END}')
+    elif ACTION in ('e', 'edit'):
             pass
-        case 'l' | 'list':
+    elif ACTION in ('l', 'list'):
             host_List()
-        case '?':
+    elif ACTION == '?':
             print(f'{CYAN}host {WHITE}a{END}dd | build | complete | delete | edit | list{END}')
+
 
 def host_Add(Args):
     host = {'name':Args.pop(0), 'ip':Args.pop(0), 'mac':Args.pop(0)}
@@ -153,21 +153,22 @@ def host_Add(Args):
         host['os_name'] = Args.pop(0)
     if Args:
         host['os_version'] = Args.pop(0)
+    #
     req = requests.post(f'{API}/host', json=host)
-    match req.status_code:
-        case 200:
-            print(f'{GREEN}New host created added{END}')
-        case 422:
-            Detail = req.json()['detail']
-            if type(Detail) == str:
-                print(f'{RED}Error: {Detail}{END}')
-            else:
-                for deet in Detail:
-                    print(f"{RED}{deet['msg']}{END}")
-        case _:
-            print(f'{YELLOW}Unknown response {END}')
-            print(req)
-            print(req.text)
+    #
+    if req.status_code == 200:
+        print(f'{GREEN}New host created added{END}')
+    elif req.status_code == 422:
+        Detail = req.json()['detail']
+        if type(Detail) == str:
+            print(f'{RED}Error: {Detail}{END}')
+        else:
+            for deet in Detail:
+                print(f"{RED}{deet['msg']}{END}")
+    else:
+        print(f'{YELLOW}Unknown response {END}')
+        print(req)
+        print(req.text)
 
 
 def host_Build(Args):
@@ -177,38 +178,37 @@ def host_Build(Args):
         Params['os_name'] = Args.pop(0)
     if Args:
         Params['os_version'] = Args.pop(0)
+    #
     req = requests.patch(f'{API}/host/{hn}/build', json = Params)
-    match req.status_code:
-        case 200:
-            print(f'Build mode enabled for {hn}')
-        case 404:
-            print(f'{RED}Host not found{END}')
-        case _:
-            print(f'{YELLOW}Unknown response{END}')
+    #
+    if req.status_code == 200:
+        print(f'Build mode enabled for {hn}')
+    elif req.status_code == 404:
+        print(f'{RED}Host not found{END}')
+    else:
+        print(f'{YELLOW}Unknown response{END}')
 
 
 def host_Complete(Args):
     hn = Args.pop(0)
     req = requests.patch(f'{API}/host/{hn}/complete')
-    match req.status_code:
-        case 200:
-            print(f'Build mode disabled for {hn}')
-        case 404:
-            print(f'{RED}Host not found{END}')
-        case _:
-            print(f'{YELLOW}Unknown response{END}')
+    if req.status_code == 200:
+        print(f'Build mode disabled for {hn}')
+    elif req.status_code == 404:
+        print(f'{RED}Host not found{END}')
+    else:
+        print(f'{YELLOW}Unknown response{END}')
 
 
 def host_Delete(Args):
     hn = Args.pop(0)
     req = requests.delete(f'{API}/host/{hn}')
-    match req.status_code:
-        case 200:
+    if req.status_code == 200:
             print(f'Host "{hn}" deleted')
-        case 404:
-            print(f'{RED}Host not found{END}')
-        case _:
-            print(f'{YELLOW}Unknown response{END}')
+    elif req.status_code == 404:
+        print(f'{RED}Host not found{END}')
+    else:
+        print(f'{YELLOW}Unknown response{END}')
 
 
 def host_List():
@@ -231,13 +231,12 @@ def do_Ipam_Command(Args):
     Args.append('')
     ACTION = Args.pop(0)
 
-    match ACTION:
-        case '':
-            CONTEXT = 'ipam'
-        case 'l' | 'list':
-            ipam_List()
-        case _:
-            print(f"{RED}What ?{END}")
+    if ACTION == '':
+        CONTEXT = 'ipam'
+    elif ACTION in ('l', 'list'):
+        ipam_List()
+    else:
+        print(f"{RED}What ?{END}")
 
 
 ## NODE Functions ---------------------------------------------------------------------------------
@@ -248,13 +247,12 @@ def do_Node_Command(Args):
     Args.append('')
     ACTION = Args.pop(0)
 
-    match ACTION:
-        case '':
-            CONTEXT = 'node'
-        case 'l' | 'list':
-            node_List()
-        case _:
-            print(f"{RED}What ?{END}")
+    if ACTION == '':
+        CONTEXT = 'node'
+    elif ACTION in ('l', 'list'):
+        node_List()
+    else:
+        print(f"{RED}What ?{END}")
 
 
 ## OS Functions ---------------------------------------------------------------------------------
@@ -265,13 +263,12 @@ def do_OS_Command(Args):
     Args.append('')
     ACTION = Args.pop(0)
 
-    match ACTION:
-        case '':
-            CONTEXT = 'os'
-        case 'l' | 'list':
-            os_List()
-        case _:
-            print(f"{RED}What ?{END}")
+    if ACTION == '':
+        CONTEXT = 'os'
+    elif ACTION in ('l', 'list'):
+        os_List()
+    else:
+        print(f"{RED}What ?{END}")
 
 
 def os_List():
@@ -281,7 +278,7 @@ def os_List():
     else:
         print(f'{BG_GRAY}  Name         Version          URL                                                            {END}')
         for os in Systems:
-            Versions = requests.get(f'{API}/osver/{os['name']}').json()
+            Versions = requests.get(f"{API}/osver/{os['name']}").json()
             for osv in Versions:
                 print(f"  {osv['os_name']:12} {osv['os_version']:16} {os['base_url']}/{osv['url']}")
 
@@ -294,13 +291,12 @@ def do_Subnet_Command(Args):
     Args.append('')
     ACTION = Args.pop(0)
 
-    match ACTION:
-        case '':
-            CONTEXT = 'subnet'
-        case 'l' | 'list':
-            subnet_List()
-        case _:
-            print(f"{RED}What ?{END}")
+    if ACTION == '':
+        CONTEXT = 'subnet'
+    elif ACTION in ('l', 'list'):
+        subnet_List()
+    else:
+        print(f"{RED}What ?{END}")
 
 
 def subnet_List():
