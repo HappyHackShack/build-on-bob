@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import  FastAPI
 import yaml
 
+from library import *
 from models import *
 from database import *
 
@@ -22,6 +23,20 @@ from ipam import *
 from nodes import *
 from opsystems import *
 from subnets import *
+
+
+@app.post("/cache/scripts")
+def cache_scripts_generate(session: SessionDep):
+    Opt_Bob = Config.bob_home_directory
+    Local_Cache = Config.bob_local_cache
+    Systems = session.exec(select(OpSys)).all()
+    Versions = session.exec(select(OsVersion)).all()
+    Temp = { 'os_systems': Systems, 'os_versions': Versions }
+
+    render_template('populate-cache.sh.j2', Config()|Temp, f'{Opt_Bob}/populate-cache.sh')
+    render_template('fetch-from-cache.sh.j2', Config()|Temp, f'{Opt_Bob}/fetch-from-cache.sh')
+
+    return {"ok": True}
 
 
 @app.post("/initialise/database")

@@ -45,6 +45,8 @@ def do_Command(Args):
         CONTEXT = '_SHELL_'
     elif OBJ in ('f', 'fetch'):
         pass #run_Fetch_Command()
+    elif OBJ in ('G', 'gcs'):
+        cache_scripts_gen()
     elif OBJ in ('h', 'host'):
         do_Host_Command(Args)
     elif OBJ in ('i', 'ipam'):
@@ -92,12 +94,21 @@ def bob_Shell():
                 do_Command(Noun.split(' '))
 
 
+def cache_scripts_gen():
+    req = requests.post(f'{API}/cache/scripts')
+    if req.status_code == 200:
+        print(f'{GREEN}Scripts genetated{END}')
+    else:
+        print(f"{RED}There was a problem{END}")
+
+
 def show_Help():
     if SHOW_HELP_BANNER:
         bob = figlet('BoB the Workman', font='slant', width=120)
         print(f"""{bob} - your gateway to automated builds of Physicals (and virtuals)\n
 Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> ...]{END}""")
     print(f"""  The following {WHITE}Objects{END} can be worked with:
+    {WHITE}G  | gcs{END}     - generate cache scripts (fetch and populate)
     {WHITE}h  | host{END}    - perform {MAGENTA}host{END} actions
     {WHITE}i  | ipam{END}    - perform {MAGENTA}IPAM{END} actions
     {WHITE}n  | node{END}    - perform {MAGENTA}node{END} actions
