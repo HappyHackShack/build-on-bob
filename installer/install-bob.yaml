@@ -26,6 +26,7 @@
             name:
               - datalite
               - fastapi[standard]
+              - fastapi-offline
               - flask
               - gunicorn
               - netaddr

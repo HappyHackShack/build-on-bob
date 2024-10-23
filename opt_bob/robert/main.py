@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 from typing import Annotated
-from fastapi import  FastAPI
+from fastapi_offline import FastAPIOffline
 import yaml
 
 from library import *
@@ -10,13 +10,13 @@ from database import *
 
 
 @asynccontextmanager
-async def myLifespan(app: FastAPI):
+async def myLifespan(app: FastAPIOffline):
     create_db_and_tables()
     yield
     # nothing to do on exit
 
 # Start the API App (with a lifespan)
-app = FastAPI(lifespan=myLifespan)
+app = FastAPIOffline(lifespan=myLifespan)
 
 from hosts import *
 from ipam import *
