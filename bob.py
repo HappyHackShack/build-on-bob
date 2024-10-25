@@ -49,6 +49,8 @@ def do_Command(Args):
         cache_scripts_gen()
     elif OBJ in ('h', 'host'):
         do_Host_Command(Args)
+    elif OBJ in ('hv', 'hypervisor'):
+        do_Hypervisor_Command(Args)
     elif OBJ in ('i', 'ipam'):
         do_Ipam_Command(Args)
     elif OBJ in ('n', 'node'):
@@ -108,12 +110,13 @@ def show_Help():
         print(f"""{bob} - your gateway to automated builds of Physicals (and virtuals)\n
 Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> ...]{END}""")
     print(f"""  The following {WHITE}Objects{END} can be worked with:
-    {WHITE}G  | gcs{END}     - generate cache scripts (fetch and populate)
-    {WHITE}h  | host{END}    - perform {MAGENTA}host{END} actions
-    {WHITE}i  | ipam{END}    - perform {MAGENTA}IPAM{END} actions
-    {WHITE}n  | node{END}    - perform {MAGENTA}node{END} actions
-    {WHITE}o  | os{END}      - perform {MAGENTA}OS{END} actions
-    {WHITE}sn | subnet{END}  - perform {MAGENTA}subnet{END} actions
+    {WHITE}G  | gcs{END}        - generate cache scripts (fetch and populate)
+    {WHITE}h  | host{END}       - perform {MAGENTA}host{END} actions
+    {WHITE}hv | hypervisor{END} - perform {MAGENTA}hypervisor{END} actions
+    {WHITE}i  | ipam{END}       - perform {MAGENTA}IPAM{END} actions
+    {WHITE}n  | node{END}       - perform {MAGENTA}node{END} actions
+    {WHITE}o  | os{END}         - perform {MAGENTA}OS{END} actions
+    {WHITE}sn | subnet{END}     - perform {MAGENTA}subnet{END} actions
   The following {WHITE}System Actions{END} can be performed:
     {WHITE}f  | fetch{END}  - perform a fetch
     {WHITE}?  | help{END}   - show this help :)
@@ -159,7 +162,7 @@ def do_Host_Command(Args):
 
 
 def host_Add(Args):
-    host = {'name':Args.pop(0), 'ip':Args.pop(0), 'mac':Args.pop(0)}
+    host = { 'name':Args.pop(0), 'ip':Args.pop(0), 'mac':Args.pop(0) }
     if Args:
         host['os_name'] = Args.pop(0)
     if Args:
@@ -232,6 +235,73 @@ def host_List():
         for h in Hosts:
             bld = GRAY if h['target'] == 'local' else RED
             print(f"  {h['name']:15} {BLUE}{h['mac']} / {CYAN}{h['ip']:15}{END} {h['os_name']:9} {h['os_version']:16} {h['disk']:11} {bld}{h['target']}{END}")
+
+
+## Hypervisor Functions ---------------------------------------------------------------------------------
+
+def do_Hypervisor_Command(Args):
+    global CONTEXT
+    
+    Args.append('')
+    ACTION = Args.pop(0)
+
+    if ACTION == '':
+        CONTEXT = 'hypervisor'
+    elif ACTION in ('a', 'add'):
+        if len(Args) > 1:
+            hypervisor_Add(Args)
+        else:
+            print(f'{RED}Please specify at least <name> <type> {END}')
+    elif ACTION in ('d', 'delete'):
+        if Args:
+            hypervisor_Delete(Args)
+        else:
+            print(f'{RED}Please specify hypervisor to delete{END}')
+    elif ACTION in ('l', 'list'):
+        hypervisor_List()
+    else:
+        print(f"{RED}What ?{END}")
+
+
+def hypervisor_Add(Args):
+    HV = { 'name':Args.pop(0), 'type':Args.pop(0) }
+    req = requests.post(f'{API}/hypervisor', json=HV)
+    #
+    if req.status_code == 200:
+        print(f'{GREEN}New Hypervisor created added{END}')
+    elif req.status_code == 422:
+        Detail = req.json()['detail']
+        if type(Detail) == str:
+            print(f'{RED}Error: {Detail}{END}')
+        else:
+            for deet in Detail:
+                print(f"{RED}{deet['msg']}{END}")
+    else:
+        print(f'{YELLOW}Unknown response {END}')
+        print(req)
+        print(req.text)
+
+
+def hypervisor_Delete(Args):
+    hv = Args.pop(0)
+    req = requests.delete(f'{API}/hypervisor/{hv}')
+    if req.status_code == 200:
+            print(f'Hypervisor "{hv}" deleted')
+    elif req.status_code == 404:
+        print(f'{RED}Hypervisor not found{END}')
+    else:
+        print(f'{YELLOW}Unknown response{END}')
+
+
+def hypervisor_List():
+    req = requests.get(f'{API}/hypervisor')
+    Hypers = req.json()
+    if len(Hypers) == 0:
+        print( f"{YELLOW}You don't have any hypervisors yet{END}")
+    else:
+        print(f'{BG_GRAY}  Hostname        Type              {END}')
+        for h in Hypers:
+            print(f"  {h['name']:15} {h['type']} {END}")
 
 
 ## IPAM Functions ---------------------------------------------------------------------------------

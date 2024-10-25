@@ -1,0 +1,9 @@
+---
+
+all:
+  hosts:
+    {% for hv in Hypervisors -%}
+    {{ hv.name }}:
+      ansible_user: {{ hv.user }}
+      ansible_ssh_key_file: '{{"{{"}} lookup("file", "{{ hv.key_file }}") {{"}}"}}'
+    {% endfor -%}

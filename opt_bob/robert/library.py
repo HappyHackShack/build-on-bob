@@ -31,7 +31,7 @@ class Configuration():
 Config = Configuration()
 
 
-### ---------- Build Templates -----------------------------------------------------------
+### ---------- General Templates -----------------------------------------------------------
 
 def render_template(Template_Filename, Config, Target_Filename):
     environment = Environment(loader=FileSystemLoader(Template_Dir))
@@ -42,6 +42,7 @@ def render_template(Template_Filename, Config, Target_Filename):
         cfg.write(rendered)
         cfg.write('\n')
 
+### ---------- Build Templates -----------------------------------------------------------
 
 def wipe_host_build_files(host):
     for directory in [ Config.nginx_build_dir, Config.nginx_ipxe_dir ]:
@@ -68,3 +69,10 @@ def write_Build_Files(host, session):
         print(f'Writing template {tpl_src} --> {output}')
         #cfg = host.dict() | OS_Ver.dict()
         render_template( tpl_src, Config()|host.dict()|OS_Ver.dict(), f"{Config.nginx_base_dir}/{output}")
+
+### ---------- Hypervisor & VMs -----------------------------------------------------------
+
+def write_ansible_inventory(session):
+    Hypers = session.exec(select(Hypervisor)).all()
+    Data = { 'Hypervisors': Hypers }
+    render_template( 'ans-inventory.j2', Data, '../../viv/inventory.yaml' )

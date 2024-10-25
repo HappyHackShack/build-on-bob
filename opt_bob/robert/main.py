@@ -19,6 +19,7 @@ async def myLifespan(app: FastAPIOffline):
 app = FastAPIOffline(lifespan=myLifespan)
 
 from hosts import *
+from hypervisors import *
 from ipam import *
 from nodes import *
 from opsystems import *

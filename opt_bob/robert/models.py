@@ -43,6 +43,17 @@ class Host(HostModel, table=True):
     pass
 
 
+class Hypervisor(SQLModel, table=True):
+    name: str = Field(primary_key=True)
+    type: Optional[str] = Field(default='libvirt')
+    user: Optional[str] = Field(default='rocky')
+    key_file: Optional[str]  = Field(default='~/.ssh/rocky')
+    image_dir: Optional[str] = Field(default='/var/lib/libvirt/images')
+    cloud_image: Optional[str] = Field(default='Rocky-9-GenericCloud-Base-9.4-20240609.0.x86_64.qcow2')
+    config_dir: Optional[str] = Field(default='/var/lib/libvirt/cloud')
+    bridge_name: Optional[str] = Field(default='bridge0')
+
+
 class IPAM(SQLModel, table=True):
     name: str = Field(primary_key=True)
     ip_from: str
@@ -80,3 +91,12 @@ class Subnet(SQLModel, table=True):
     gateway: str
     nameservers: Optional[str]
     node: str
+
+
+class Virtual(SQLModel, table=True):
+    name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
+    ip: str
+    hypervisor: str
+    vm_cpu_cores: Optional[int] = Field(default=4)
+    vm_memory_gb: Optional[int] = Field(default=4)
+    vm_disk_gb: Optional[int] = Field(default=25)
