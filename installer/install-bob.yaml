@@ -24,6 +24,7 @@
         - name: Install any Python requirements
           ansible.builtin.pip:
             name:
+              - ansible_runner
               - datalite
               - fastapi[standard]
               - fastapi-offline
@@ -87,6 +88,8 @@
 
     # BOB Engine
     - name: The bob engine block
+      tags:
+        - just-bob
       block:
         - name: Put the bob script into place
           ansible.builtin.copy:
@@ -132,8 +135,23 @@
             mode: preserve
           notify: Restart WENDY
 
+    # Ansible
+    - name: Ansible block
+      tags:
+        - etc-ans
+      block:
+        # - name: Make Ansible directory
+        - name: Put Ansible engine into place
+          ansible.builtin.copy:
+            src: ./etc_ansible/
+            dest: "/etc/ansible/"
+            owner: root
+            mode: preserve
+
     # Wendy
-    - name: Wendy API block
+    - name: Wendy block
+      tags:
+        - wendy
       block:
         - name: Wendy service file
           ansible.builtin.template:

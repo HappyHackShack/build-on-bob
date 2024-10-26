@@ -1,0 +1,6 @@
+---
+# vars file for libvirt-vm
+
+lvvm_libvirt_dir: /var/lib/libvirt
+lvvm_config_dir: "{{ lvvm_libvirt_dir }}/cloud"
+lvvm_image_dir: "{{ lvvm_libvirt_dir }}/images"

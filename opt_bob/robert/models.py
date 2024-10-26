@@ -3,31 +3,29 @@ from pydantic import field_validator, AfterValidator, ConfigDict
 from sqlmodel import Field, SQLModel
 from typing import Annotated, Optional
 
-from database import get_session
-
 
 def coerce_to_lower(n: str) -> str:
     return n.lower()
 
 
+def validate_ip(ip: str) -> str:
+    try:
+        netaddr.IPAddress(ip)
+    except:
+        raise ValueError('invalid IP address')
+    return ip
+
+
 class HostModel(SQLModel):
     model_config = ConfigDict(validate_assignment=True)
+    #
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
-    ip: str
+    ip: Annotated[str, AfterValidator(validate_ip)]
     mac: str
     os_name: Optional[str] = Field(default='rescue')
     os_version: Optional[str] = Field(default='v3.20')
     disk: Optional[str] = Field(default='/dev/sda')
     target: Optional[str] = Field(default='local')
-
-    @field_validator('ip')
-    @classmethod
-    def validate_ip(cls, ip) :
-        try:
-            netaddr.IPAddress(ip)
-        except:
-            raise ValueError('invalid IP address')
-        return ip
 
     @field_validator('mac')
     @classmethod
@@ -37,7 +35,6 @@ class HostModel(SQLModel):
         except:
             raise ValueError('invalid MAC address')
         return mac
-
 
 class Host(HostModel, table=True):
     pass
@@ -56,6 +53,7 @@ class Hypervisor(SQLModel, table=True):
 
 class IPAM(SQLModel, table=True):
     name: str = Field(primary_key=True)
+    backend: str
     ip_from: str
     ip_to: str
 
@@ -93,10 +91,15 @@ class Subnet(SQLModel, table=True):
     node: str
 
 
-class Virtual(SQLModel, table=True):
+class VirtualModel(SQLModel):
+    model_config = ConfigDict(validate_assignment=True)
+    #
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
-    ip: str
     hypervisor: str
+    ip: Annotated[str, AfterValidator(validate_ip)]
     vm_cpu_cores: Optional[int] = Field(default=4)
-    vm_memory_gb: Optional[int] = Field(default=4)
+    vm_memory_mb: Optional[int] = Field(default=4096)
     vm_disk_gb: Optional[int] = Field(default=25)
+
+class Virtual(VirtualModel, table=True):
+    pass

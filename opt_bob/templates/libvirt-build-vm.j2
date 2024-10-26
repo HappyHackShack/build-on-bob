@@ -1,0 +1,21 @@
+---
+
+- name: Create a LibVirt VM
+  hosts: {{ hypervisor }}
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Include libvirt-VM role
+      ansible.builtin.include_role:
+        name: libvirt-vm
+      vars:
+        lvvm_hostname: {{ name }}
+        lvvm_vm_cores: {{ vm_cpu_cores }}
+        lvvm_vm_memory: {{ vm_memory_mb }}
+        lvvm_vm_os_disk_size: {{ vm_disk_gb }}
+        lvvm_ip_cidr: {{ ip }}/{{ cidr }}
+        lvvm_ip_gateway: {{ gateway }}
+        lvvm_nameservers:
+          {% for ns in nameservers %}- {{ ns }}
+          {% endfor %}

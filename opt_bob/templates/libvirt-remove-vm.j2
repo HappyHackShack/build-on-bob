@@ -1,0 +1,21 @@
+---
+
+- name: Destroy and Remove a LibVirt VM
+  hosts: {{ hypervisor }}
+  connection: local
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Destroy VM (Force Shutdown)
+      community.libvirt.virt:
+        uri: 'qemu+ssh://{{ user }}@{{ hypervisor }}/system?keyfile={{ key_file }}'
+        name: {{ name }}
+        state: destroyed
+    - name: Undefine VM (Actually delete it)
+      community.libvirt.virt:
+        uri: 'qemu+ssh://{{ user }}@{{ hypervisor }}/system?keyfile={{ key_file }}'
+        name: {{ name }}
+        command: undefine
+
+    # - name: Go and delete any creation sctipts

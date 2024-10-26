@@ -65,6 +65,8 @@ def do_Command(Args):
         do_Subnet_Command(Args)
     elif OBJ in ('t', 'tail'):
         os.system('tail -n 3 -f /var/log/nginx/access.log')
+    elif OBJ in ('vm', 'virtual'):
+        do_Virtual_Command(Args)
     elif OBJ in ('w', 'watch'):
         pass
     elif OBJ in ('?', 'help'):
@@ -104,6 +106,27 @@ def cache_scripts_gen():
         print(f"{RED}There was a problem{END}")
 
 
+def show_API_Response(req, Object, objName, Action, Success_Colour=GREEN):
+    if req.status_code == 200:
+        print(f'{Success_Colour}{Object} "{objName}" {Action}{END}')
+    elif req.status_code == 404:
+        print(f'{RED}{Object} "{objName}" not found{END}')
+    elif req.status_code == 422:
+        Detail = req.json()['detail']
+        if type(Detail) == str:
+            print(f'{RED}Error: {Detail}{END}')
+        else:
+            for deet in Detail:
+                print(f"{RED}{deet['msg']}{END}")
+    elif req.status_code == 500:
+        Detail = req.json()['detail']
+        print(f'{RED}Server Error: {Detail}{END}')
+    else:
+        print(f'{YELLOW}Unknown response {END}')
+        print(req)
+        print(req.text)
+
+
 def show_Help():
     if SHOW_HELP_BANNER:
         bob = figlet('BoB the Workman', font='slant', width=120)
@@ -117,6 +140,7 @@ Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> .
     {WHITE}n  | node{END}       - perform {MAGENTA}node{END} actions
     {WHITE}o  | os{END}         - perform {MAGENTA}OS{END} actions
     {WHITE}sn | subnet{END}     - perform {MAGENTA}subnet{END} actions
+    {WHITE}vm | virtual{END}    - perform {MAGENTA}virtual machine{END} actions
   The following {WHITE}System Actions{END} can be performed:
     {WHITE}f  | fetch{END}  - perform a fetch
     {WHITE}?  | help{END}   - show this help :)
@@ -158,7 +182,7 @@ def do_Host_Command(Args):
     elif ACTION in ('l', 'list'):
             host_List()
     elif ACTION == '?':
-            print(f'{CYAN}host {WHITE}a{END}dd | build | complete | delete | edit | list{END}')
+            print(f'{CYAN}host {WHITE}a{END}dd | {WHITE}b{END}uild | {WHITE}c{END}omplete | {WHITE}d{END}elete | {WHITE}e{END}dit | {WHITE}l{END}ist')
 
 
 def host_Add(Args):
@@ -169,20 +193,7 @@ def host_Add(Args):
         host['os_version'] = Args.pop(0)
     #
     req = requests.post(f'{API}/host', json=host)
-    #
-    if req.status_code == 200:
-        print(f'{GREEN}New host created added{END}')
-    elif req.status_code == 422:
-        Detail = req.json()['detail']
-        if type(Detail) == str:
-            print(f'{RED}Error: {Detail}{END}')
-        else:
-            for deet in Detail:
-                print(f"{RED}{deet['msg']}{END}")
-    else:
-        print(f'{YELLOW}Unknown response {END}')
-        print(req)
-        print(req.text)
+    show_API_Response(req, 'Host', host['name'], 'added')
 
 
 def host_Build(Args):
@@ -194,35 +205,19 @@ def host_Build(Args):
         Params['os_version'] = Args.pop(0)
     #
     req = requests.patch(f'{API}/host/{hn}/build', json = Params)
-    #
-    if req.status_code == 200:
-        print(f'Build mode enabled for {hn}')
-    elif req.status_code == 404:
-        print(f'{RED}Host not found{END}')
-    else:
-        print(f'{YELLOW}Unknown response{END}')
+    show_API_Response(req, 'Host', hn, ': build mode enabled', CYAN)
 
 
 def host_Complete(Args):
     hn = Args.pop(0)
-    req = requests.patch(f'{API}/host/{hn}/complete')
-    if req.status_code == 200:
-        print(f'Build mode disabled for {hn}')
-    elif req.status_code == 404:
-        print(f'{RED}Host not found{END}')
-    else:
-        print(f'{YELLOW}Unknown response{END}')
+    req = requests.get(f'{API}/host/{hn}/complete')
+    show_API_Response(req, 'Host', hn, ': build mode disabled', BLUE)
 
 
 def host_Delete(Args):
     hn = Args.pop(0)
     req = requests.delete(f'{API}/host/{hn}')
-    if req.status_code == 200:
-            print(f'Host "{hn}" deleted')
-    elif req.status_code == 404:
-        print(f'{RED}Host not found{END}')
-    else:
-        print(f'{YELLOW}Unknown response{END}')
+    show_API_Response(req, 'Host', hn, 'deleted', MAGENTA)
 
 
 def host_List():
@@ -256,9 +251,11 @@ def do_Hypervisor_Command(Args):
         if Args:
             hypervisor_Delete(Args)
         else:
-            print(f'{RED}Please specify hypervisor to delete{END}')
+            print(f'{RED}Please specify a hypervisor to delete{END}')
     elif ACTION in ('l', 'list'):
         hypervisor_List()
+    elif ACTION == '?':
+            print(f'{CYAN}hypervisor {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
 
@@ -266,31 +263,13 @@ def do_Hypervisor_Command(Args):
 def hypervisor_Add(Args):
     HV = { 'name':Args.pop(0), 'type':Args.pop(0) }
     req = requests.post(f'{API}/hypervisor', json=HV)
-    #
-    if req.status_code == 200:
-        print(f'{GREEN}New Hypervisor created added{END}')
-    elif req.status_code == 422:
-        Detail = req.json()['detail']
-        if type(Detail) == str:
-            print(f'{RED}Error: {Detail}{END}')
-        else:
-            for deet in Detail:
-                print(f"{RED}{deet['msg']}{END}")
-    else:
-        print(f'{YELLOW}Unknown response {END}')
-        print(req)
-        print(req.text)
+    show_API_Response(req, 'Hypervisor', HV['name'], 'added')
 
 
 def hypervisor_Delete(Args):
     hv = Args.pop(0)
     req = requests.delete(f'{API}/hypervisor/{hv}')
-    if req.status_code == 200:
-            print(f'Hypervisor "{hv}" deleted')
-    elif req.status_code == 404:
-        print(f'{RED}Hypervisor not found{END}')
-    else:
-        print(f'{YELLOW}Unknown response{END}')
+    show_API_Response(req, 'Hypervisor', hv, 'deleted', MAGENTA)
 
 
 def hypervisor_List():
@@ -316,6 +295,8 @@ def do_Ipam_Command(Args):
         CONTEXT = 'ipam'
     elif ACTION in ('l', 'list'):
         ipam_List()
+    elif ACTION == '?':
+            print(f'{CYAN}ipam {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
 
@@ -332,6 +313,8 @@ def do_Node_Command(Args):
         CONTEXT = 'node'
     elif ACTION in ('l', 'list'):
         node_List()
+    elif ACTION == '?':
+            print(f'{CYAN}node {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
 
@@ -348,6 +331,8 @@ def do_OS_Command(Args):
         CONTEXT = 'os'
     elif ACTION in ('l', 'list'):
         os_List()
+    elif ACTION == '?':
+            print(f'{CYAN}os {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
 
@@ -376,6 +361,8 @@ def do_Subnet_Command(Args):
         CONTEXT = 'subnet'
     elif ACTION in ('l', 'list'):
         subnet_List()
+    elif ACTION == '?':
+            print(f'{CYAN}subnet {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
 
@@ -390,6 +377,80 @@ def subnet_List():
         for sn in Subnets:
             net = f"{sn['network']} / {sn['cidr']}"
             print(f"  {net:26} {sn['gateway']:15} {sn['nameservers']:30} {sn['node']:24}{END}")
+
+
+## Virtual Machine Functions -------------------------------------------------------------------------
+
+def do_Virtual_Command(Args):
+    global CONTEXT
+    
+    Args.append('')
+    ACTION = Args.pop(0)
+
+    if ACTION == '':
+        CONTEXT = 'virtual'
+    elif ACTION in ('a', 'add'):
+        if len(Args) > 2:
+            virtual_Add(Args)
+        else:
+            print(f'{RED}Please specify at least <hypervsisor> <hostname> <IP> {END}')
+    elif ACTION in ('b', 'build'):
+        if Args:
+            virtual_Build(Args)
+        else:
+            print(f'{RED}Please specify a VM to build{END}')
+    elif ACTION in ('d', 'delete'):
+        if Args:
+            virtual_Delete(Args)
+        else:
+            print(f'{RED}Please specify a VM to delete{END}')
+    elif ACTION in ('l', 'list'):
+        virtual_List()
+    elif ACTION in ('rm', 'remove'):
+        if Args:
+            virtual_Remove(Args)
+        else:
+            print(f'{RED}Please specify a VM to delete{END}')
+    elif ACTION == '?':
+            print(f'{CYAN}virtual {WHITE}a{END}dd | {WHITE}b{END}uild | {WHITE}d{END}elete | {WHITE}l{END}ist | {WHITE}r{END}emove')
+    else:
+        print(f"{RED}What ?{END}")
+
+
+def virtual_Add(Args):
+    VM = { 'hypervisor':Args.pop(0), 'name':Args.pop(0), 'ip':Args.pop(0) }
+    req = requests.post(f'{API}/vm', json=VM)
+    show_API_Response(req, 'VM', VM['name'], 'added')
+
+
+def virtual_Build(Args):
+    vm_name = Args.pop(0)
+    print(f"{CYAN}Please wait while the VM is created ...{END}")
+    req = requests.patch(f'{API}/vm/{vm_name}/build')
+    show_API_Response(req, 'Virtual Machine', vm_name, 'built')
+
+
+def virtual_Delete(Args):
+    vm_name = Args.pop(0)
+    req = requests.delete(f'{API}/vm/{vm_name}')
+    show_API_Response(req, 'Virtual Machine', vm_name, 'deleted', MAGENTA)
+
+
+def virtual_List():
+    Virtuals = requests.get(f'{API}/vm').json()
+    if len(Virtuals) == 0:
+        print( f"{YELLOW}You don't have any Virtual Machines yet{END}")
+    else:
+        print(f'{BG_GRAY}  Hypervisor   Name         IP                       {END}')
+        for vm in Virtuals:
+            print(f"  {vm['hypervisor']:12} {vm['name']:12} {vm['ip']}")
+
+
+def virtual_Remove(Args):
+    vm_name = Args.pop(0)
+    print(f"{CYAN}Please wait while the VM is removed ...{END}")
+    req = requests.patch(f'{API}/vm/{vm_name}/remove')
+    show_API_Response(req, 'Virtual Machine', vm_name, 'remnoved', MAGENTA)
 
 
 ###=======================================================================

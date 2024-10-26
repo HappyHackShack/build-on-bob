@@ -5,5 +5,5 @@ all:
     {% for hv in Hypervisors -%}
     {{ hv.name }}:
       ansible_user: {{ hv.user }}
-      ansible_ssh_key_file: '{{"{{"}} lookup("file", "{{ hv.key_file }}") {{"}}"}}'
+      ansible_ssh_private_key_file: '{{ hv.key_file }}'
     {% endfor -%}

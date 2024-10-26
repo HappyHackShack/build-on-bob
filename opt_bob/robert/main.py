@@ -24,6 +24,12 @@ from ipam import *
 from nodes import *
 from opsystems import *
 from subnets import *
+from virtuals import *
+
+
+@app.get("/config")
+def get_config():
+    return Config()
 
 
 @app.post("/cache/scripts")

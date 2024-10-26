@@ -1,11 +1,15 @@
+import ansible_runner as Ansible
+from fastapi import HTTPException
 from jinja2 import Environment, FileSystemLoader
 import os
+import shutil
 from sqlmodel import select
 import yaml
 
 from models import *
 
 My_Dir = os.path.dirname(__file__)
+Ansible_Dir = f"/etc/ansible"
 Template_Dir = f"{My_Dir}/../templates"
 
 ### ---------- Configuration   -----------------------------------------------------------
@@ -31,7 +35,7 @@ class Configuration():
 Config = Configuration()
 
 
-### ---------- General Templates -----------------------------------------------------------
+### ---------- General --------------------------------------------------------------------
 
 def render_template(Template_Filename, Config, Target_Filename):
     environment = Environment(loader=FileSystemLoader(Template_Dir))
@@ -42,13 +46,40 @@ def render_template(Template_Filename, Config, Target_Filename):
         cfg.write(rendered)
         cfg.write('\n')
 
+
+def run_ansible(playbook):
+    result = Ansible.interface.run( private_data_dir=Ansible_Dir, playbook=playbook )
+    # print(result)
+    # for ev in result.events:
+    #     stdout = ev['stdout'][2:] if ev['stdout'][:2] == '\r\n' else ev['stdout']
+    #     print('EV', ev['uuid'], stdout)
+
+    # Clean up the Artifacts
+    for ev in result.events:
+        uuid = ev['uuid']
+        evPath = f"{Ansible_Dir}/artifacts/{uuid}"
+        if os.path.exists(evPath):
+            shutil.rmtree(evPath)
+    # Check for Total Failure
+    if not result.stats:
+        raise HTTPException(status_code=500, detail="FAILED to run the playbook")
+    # Check for task failures
+    Stats = result.stats
+    print(Stats)
+    if Stats['failures']:
+        raise HTTPException(status_code=500, detail="There were some tasks failures")
+    if not Stats['ok']:
+        raise HTTPException(status_code=500, detail="Hmm, no tasks were run")
+
+
 ### ---------- Build Templates -----------------------------------------------------------
 
 def wipe_host_build_files(host):
     for directory in [ Config.nginx_build_dir, Config.nginx_ipxe_dir ]:
         for filename in os.listdir(directory):
             if host.mac in filename:
-                os.unlink(f"{directory}/{filename}")
+                if os.path.exists(f"{directory}/{filename}"):
+                    os.unlink(f"{directory}/{filename}")
 
 
 def write_Dnsmasq(session):
@@ -72,7 +103,21 @@ def write_Build_Files(host, session):
 
 ### ---------- Hypervisor & VMs -----------------------------------------------------------
 
+def wipe_vm_playbooks(VM):
+    for verb in ['build', 'remove]']:
+        playbook = f'{Ansible_Dir}/{verb}-{VM.name}-vm.yaml'
+        if os.path.exists(playbook):
+            os.unlink( playbook )
+
+
 def write_ansible_inventory(session):
     Hypers = session.exec(select(Hypervisor)).all()
     Data = { 'Hypervisors': Hypers }
-    render_template( 'ans-inventory.j2', Data, '../../viv/inventory.yaml' )
+    render_template( 'ans-inventory.j2', Data, f'{Ansible_Dir}/inventory.yaml' )
+
+
+def write_vm_playbooks(VM, session):
+    Hyper = session.get(Hypervisor, VM.hypervisor)
+    Extra = { 'cidr': '24', 'gateway': '172.16.0.254', 'nameservers': ['172.16.0.254'] }
+    render_template( 'libvirt-build-vm.j2', VM.dict()|Extra, f'{Ansible_Dir}/build-{VM.name}-vm.yaml' )
+    render_template( 'libvirt-remove-vm.j2', Hyper.dict()|VM.dict(), f'{Ansible_Dir}/remove-{VM.name}-vm.yaml' )

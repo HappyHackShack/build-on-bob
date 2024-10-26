@@ -1,0 +1,25 @@
+---
+# tasks file for libvirt-vm
+
+- name: Add network data
+  ansible.builtin.template:
+    src: network-config.j2
+    dest: "{{  lvvm_config_dir }}/{{  lvvm_hostname }}.network"
+    mode: '0644'
+
+- name: Add user-data
+  ansible.builtin.template:
+    src: user-data.j2
+    dest: "{{  lvvm_config_dir }}/{{  lvvm_hostname }}.user"
+    mode: '0644'
+
+- name: Add create script
+  ansible.builtin.template:
+    src: create-guest-vm.j2
+    dest: "{{  lvvm_config_dir }}/create-{{  lvvm_hostname }}-vm.sh"
+    mode: '0750'
+
+- name: Run the Create script
+  ansible.builtin.shell:
+    chdir: "{{  lvvm_config_dir }}"
+    cmd: ./create-{{  lvvm_hostname }}-vm.sh

@@ -1,0 +1,12 @@
+#cloud-config
+
+hostname: {{  lvvm_hostname }}
+fqdn: {{  lvvm_hostname }}.{{  lvvm_domain }}
+
+password: "{{  lvvm_default_pass }}"
+chpasswd: {expire: false}
+ssh_pwauth: {{  lvvm_ssh_pwauth }}
+ssh_authorized_keys:
+{% for key in  lvvm_ssh_keys %}
+- {{ key }}
+{% endfor %}
