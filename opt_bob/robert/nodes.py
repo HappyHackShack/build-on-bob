@@ -3,11 +3,12 @@ from sqlmodel import select
 from typing import Annotated
 
 from database import SessionDep
+from library import *
 from main import app
 from models import *
 
 
-@app.post("/node")
+@app.post("/node", status_code=201, responses=API_POST_Responses)
 def create_node(node: Node, session: SessionDep) -> Node:
     session.add(node)
     session.commit()
@@ -22,7 +23,7 @@ def read_node_list(session: SessionDep, offset: int = 0,
     return nodes
 
 
-@app.get("/node/{node_name}")
+@app.get("/node/{node_name}", responses=API_GET_Responses)
 def read_node(node_name: str, session: SessionDep) -> Node:
     node = session.get(Node, node_name)
     if not node:
@@ -30,7 +31,7 @@ def read_node(node_name: str, session: SessionDep) -> Node:
     return node
 
 
-@app.delete("/node/{node_name}")
+@app.delete("/node/{node_name}", responses=API_DELETE_Responses)
 def delete_node(node_name: str, session: SessionDep):
     node = session.get(Node, node_name)
     if not node:

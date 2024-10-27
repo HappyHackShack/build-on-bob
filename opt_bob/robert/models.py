@@ -51,11 +51,23 @@ class Hypervisor(SQLModel, table=True):
     bridge_name: Optional[str] = Field(default='bridge0')
 
 
-class IPAM(SQLModel, table=True):
+class IpamModel(SQLModel):
+    model_config = ConfigDict(validate_assignment=True)
+    #
     name: str = Field(primary_key=True)
-    backend: str
-    ip_from: str
-    ip_to: str
+    ip_from: Annotated[str, AfterValidator(validate_ip)]
+    ip_to: Annotated[str, AfterValidator(validate_ip)]
+    backend: str = Field(default='internal')
+
+class IPAM(IpamModel, table=True):
+    pass
+
+
+class IPaddress(SQLModel, table=True):
+    ipam: str
+    ip: str = Field(primary_key=True)
+    hostname: Optional[str] = Field(default=None)
+    domain: Optional[str] = Field(default=None)
 
 
 class Node(SQLModel, table=True):
@@ -87,8 +99,12 @@ class Subnet(SQLModel, table=True):
     network: str = Field(primary_key=True)
     cidr: int
     gateway: str
-    nameservers: Optional[str]
-    node: str
+    nameservers: Optional[str] = Field(default='')
+    ipam: Optional[str] = Field(default='')
+    node: Optional[str] = Field(default='localhost')
+
+    def net_cidr(self) -> str:
+        return f"{self.network}/{self.cidr}"
 
 
 class VirtualModel(SQLModel):

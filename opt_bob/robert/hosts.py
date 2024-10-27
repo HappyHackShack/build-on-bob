@@ -8,19 +8,19 @@ from library import *
 from main import app
 from models import *
 
-@app.post("/host")
+@app.post("/host", status_code=201, responses=API_POST_Responses)
 def create_host(host: Host, session: SessionDep) -> Host:
     """Create a new Host\n
     Example text"""
     # Validations
     if session.get(Host, host.name):
-        raise HTTPException(status_code=422, detail="Host already exists")
+        raise HTTPException(status_code=409, detail="Host already exists")
     sql = select(Host).where(Host.ip==host.ip)
     if session.exec(sql).one_or_none():
-        raise HTTPException(status_code=422, detail="IP already in use")
+        raise HTTPException(status_code=409, detail="IP already in use")
     sql = select(Host).where(Host.mac==host.mac)
     if session.exec(sql).one_or_none():
-        raise HTTPException(status_code=422, detail="MAC already in use")
+        raise HTTPException(status_code=409, detail="MAC already in use")
     # IP in a subnet
     # TODO
     # Which subnet / Node
@@ -43,7 +43,7 @@ def read_list_of_hosts(session: SessionDep, offset: int = 0,
     return hosts
 
 
-@app.get("/host/{host_name}")
+@app.get("/host/{host_name}", responses=API_GET_Responses)
 def read_a_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
@@ -51,7 +51,7 @@ def read_a_host(host_name: str, session: SessionDep) -> Host:
     return host
 
 
-@app.patch("/host/{host_name}")
+@app.patch("/host/{host_name}", responses=API_GET_Responses)
 def update_host(host_name: str, Patch:Host, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
@@ -77,7 +77,7 @@ def update_host(host_name: str, Patch:Host, session: SessionDep):
     return host
 
 
-@app.delete("/host/{host_name}")
+@app.delete("/host/{host_name}", responses=API_DELETE_Responses)
 def delete_host(host_name: str, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
@@ -87,7 +87,7 @@ def delete_host(host_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@app.patch("/host/{host_name}/build")
+@app.patch("/host/{host_name}/build", responses=API_GET_Responses)
 def build_host(Params:dict, host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
@@ -110,7 +110,7 @@ def build_host(Params:dict, host_name: str, session: SessionDep) -> Host:
     return host
 
 
-@app.get("/host/{host_name}/complete")
+@app.get("/host/{host_name}/complete", responses=API_GET_Responses)
 def complete_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:

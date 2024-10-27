@@ -8,6 +8,18 @@ from library import *
 from models import *
 from database import *
 
+# Some HTTP Response Codes
+# 200 = OK
+# 201 = Created
+# 202 = Accepted
+# 204 = No Content
+# 400 = Bad Request; e.g. malformed data in the request
+# 406 = Not Acceptable; well-formed request but doesn't meet other criteria
+# 409 = Conflict; well-formed, but violates current data
+# 410 = Gone
+# 422 = Unprocessable Content (Data validation)
+# 423 = Locked 
+
 
 @asynccontextmanager
 async def myLifespan(app: FastAPIOffline):
@@ -16,7 +28,11 @@ async def myLifespan(app: FastAPIOffline):
     # nothing to do on exit
 
 # Start the API App (with a lifespan)
-app = FastAPIOffline(lifespan=myLifespan)
+app = FastAPIOffline(
+    lifespan = myLifespan,
+    root_path = '/api',
+    #static_url = '/static-offline-docs'
+)
 
 from hosts import *
 from hypervisors import *

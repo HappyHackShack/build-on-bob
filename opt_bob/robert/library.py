@@ -1,7 +1,9 @@
 import ansible_runner as Ansible
 from fastapi import HTTPException
+import ipaddress
 from jinja2 import Environment, FileSystemLoader
 import os
+from pydantic import BaseModel
 import shutil
 from sqlmodel import select
 import yaml
@@ -11,6 +13,28 @@ from models import *
 My_Dir = os.path.dirname(__file__)
 Ansible_Dir = f"/etc/ansible"
 Template_Dir = f"{My_Dir}/../templates"
+
+### ---------- Errors   -----------------------------------------------------------
+
+class API_Error(BaseModel):
+    detail: str
+
+API_DELETE_Responses = {
+    404: {"model": API_Error, "description": 'Not Found'},
+    406: {"model": API_Error, "description": 'Not Acceptable'},
+    409: {"model": API_Error, "description": 'Conflicting Data'},
+}
+
+API_GET_Responses = {
+    404: {"model": API_Error, "description": 'Not Found'},
+}
+
+API_POST_Responses = {
+    201: {"model": API_Error, "description": 'Resource Created'},
+    406: {"model": API_Error, "description": 'Not Acceptable'},
+    409: {"model": API_Error, "description": 'Conflicting Data'},
+    410: {"model": API_Error, "description": 'Data Gone'},
+}
 
 ### ---------- Configuration   -----------------------------------------------------------
 
@@ -70,6 +94,21 @@ def run_ansible(playbook):
         raise HTTPException(status_code=500, detail="There were some tasks failures")
     if not Stats['ok']:
         raise HTTPException(status_code=500, detail="Hmm, no tasks were run")
+
+
+### ---------- Networks --------------------------------------------------------------------
+
+def get_Subnet_for_ip(ip, session) -> Subnet:
+    for sub in session.exec(select(Subnet)).all():
+        if network_contains_ip(sub.net_cidr(), ip):
+            return sub
+    return None
+
+
+def network_contains_ip(network_CIDR: str, ip_address: str) -> bool:
+    ip_net = ipaddress.IPv4Network(f"{ip_address}/32")
+    network = ipaddress.IPv4Network(network_CIDR)
+    return network.overlaps(ip_net)
 
 
 ### ---------- Build Templates -----------------------------------------------------------

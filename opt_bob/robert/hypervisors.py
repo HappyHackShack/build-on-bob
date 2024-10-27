@@ -8,7 +8,7 @@ from main import app
 from models import *
 
 
-@app.post("/hypervisor")
+@app.post("/hypervisor", status_code=201, responses=API_POST_Responses)
 def create_hypervisor(hypervisor:  Hypervisor, session: SessionDep) ->  Hypervisor:
     session.add(hypervisor)
     session.commit()
@@ -24,7 +24,7 @@ def read_hypervisor_list(session: SessionDep, offset: int = 0,
     return hypervisors
 
 
-@app.get("/hypervisor/{hypervisor_name}")
+@app.get("/hypervisor/{hypervisor_name}", responses=API_GET_Responses)
 def read_hypervisor(hypervisor_name: str, session: SessionDep) ->  Hypervisor:
     hypervisor = session.get( Hypervisor, hypervisor_name)
     if not hypervisor:
@@ -32,7 +32,7 @@ def read_hypervisor(hypervisor_name: str, session: SessionDep) ->  Hypervisor:
     return hypervisor
 
 
-@app.delete("/hypervisor/{hypervisor_name}")
+@app.delete("/hypervisor/{hypervisor_name}", responses=API_DELETE_Responses)
 def delete_hypervisor(hypervisor_name: str, session: SessionDep):
     hypervisor = session.get( Hypervisor, hypervisor_name)
     if not hypervisor:

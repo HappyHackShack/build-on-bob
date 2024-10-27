@@ -3,11 +3,12 @@ from sqlmodel import select
 from typing import Annotated
 
 from database import SessionDep
+from library import *
 from main import app
 from models import *
 
 
-@app.post("/os")
+@app.post("/os", status_code=201, responses=API_POST_Responses)
 def create_opsys(opsys: OpSys, session: SessionDep) -> OpSys:
     session.add(opsys)
     session.commit()
@@ -22,7 +23,7 @@ def read_opsystems(session: SessionDep, offset: int = 0,
     return systems
 
 
-@app.get("/os/{os_name}")
+@app.get("/os/{os_name}", responses=API_GET_Responses)
 def read_opsys(os_name: str, session: SessionDep) -> OpSys:
     opsys = session.get(OpSys, os_name)
     if not opsys:
@@ -30,7 +31,7 @@ def read_opsys(os_name: str, session: SessionDep) -> OpSys:
     return opsys
 
 
-@app.delete("/os/{os_name}")
+@app.delete("/os/{os_name}", responses=API_DELETE_Responses)
 def delete_opsys(os_name: str, session: SessionDep):
     opsys = session.get(OpSys, os_name)
     if not opsys:
@@ -47,7 +48,7 @@ def read_all_os_versions(session: SessionDep) -> list[OsVersion]:
     return versions
 
 
-@app.get("/osver/{os_name}")
+@app.get("/osver/{os_name}", responses=API_GET_Responses)
 def read_os_versions4os(os_name: str, session: SessionDep) -> list[OsVersion]:
     if not session.get(OpSys,os_name):
         raise HTTPException(status_code=404, detail="OS not found")
@@ -56,7 +57,7 @@ def read_os_versions4os(os_name: str, session: SessionDep) -> list[OsVersion]:
     return versions
 
 
-@app.get("/osver/{os_name}/{os_version}")
+@app.get("/osver/{os_name}/{os_version}", responses=API_GET_Responses)
 def read_os_version(os_name: str, os_version: str, session: SessionDep) -> OsVersion:
     if not session.get(OpSys,os_name):
         raise HTTPException(status_code=404, detail="OS not found")
