@@ -23,7 +23,7 @@ def create_virtual(virtual:  Virtual, session: SessionDep) ->  Virtual:
         # Requested network address => attempt IPAM
         from ipam import ipam_allocate_ip
         suggested = ipam_allocate_ip(subnet.ipam, {'fqdn':virtual.name}, session)
-        virtual.ip = suggested['ip']
+        virtual.ip = suggested.ip
     else:
         Valid_Subnet = get_Subnet_for_ip(virtual.ip, session)
         if not Valid_Subnet:

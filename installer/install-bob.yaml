@@ -31,6 +31,7 @@
               - flask
               - gunicorn
               - netaddr
+              - proxmoxer
               - pyfiglet
               - sqlmodel
 
@@ -121,10 +122,13 @@
             owner: root
             mode: '0644'
 
-        - name: Remove any Wendy pycache before copying the engine
+        - name: Remove any component pycache before copying the engine
           ansible.builtin.file:
-            path: ../opt_bob/wendy/__pycache__
+            path: "../opt_bob/{{ item }}/__pycache__"
             state: absent
+          loop:
+            - robert
+            - wendy
 
         - name: Put the bob (python) engine into place
           # TODO - what about b-o-b.db
@@ -185,6 +189,8 @@
 
     # NGINX
     - name: Any NGINX stuff block
+      tags:
+        - nginx
       block:
         - name: Configure Wendy log format
           ansible.builtin.template:
@@ -193,10 +199,10 @@
             mode: '0640'
           notify: Restart NGINX
 
-        - name: Put the Wendy proxy in place
+        - name: Put the BoB proxy in place
           ansible.builtin.template:
-            src: ng-wendy.conf.j2
-            dest: /etc/nginx/default.d/wendy.conf
+            src: ng-bob.conf.j2
+            dest: /etc/nginx/default.d/bob.conf
             mode: '0640'
           notify: Restart NGINX
 

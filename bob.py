@@ -107,15 +107,24 @@ def cache_scripts_gen():
 
 
 def show_API_Response(req, Object, objName, Action, Success_Colour=GREEN):
-    if req.status_code == 200:
+    if req.status_code in (200, 201):
         print(f'{Success_Colour}{Object} "{objName}" {Action}{END}')
     elif req.status_code == 404:
-        print(f'{RED}{Object} "{objName}" not found{END}')
+        print(f'{RED}{Object} "{objName}" Not Found{END}')
+    elif req.status_code == 406:
+        Detail = req.json()['detail']
+        print(f'{RED}Not Acceptable: {Detail}{END}')
+    elif req.status_code == 409:
+        Detail = req.json()['detail']
+        print(f'{RED}Data Conflict: {Detail}{END}')
+    elif req.status_code == 410:
+        Detail = req.json()['detail']
+        print(f'{RED}Gone: {Detail}{END}')
     elif req.status_code == 422:
         Detail = req.json()['detail']
         if type(Detail) == str:
-            print(f'{RED}Error: {Detail}{END}')
-        else:
+            print(f'{RED}Validation Error: {Detail}{END}')
+        else:  # Normal SqlModel response
             for deet in Detail:
                 print(f"{RED}{deet['msg']}{END}")
     elif req.status_code == 500:
@@ -237,8 +246,7 @@ def host_List():
 def do_Hypervisor_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'hypervisor'
@@ -288,17 +296,67 @@ def hypervisor_List():
 def do_Ipam_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'ipam'
+    elif ACTION in ('a', 'add'):
+        if len(Args) > 2:
+            ipam_Add(Args)
+        else:
+            print(f'{RED}Please specify at least <name> <ip_range_start> <ip_range_end> {END}')
+    elif ACTION in ('d', 'delete'):
+        if Args:
+            ipam_Delete(Args)
+        else:
+            print(f'{RED}Please specify an IPAM to delete{END}')
     elif ACTION in ('l', 'list'):
         ipam_List()
+    elif ACTION in ('s', 'show'):
+        if Args:
+            ipam_Show_IPs(Args)
+        else:
+            print(f'{RED}Please specify an IPAM to show{END}')
     elif ACTION == '?':
-            print(f'{CYAN}ipam {WHITE}l{END}ist')
+            print(f'{CYAN}ipam {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist | {WHITE}s{END}how')
     else:
         print(f"{RED}What ?{END}")
+
+
+def ipam_Add(Args):
+    IPAM = { 'name':Args.pop(0), 'ip_from':Args.pop(0), 'ip_to':Args.pop(0) }
+    req = requests.post(f'{API}/ipam', json=IPAM)
+    show_API_Response(req, 'IPAM', IPAM['name'], 'added')
+
+
+def ipam_Delete(Args):
+    ipam = Args.pop(0)
+    req = requests.delete(f'{API}/ipam/{ipam}')
+    show_API_Response(req, 'IPAM', ipam, 'deleted', MAGENTA)
+
+
+def ipam_List():
+    req = requests.get(f'{API}/ipam')
+    IPAMs = req.json()
+    if len(IPAMs) == 0:
+        print( f"{YELLOW}You don't have any IPAMs yet{END}")
+    else:
+        print(f'{BG_GRAY}  Name         IP Range                         {END}')
+        for ipam in IPAMs:
+            print(f"  {ipam['name']:12} {ipam['ip_from']} - {ipam['ip_to']} {END}")
+
+
+def ipam_Show_IPs(Args):
+    ipam = Args.pop(0)
+    req = requests.get(f'{API}/ipam/{ipam}/allocations')
+    Allocs = req.json()
+    if len(Allocs) == 0:
+        print( f"{YELLOW}Hmm, there are no IPs in that range{END}")
+    else:
+        print(f'{BG_GRAY}  IP Address       FQDN                           {END}')
+        for ip in Allocs:
+            fqdn = f"{ip['hostname']}.{ip['domain']}" if ip['hostname'] else ''
+            print(f"  {ip['ip']:16} {fqdn} {END}")
 
 
 ## NODE Functions ---------------------------------------------------------------------------------
@@ -306,8 +364,7 @@ def do_Ipam_Command(Args):
 def do_Node_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'node'
@@ -324,8 +381,7 @@ def do_Node_Command(Args):
 def do_OS_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'os'
@@ -354,17 +410,41 @@ def os_List():
 def do_Subnet_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'subnet'
+    elif ACTION in ('a', 'add'):
+        if len(Args) > 2:
+            subnet_Add(Args)
+        else:
+            print(f'{RED}Please specify at least <network>/<cidr> <gateway> {END}')
+    elif ACTION in ('d', 'delete'):
+        if Args:
+            subnet_Delete(Args)
+        else:
+            print(f'{RED}Please specify an IPAM to delete{END}')
     elif ACTION in ('l', 'list'):
         subnet_List()
     elif ACTION == '?':
-            print(f'{CYAN}subnet {WHITE}l{END}ist')
+            print(f'{CYAN}subnet {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist')
     else:
         print(f"{RED}What ?{END}")
+
+
+def subnet_Add(Args):
+    network_cidr = Args.pop(0)
+    network = network_cidr.split('/')[0]
+    cidr = network_cidr.split('/')[1]
+    Snet = { 'network':network, 'cidr':cidr, 'gateway':Args.pop(0) }
+    req = requests.post(f'{API}/subnet', json=Snet)
+    show_API_Response(req, 'Subnet', network_cidr, 'added')
+
+
+def subnet_Delete(Args):
+    net = Args.pop(0)
+    req = requests.delete(f'{API}/subnet/{net}')
+    show_API_Response(req, 'Subnet', net, 'deleted', MAGENTA)
 
 
 def subnet_List():
@@ -373,10 +453,10 @@ def subnet_List():
     if len(Subnets) == 0:
         print( f"{YELLOW}You don't have any subnets yet{END}")
     else:
-        print(f'{BG_GRAY}  Network                    Gateway         Name Servers                   Node                       {END}')
+        print(f'{BG_GRAY}  Network                Gateway         IPAM             Name Servers                   Node                 {END}')
         for sn in Subnets:
             net = f"{sn['network']} / {sn['cidr']}"
-            print(f"  {net:26} {sn['gateway']:15} {sn['nameservers']:30} {sn['node']:24}{END}")
+            print(f"  {net:22} {sn['gateway']:15} {sn['ipam']:15} {sn['nameservers']:30} {sn['node']:16}{END}")
 
 
 ## Virtual Machine Functions -------------------------------------------------------------------------
@@ -384,8 +464,7 @@ def subnet_List():
 def do_Virtual_Command(Args):
     global CONTEXT
     
-    Args.append('')
-    ACTION = Args.pop(0)
+    ACTION = Args.pop(0) if Args else ''
 
     if ACTION == '':
         CONTEXT = 'virtual'

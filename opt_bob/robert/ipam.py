@@ -110,7 +110,7 @@ def delete_ipam(ipam_name: str, session: SessionDep):
 
 
 @app.post("/ipam/{ipam_name}/allocate", responses=API_POST_Responses)
-def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> dict:
+def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> IPaddress:
     try:
         fqdn = data['fqdn']
     except:
@@ -131,7 +131,7 @@ def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> dict:
     session.add(ipaddr)
     session.commit()
     session.refresh(ipaddr)
-    return { 'ip': str(ipaddr) }
+    return ipaddr
 
 
 @app.delete("/ipam/{ip_address}/deallocate", responses=API_DELETE_Responses)
