@@ -4,6 +4,7 @@ all:
   hosts:
     {% for hv in Hypervisors -%}
     {{ hv.name }}:
+      ansible_python_interpreter: /bin/python3
       ansible_user: {{ hv.user }}
       ansible_ssh_private_key_file: '{{ hv.key_file }}'
     {% endfor -%}

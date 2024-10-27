@@ -450,7 +450,7 @@ def virtual_Remove(Args):
     vm_name = Args.pop(0)
     print(f"{CYAN}Please wait while the VM is removed ...{END}")
     req = requests.patch(f'{API}/vm/{vm_name}/remove')
-    show_API_Response(req, 'Virtual Machine', vm_name, 'remnoved', MAGENTA)
+    show_API_Response(req, 'Virtual Machine', vm_name, 'removed', MAGENTA)
 
 
 ###=======================================================================

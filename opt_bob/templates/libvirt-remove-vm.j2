@@ -18,4 +18,18 @@
         name: {{ name }}
         command: undefine
 
-    # - name: Go and delete any creation sctipts
+
+- name: Destroy and Remove a LibVirt VM
+  hosts: {{ hypervisor }}
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Delete the build files
+      ansible.builtin.file:
+        path: "/var/lib/libvirt/cloud/{{'{{'}} item {{'}}'}}"
+        state: absent
+      loop:
+        - "create-{{ name }}-vm.sh"
+        - "{{ name }}.network"
+        - "{{ name }}.user"          

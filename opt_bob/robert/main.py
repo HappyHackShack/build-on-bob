@@ -49,7 +49,7 @@ def cache_scripts_generate(session: SessionDep):
 @app.post("/initialise/database")
 def init_database(session: SessionDep):
     try:
-        with open('../init-data.yaml','rt') as init:
+        with open('init-data.yaml','rt') as init:
             Data = yaml.safe_load(init)
         print('Init-Data Loaded from ...')
         # Go through each OS

@@ -1,6 +1,6 @@
 # Build on Bob
 
-An automated deployment system.
+An automated OS deployment system for Physicals and Virtuals - aimed at teh cloud-native world.
 
 ## Installation
 
@@ -19,8 +19,14 @@ export BECOME_PASS='<your password>'
 # Run the ansible installer
 ansible-playbook install-bob.yaml --tags pre-req
 ansible-playbook install-bob.yaml
+
+# Ensure you have some Operating SYstems defined, then generate the cache scripts
+cd /opt/bob
+bob gcs
+
 # Finally fetch the cloud images
-bob fetch
+cd /usr/share/nginx/html
+/opt/bob/populate-cache.sh
 ```
 
 ## Usage
@@ -29,7 +35,7 @@ You are now ready to start deploying hosts; e,g,
 
 ```bash
 # Create a host
-bob add example 192.168.0.99 00:00:00:00:00:00
+bob host add example 192.168.0.99 00:00:00:00:00:00
 # Put it into build mode
-bob build example rocky
+bob host build example rocky
 ```
