@@ -8,8 +8,10 @@ from main import app
 from models import *
 
 
-@app.post("/hypervisor", status_code=201, responses=API_POST_Responses, tags=['Hypervisors'])
-def create_hypervisor(hypervisor:  Hypervisor, session: SessionDep) ->  Hypervisor:
+@app.post(
+    "/hypervisor", status_code=201, responses=API_POST_Responses, tags=["Hypervisors"]
+)
+def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor:
     session.add(hypervisor)
     session.commit()
     session.refresh(hypervisor)
@@ -17,24 +19,33 @@ def create_hypervisor(hypervisor:  Hypervisor, session: SessionDep) ->  Hypervis
     return hypervisor
 
 
-@app.get("/hypervisor", tags=['Hypervisors'])
-def read_hypervisor_list(session: SessionDep, offset: int = 0,
-           limit: Annotated[int, Query(le=100)] = 100, ) -> list[ Hypervisor]:
-    hypervisors = session.exec(select( Hypervisor).offset(offset).limit(limit)).all()
+@app.get("/hypervisor", tags=["Hypervisors"])
+def read_hypervisor_list(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+) -> list[Hypervisor]:
+    hypervisors = session.exec(select(Hypervisor).offset(offset).limit(limit)).all()
     return hypervisors
 
 
-@app.get("/hypervisor/{hypervisor_name}", responses=API_GET_Responses, tags=['Hypervisors'])
-def read_hypervisor(hypervisor_name: str, session: SessionDep) ->  Hypervisor:
-    hypervisor = session.get( Hypervisor, hypervisor_name)
+@app.get(
+    "/hypervisor/{hypervisor_name}", responses=API_GET_Responses, tags=["Hypervisors"]
+)
+def read_hypervisor(hypervisor_name: str, session: SessionDep) -> Hypervisor:
+    hypervisor = session.get(Hypervisor, hypervisor_name)
     if not hypervisor:
         raise HTTPException(status_code=404, detail=" Hypervisor not found")
     return hypervisor
 
 
-@app.delete("/hypervisor/{hypervisor_name}", responses=API_DELETE_Responses, tags=['Hypervisors'])
+@app.delete(
+    "/hypervisor/{hypervisor_name}",
+    responses=API_DELETE_Responses,
+    tags=["Hypervisors"],
+)
 def delete_hypervisor(hypervisor_name: str, session: SessionDep):
-    hypervisor = session.get( Hypervisor, hypervisor_name)
+    hypervisor = session.get(Hypervisor, hypervisor_name)
     if not hypervisor:
         raise HTTPException(status_code=404, detail=" Hypervisor not found")
     session.delete(hypervisor)

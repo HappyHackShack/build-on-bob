@@ -12,7 +12,7 @@ def validate_ip(ip: str) -> str:
     try:
         netaddr.IPAddress(ip)
     except:
-        raise ValueError('invalid IP address')
+        raise ValueError("invalid IP address")
     return ip
 
 
@@ -22,19 +22,20 @@ class HostModel(SQLModel):
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
     ip: Annotated[str, AfterValidator(validate_ip)]
     mac: str
-    os_name: Optional[str] = Field(default='rescue')
-    os_version: Optional[str] = Field(default='v3.20')
-    disk: Optional[str] = Field(default='/dev/sda')
-    target: Optional[str] = Field(default='local')
+    os_name: Optional[str] = Field(default="rescue")
+    os_version: Optional[str] = Field(default="v3.20")
+    disk: Optional[str] = Field(default="/dev/sda")
+    target: Optional[str] = Field(default="local")
 
-    @field_validator('mac')
+    @field_validator("mac")
     @classmethod
-    def validate_mac(cls, mac) :
+    def validate_mac(cls, mac):
         try:
             netaddr.EUI(mac)
         except:
-            raise ValueError('invalid MAC address')
+            raise ValueError("invalid MAC address")
         return mac
+
 
 class Host(HostModel, table=True):
     pass
@@ -42,13 +43,15 @@ class Host(HostModel, table=True):
 
 class Hypervisor(SQLModel, table=True):
     name: str = Field(primary_key=True)
-    type: Optional[str] = Field(default='libvirt')
-    user: Optional[str] = Field(default='rocky')
-    key_file: Optional[str]  = Field(default='~/.ssh/rocky')
-    image_dir: Optional[str] = Field(default='/var/lib/libvirt/images')
-    cloud_image: Optional[str] = Field(default='Rocky-9-GenericCloud-Base-9.4-20240609.0.x86_64.qcow2')
-    config_dir: Optional[str] = Field(default='/var/lib/libvirt/cloud')
-    bridge_name: Optional[str] = Field(default='bridge0')
+    type: Optional[str] = Field(default="libvirt")
+    user: Optional[str] = Field(default="rocky")
+    key_file: Optional[str] = Field(default="~/.ssh/rocky")
+    image_dir: Optional[str] = Field(default="/var/lib/libvirt/images")
+    cloud_image: Optional[str] = Field(
+        default="Rocky-9-GenericCloud-Base-9.4-20240609.0.x86_64.qcow2"
+    )
+    config_dir: Optional[str] = Field(default="/var/lib/libvirt/cloud")
+    bridge_name: Optional[str] = Field(default="bridge0")
 
 
 class IpamModel(SQLModel):
@@ -57,7 +60,8 @@ class IpamModel(SQLModel):
     name: str = Field(primary_key=True)
     ip_from: Annotated[str, AfterValidator(validate_ip)]
     ip_to: Annotated[str, AfterValidator(validate_ip)]
-    backend: str = Field(default='internal')
+    backend: str = Field(default="internal")
+
 
 class IPAM(IpamModel, table=True):
     pass
@@ -99,9 +103,9 @@ class Subnet(SQLModel, table=True):
     network: str = Field(primary_key=True)
     cidr: int
     gateway: str
-    nameservers: Optional[str] = Field(default='')
-    ipam: Optional[str] = Field(default='')
-    node: Optional[str] = Field(default='localhost')
+    nameservers: Optional[str] = Field(default="")
+    ipam: Optional[str] = Field(default="")
+    node: Optional[str] = Field(default="localhost")
 
     def net_cidr(self) -> str:
         return f"{self.network}/{self.cidr}"
@@ -116,6 +120,7 @@ class VirtualModel(SQLModel):
     vm_cpu_cores: Optional[int] = Field(default=4)
     vm_memory_mb: Optional[int] = Field(default=4096)
     vm_disk_gb: Optional[int] = Field(default=25)
+
 
 class Virtual(VirtualModel, table=True):
     pass

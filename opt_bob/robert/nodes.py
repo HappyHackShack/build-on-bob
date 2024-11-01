@@ -8,7 +8,7 @@ from main import app
 from models import *
 
 
-@app.post("/node", status_code=201, responses=API_POST_Responses, tags=['Nodes'])
+@app.post("/node", status_code=201, responses=API_POST_Responses, tags=["Nodes"])
 def create_node(node: Node, session: SessionDep) -> Node:
     session.add(node)
     session.commit()
@@ -16,14 +16,17 @@ def create_node(node: Node, session: SessionDep) -> Node:
     return node
 
 
-@app.get("/node", tags=['Nodes'])
-def read_node_list(session: SessionDep, offset: int = 0,
-           limit: Annotated[int, Query(le=100)] = 100, ) -> list[Node]:
+@app.get("/node", tags=["Nodes"])
+def read_node_list(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+) -> list[Node]:
     nodes = session.exec(select(Node).offset(offset).limit(limit)).all()
     return nodes
 
 
-@app.get("/node/{node_name}", responses=API_GET_Responses, tags=['Nodes'])
+@app.get("/node/{node_name}", responses=API_GET_Responses, tags=["Nodes"])
 def read_node(node_name: str, session: SessionDep) -> Node:
     node = session.get(Node, node_name)
     if not node:
@@ -31,7 +34,7 @@ def read_node(node_name: str, session: SessionDep) -> Node:
     return node
 
 
-@app.delete("/node/{node_name}", responses=API_DELETE_Responses, tags=['Nodes'])
+@app.delete("/node/{node_name}", responses=API_DELETE_Responses, tags=["Nodes"])
 def delete_node(node_name: str, session: SessionDep):
     node = session.get(Node, node_name)
     if not node:
