@@ -8,7 +8,7 @@ import shutil
 from sqlmodel import select
 import yaml
 
-from models import Host, Hypervisor, OsTemplate, OsVersion, Subnet
+from models import Host, Hypervisor, OsTemplate, OsVersion, Subnet, Virtual
 
 
 My_Dir = os.path.dirname(__file__)
@@ -162,11 +162,16 @@ def write_Build_Files(host, session):
 ### ---------- Hypervisor & VMs -----------------------------------------------------------
 
 
-def wipe_vm_playbooks(VM):
+def wipe_vm_playbooks(VM: Virtual):
     for verb in ["build", "remove]"]:
         playbook = f"{Ansible_Dir}/{verb}-{VM.name}-vm.yaml"
         if os.path.exists(playbook):
             os.unlink(playbook)
+
+
+def write_ansible_hostvars(hypervisor: Hypervisor):
+    render_template("proxmox-host-vars.j2", hypervisor.dict(), f"{Ansible_Dir}/host_vars/{hypervisor.name}.yaml")
+    render_template("proxmox-mk-template.j2", hypervisor.dict(), f"{Ansible_Dir}/mk-{hypervisor.name}-r94-tpl.yaml")
 
 
 def write_ansible_inventory(session):
@@ -175,7 +180,7 @@ def write_ansible_inventory(session):
     render_template("ans-inventory.j2", Data, f"{Ansible_Dir}/inventory.yaml")
 
 
-def write_vm_playbooks(VM, session):
+def write_vm_playbooks(VM: Virtual, session):
     Hyper = session.get(Hypervisor, VM.hypervisor)
     Extra = {"cidr": "24", "gateway": "172.16.0.254", "nameservers": ["172.16.0.254"]}
     render_template(

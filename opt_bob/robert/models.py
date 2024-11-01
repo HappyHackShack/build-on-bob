@@ -44,14 +44,17 @@ class Host(HostModel, table=True):
 class Hypervisor(SQLModel, table=True):
     name: str = Field(primary_key=True)
     type: Optional[str] = Field(default="libvirt")
-    user: Optional[str] = Field(default="rocky")
-    key_file: Optional[str] = Field(default="~/.ssh/rocky")
-    image_dir: Optional[str] = Field(default="/var/lib/libvirt/images")
-    cloud_image: Optional[str] = Field(
-        default="Rocky-9-GenericCloud-Base-9.4-20240609.0.x86_64.qcow2"
-    )
-    config_dir: Optional[str] = Field(default="/var/lib/libvirt/cloud")
+    ssh_user: Optional[str] = Field(default="rocky")
+    ssh_key_file: Optional[str] = Field(default="~/.ssh/rocky")
+    api_user: Optional[str] = Field(default="root@pam")
+    api_token: Optional[str] = Field(default="bob")
+    api_secret: Optional[str] = Field(default="")
     bridge_name: Optional[str] = Field(default="bridge0")
+    cloud_image: Optional[str] = Field(
+        default="Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2"
+    )
+    lv_config_dir: Optional[str] = Field(default="/var/lib/libvirt/cloud")
+    lv_image_dir: Optional[str] = Field(default="/var/lib/libvirt/images")
 
 
 class IpamModel(SQLModel):

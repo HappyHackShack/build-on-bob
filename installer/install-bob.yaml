@@ -76,7 +76,7 @@
     # BOB Engine
     - name: The bob engine block
       tags:
-        - just-bob
+        - update-bob
       block:
         - name: Put the bob script into place
           ansible.builtin.copy:
@@ -128,7 +128,7 @@
     # Ansible
     - name: Ansible block
       tags:
-        - etc-ans
+        - update-ansible
       block:
         # - name: Make Ansible directory
         - name: Put Ansible engine into place

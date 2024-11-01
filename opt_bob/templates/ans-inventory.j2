@@ -1,10 +1,21 @@
 ---
 
 all:
-  hosts:
-    {% for hv in Hypervisors -%}
-    {{ hv.name }}:
-      ansible_python_interpreter: /bin/python3
-      ansible_user: {{ hv.user }}
-      ansible_ssh_private_key_file: '{{ hv.key_file }}'
-    {% endfor -%}
+  vars:
+    ansible_python_interpreter: /bin/python3
+  children:
+  
+    libvirt:
+      hosts:
+        {% for hv in Hypervisors %}{% if hv.type == 'libvirt' -%}
+        {{ hv.name }}:
+          ansible_user: {{ hv.ssh_user }}
+          ansible_ssh_private_key_file: '{{ hv.ssh_key_file }}'
+        {% endif %}{% endfor %}
+    proxmox:
+      hosts:
+        {% for hv in Hypervisors -%}{% if hv.type == 'proxmox' -%}
+        {{ hv.name }}:
+          ansible_user: {{ hv.ssh_user }}
+          ansible_ssh_private_key_file: '{{ hv.ssh_key_file }}'
+        {% endif %}{% endfor -%}

@@ -254,7 +254,7 @@ def do_Hypervisor_Command(Args):
         if len(Args) > 1:
             hypervisor_Add(Args)
         else:
-            print(f'{RED}Please specify at least <name> <type> {END}')
+            print(f'{RED}Please specify (at least) <name> <type> [<user>] [<ssh_private_key_file>]{END}')
     elif ACTION in ('d', 'delete'):
         if Args:
             hypervisor_Delete(Args)
@@ -269,9 +269,14 @@ def do_Hypervisor_Command(Args):
 
 
 def hypervisor_Add(Args):
-    HV = { 'name':Args.pop(0), 'type':Args.pop(0) }
-    req = requests.post(f'{API}/hypervisor', json=HV)
-    show_API_Response(req, 'Hypervisor', HV['name'], 'added')
+    hv = { 'name':Args.pop(0), 'type':Args.pop(0) }
+    if Args:
+        hv['ssh_user'] = Args.pop(0)
+    if Args:
+        hv['ssh_key_file'] = Args.pop(0)
+
+    req = requests.post(f'{API}/hypervisor', json=hv)
+    show_API_Response(req, 'Hypervisor', hv['name'], 'added')
 
 
 def hypervisor_Delete(Args):
@@ -437,6 +442,8 @@ def subnet_Add(Args):
     network = network_cidr.split('/')[0]
     cidr = network_cidr.split('/')[1]
     Snet = { 'network':network, 'cidr':cidr, 'gateway':Args.pop(0) }
+    if Args:
+        Snet['nameservers'] = Args.pop(0)
     req = requests.post(f'{API}/subnet', json=Snet)
     show_API_Response(req, 'Subnet', network_cidr, 'added')
 

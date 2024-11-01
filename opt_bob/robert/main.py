@@ -111,26 +111,6 @@ def init_database(session: SessionDep):
             localnode = Node(name="localhost")
             session.add(localnode)
 
-        # Local SUBNET
-        print("Create Local.SubNet")
-        sn0 = {
-            "network": "172.16.0.0",
-            "cidr": 24,
-            "gateway": "172.16.0.254",
-            "nameservers": "172.16.0.254",
-            "node": "localhost",
-        }
-        if not session.get(Subnet, sn0["network"]):
-            sn = Subnet(**sn0)
-            session.add(sn)
-
-        # Test HOST
-        print("Create Test Host")
-        lucy = {"name": "lucy", "ip": "172.16.0.12", "mac": "e4:b9:7a:0b:bf:97"}
-        if not session.get(Host, "lucy"):
-            h0 = Host(**lucy)
-            session.add(h0)
-
         session.commit()
         return {"ok": True}
     except Exception as e:
