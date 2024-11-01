@@ -21,20 +21,6 @@
               - qemu-img
               - wget
 
-        - name: Install any Python requirements
-          ansible.builtin.pip:
-            name:
-              - ansible_runner
-              - datalite
-              - fastapi[standard]
-              - fastapi-offline
-              - flask
-              - gunicorn
-              - netaddr
-              - proxmoxer
-              - pyfiglet
-              - sqlmodel
-
         - name: Make the required directories
           ansible.builtin.file:
             path: "{{ item }}"

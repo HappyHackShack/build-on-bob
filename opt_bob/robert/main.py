@@ -43,12 +43,12 @@ from subnets import *
 from virtuals import *
 
 
-@app.get("/config")
+@app.get("/config", tags=['Miscellaneous'])
 def get_config():
     return Config()
 
 
-@app.post("/cache/scripts")
+@app.post("/cache/scripts", tags=['Miscellaneous'])
 def cache_scripts_generate(session: SessionDep):
     Opt_Bob = Config.bob_home_directory
     Local_Cache = Config.bob_local_cache
@@ -62,7 +62,7 @@ def cache_scripts_generate(session: SessionDep):
     return {"ok": True}
 
 
-@app.post("/initialise/database")
+@app.post("/initialise/database", tags=['Miscellaneous'])
 def init_database(session: SessionDep):
     try:
         with open('init-data.yaml','rt') as init:

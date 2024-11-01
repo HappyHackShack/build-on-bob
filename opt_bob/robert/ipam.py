@@ -46,7 +46,7 @@ def delete_ipam_range(ipam: IPAM, session: SessionDep):
     session.commit()
 
 
-@app.post("/ipam", status_code=201, responses=API_POST_Responses)
+@app.post("/ipam", status_code=201, responses=API_POST_Responses, tags=['IPAM'])
 def create_ipam(ipam: IPAM, session: SessionDep) -> IPAM:
     # Check if name exists
     if session.get(IPAM, ipam.name):
@@ -71,14 +71,14 @@ def create_ipam(ipam: IPAM, session: SessionDep) -> IPAM:
     return ipam
 
 
-@app.get("/ipam")
+@app.get("/ipam", tags=['IPAM'])
 def read_ipam_list(session: SessionDep, offset: int = 0,
            limit: Annotated[int, Query(le=100)] = 100, ) -> list[IPAM]:
     ipams = session.exec(select(IPAM).offset(offset).limit(limit)).all()
     return ipams
 
 
-@app.get("/ipam/{ipam_name}", responses=API_GET_Responses)
+@app.get("/ipam/{ipam_name}", responses=API_GET_Responses, tags=['IPAM'])
 def read_ipam(ipam_name: str, session: SessionDep) -> IPAM:
     ipam = session.get(IPAM, ipam_name)
     if not ipam:
@@ -86,7 +86,7 @@ def read_ipam(ipam_name: str, session: SessionDep) -> IPAM:
     return ipam
 
 
-@app.get("/ipam/{ipam_name}/allocations", responses=API_GET_Responses)
+@app.get("/ipam/{ipam_name}/allocations", responses=API_GET_Responses, tags=['IPAM'])
 def read_ipam(ipam_name: str, session: SessionDep) -> list[IPaddress]:
     ipam = session.get(IPAM, ipam_name)
     if not ipam:
@@ -95,7 +95,7 @@ def read_ipam(ipam_name: str, session: SessionDep) -> list[IPaddress]:
     return allocs
 
 
-@app.delete("/ipam/{ipam_name}", responses=API_DELETE_Responses)
+@app.delete("/ipam/{ipam_name}", responses=API_DELETE_Responses, tags=['IPAM'])
 def delete_ipam(ipam_name: str, session: SessionDep):
     ipam = session.get(IPAM, ipam_name)
     if not ipam:
@@ -109,7 +109,7 @@ def delete_ipam(ipam_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@app.post("/ipam/{ipam_name}/allocate", responses=API_POST_Responses)
+@app.post("/ipam/{ipam_name}/allocate", responses=API_POST_Responses, tags=['IPAM'])
 def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> IPaddress:
     try:
         fqdn = data['fqdn']
@@ -134,7 +134,7 @@ def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> IPaddre
     return ipaddr
 
 
-@app.delete("/ipam/{ip_address}/deallocate", responses=API_DELETE_Responses)
+@app.delete("/ipam/{ip_address}/deallocate", responses=API_DELETE_Responses, tags=['IPAM'])
 def delete_ip_alloaction(ip_address: str, session: SessionDep):
     ipaddr = session.get(IPaddress, ip_address)
     if not ipaddr:
@@ -146,5 +146,3 @@ def delete_ip_alloaction(ip_address: str, session: SessionDep):
     session.add(ipaddr)
     session.commit()
     return {"ok": True}
-
-

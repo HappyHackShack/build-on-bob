@@ -8,7 +8,7 @@ from main import app
 from models import *
 
 
-@app.post("/subnet", status_code=201, responses=API_POST_Responses)
+@app.post("/subnet", status_code=201, responses=API_POST_Responses, tags=['Subnets'])
 def create_subnet(subnet: Subnet, session: SessionDep) -> Subnet:
     if session.get(Subnet, subnet.network):
         raise HTTPException(status_code=409, detail="That Subnet already exists")
@@ -21,14 +21,14 @@ def create_subnet(subnet: Subnet, session: SessionDep) -> Subnet:
     return subnet
 
 
-@app.get("/subnet")
+@app.get("/subnet", tags=['Subnets'])
 def read_subnet_list(session: SessionDep, offset: int = 0,
            limit: Annotated[int, Query(le=100)] = 100, ) -> list[Subnet]:
     subnets = session.exec(select(Subnet).offset(offset).limit(limit)).all()
     return subnets
 
 
-@app.get("/subnet/{network}", responses=API_GET_Responses)
+@app.get("/subnet/{network}", responses=API_GET_Responses, tags=['Subnets'])
 def read_subnet(network: str, session: SessionDep) -> Subnet:
     subnet = session.get(Subnet, network)
     if not subnet:
@@ -36,7 +36,7 @@ def read_subnet(network: str, session: SessionDep) -> Subnet:
     return subnet
 
 
-@app.delete("/subnet/{network}", responses=API_DELETE_Responses)
+@app.delete("/subnet/{network}", responses=API_DELETE_Responses, tags=['Subnets'])
 def delete_subnet(network: str, session: SessionDep):
     subnet = session.get(Subnet, network)
     if not subnet:

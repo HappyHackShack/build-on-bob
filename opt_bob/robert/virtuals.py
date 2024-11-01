@@ -8,7 +8,7 @@ from main import app
 from models import *
 
 
-@app.post("/vm", status_code=201, responses=API_POST_Responses)
+@app.post("/vm", status_code=201, responses=API_POST_Responses, tags=['Virtual Machines'])
 def create_virtual(virtual:  Virtual, session: SessionDep) ->  Virtual:
     if session.get(Virtual, virtual.name):
         raise HTTPException(status_code=409, detail="VM already exists")
@@ -40,14 +40,14 @@ def create_virtual(virtual:  Virtual, session: SessionDep) ->  Virtual:
     return virtual
 
 
-@app.get("/vm")
+@app.get("/vm", tags=['Virtual Machines'])
 def read_virtual_list(session: SessionDep, offset: int = 0,
            limit: Annotated[int, Query(le=100)] = 100, ) -> list[ Virtual]:
     virtuals = session.exec(select(Virtual).offset(offset).limit(limit)).all()
     return virtuals
 
 
-@app.get("/vm/{vm_name}", responses=API_GET_Responses)
+@app.get("/vm/{vm_name}", responses=API_GET_Responses, tags=['Virtual Machines'])
 def read_virtual(vm_name: str, session: SessionDep) ->  Virtual:
     virtual = session.get( Virtual, vm_name)
     if not virtual:
@@ -55,7 +55,7 @@ def read_virtual(vm_name: str, session: SessionDep) ->  Virtual:
     return virtual
 
 
-@app.delete("/vm/{vm_name}", responses=API_GET_Responses)
+@app.delete("/vm/{vm_name}", responses=API_GET_Responses, tags=['Virtual Machines'])
 def delete_virtual(vm_name: str, session: SessionDep):
     virtual = session.get( Virtual, vm_name)
     if not virtual:
@@ -66,7 +66,7 @@ def delete_virtual(vm_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@app.patch("/vm/{vm_name}/build", responses=API_GET_Responses)
+@app.patch("/vm/{vm_name}/build", responses=API_GET_Responses, tags=['Virtual Machines'])
 def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
     vm = session.get(Virtual, vm_name)
     if not vm:
@@ -76,7 +76,7 @@ def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
     return vm
 
 
-@app.patch("/vm/{vm_name}/remove", responses=API_GET_Responses)
+@app.patch("/vm/{vm_name}/remove", responses=API_GET_Responses, tags=['Virtual Machines'])
 def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
     vm = session.get(Virtual, vm_name)
     if not vm:
