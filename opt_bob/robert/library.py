@@ -8,10 +8,11 @@ import shutil
 from sqlmodel import select
 import yaml
 
-from models import *
+from models import Host, Hypervisor, OsTemplate, OsVersion, Subnet
+
 
 My_Dir = os.path.dirname(__file__)
-Ansible_Dir = f"/etc/ansible"
+Ansible_Dir = "/etc/ansible"
 Template_Dir = f"{My_Dir}/../templates"
 
 ### ---------- Errors   -----------------------------------------------------------

@@ -11,7 +11,7 @@ def coerce_to_lower(n: str) -> str:
 def validate_ip(ip: str) -> str:
     try:
         netaddr.IPAddress(ip)
-    except:
+    except Exception:
         raise ValueError("invalid IP address")
     return ip
 
@@ -32,7 +32,7 @@ class HostModel(SQLModel):
     def validate_mac(cls, mac):
         try:
             netaddr.EUI(mac)
-        except:
+        except Exception:
             raise ValueError("invalid MAC address")
         return mac
 

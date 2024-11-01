@@ -2,10 +2,18 @@ from fastapi import HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
 
-from database import *
-from library import *
+from database import SessionDep
+from library import (
+    API_DELETE_Responses,
+    API_GET_Responses,
+    API_POST_Responses,
+    get_Subnet_for_ip,
+    run_ansible,
+    wipe_vm_playbooks,
+    write_vm_playbooks,
+)
 from main import app
-from models import *
+from models import Hypervisor, IPaddress, Subnet, Virtual
 
 
 @app.post(
@@ -65,7 +73,7 @@ def read_virtual(vm_name: str, session: SessionDep) -> Virtual:
     return virtual
 
 
-@app.delete("/vm/{vm_name}", responses=API_GET_Responses, tags=["Virtual Machines"])
+@app.delete("/vm/{vm_name}", responses=API_DELETE_Responses, tags=["Virtual Machines"])
 def delete_virtual(vm_name: str, session: SessionDep):
     virtual = session.get(Virtual, vm_name)
     if not virtual:
@@ -91,7 +99,7 @@ def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
 @app.patch(
     "/vm/{vm_name}/remove", responses=API_GET_Responses, tags=["Virtual Machines"]
 )
-def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
+def remove_virtual(vm_name: str, session: SessionDep) -> Virtual:
     vm = session.get(Virtual, vm_name)
     if not vm:
         raise HTTPException(status_code=404, detail="VM not found")

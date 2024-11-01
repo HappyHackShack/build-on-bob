@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
-
-from typing import Annotated
+from fastapi import HTTPException
 from fastapi_offline import FastAPIOffline
+from sqlmodel import select
 import yaml
 
-from library import *
-from models import *
-from database import *
+from database import create_db_and_tables, SessionDep
+from library import Config, render_template
+from models import Host, Node, OpSys, OsTemplate, OsVersion, Subnet
 
 # Some HTTP Response Codes
 # 200 = OK
@@ -35,13 +35,13 @@ app = FastAPIOffline(
     # static_url = '/static-offline-docs'
 )
 
-from hosts import *
-from hypervisors import *
-from ipam import *
-from nodes import *
-from opsystems import *
-from subnets import *
-from virtuals import *
+# from hosts import *
+# from hypervisors import *
+# from ipam import *
+# from nodes import *
+# from opsystems import *
+# from subnets import *
+# from virtuals import *
 
 
 @app.get("/config", tags=["Miscellaneous"])
@@ -52,7 +52,6 @@ def get_config():
 @app.post("/cache/scripts", tags=["Miscellaneous"])
 def cache_scripts_generate(session: SessionDep):
     Opt_Bob = Config.bob_home_directory
-    Local_Cache = Config.bob_local_cache
     Systems = session.exec(select(OpSys)).all()
     Versions = session.exec(select(OsVersion)).all()
     Temp = {"os_systems": Systems, "os_versions": Versions}

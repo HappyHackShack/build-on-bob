@@ -3,9 +3,9 @@ from sqlmodel import select
 from typing import Annotated
 
 from database import SessionDep
-from library import *
+from library import API_DELETE_Responses, API_GET_Responses, API_POST_Responses
 from main import app
-from models import *
+from models import OpSys, OsVersion
 
 
 @app.post(

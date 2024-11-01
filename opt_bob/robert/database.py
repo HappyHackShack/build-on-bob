@@ -2,8 +2,6 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import create_engine, Session, SQLModel
 
-from models import *
-
 
 sqlite_file_name = "b-o-b.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"

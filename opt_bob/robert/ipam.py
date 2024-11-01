@@ -4,9 +4,15 @@ from sqlmodel import select
 from typing import Annotated
 
 from database import SessionDep
-from library import *
+from library import (
+    API_DELETE_Responses,
+    API_GET_Responses,
+    API_POST_Responses,
+    Config,
+    get_Subnet_for_ip,
+)
 from main import app
-from models import *
+from models import IPAM, IPaddress, Subnet
 
 
 def create_ipam_range(ipam: IPAM, session: SessionDep):
@@ -30,7 +36,6 @@ def create_ipam_range(ipam: IPAM, session: SessionDep):
 
 
 def delete_ipam_range(ipam: IPAM, session: SessionDep):
-    n = ipam.name
     ip_from = ipaddress.IPv4Address(ipam.ip_from)
     ip_to = ipaddress.IPv4Address(ipam.ip_to)
     IP_Range = range(int(ip_from), int(ip_to) + 1)
@@ -62,11 +67,11 @@ def create_ipam(ipam: IPAM, session: SessionDep) -> IPAM:
     Valid_To = get_Subnet_for_ip(ipam.ip_to, session)
     if not Valid_From:
         raise HTTPException(
-            status_code=406, detail=f"No subnet found that contains that range"
+            status_code=406, detail="No subnet found that contains that range"
         )
     if Valid_From != Valid_To:
         raise HTTPException(
-            status_code=406, detail=f"No subnet found that contains that range"
+            status_code=406, detail="No subnet found that contains that range"
         )
     if Valid_From.ipam:
         raise HTTPException(
@@ -103,7 +108,7 @@ def read_ipam(ipam_name: str, session: SessionDep) -> IPAM:
 
 
 @app.get("/ipam/{ipam_name}/allocations", responses=API_GET_Responses, tags=["IPAM"])
-def read_ipam(ipam_name: str, session: SessionDep) -> list[IPaddress]:
+def read_ip_allocations(ipam_name: str, session: SessionDep) -> list[IPaddress]:
     ipam = session.get(IPAM, ipam_name)
     if not ipam:
         raise HTTPException(status_code=404, detail="IPAM not found")
@@ -129,10 +134,10 @@ def delete_ipam(ipam_name: str, session: SessionDep):
 def ipam_allocate_ip(ipam_name: str, data: dict, session: SessionDep) -> IPaddress:
     try:
         fqdn = data["fqdn"]
-    except:
+    except Exception:
         raise HTTPException(status_code=422, detail="FQDN not specified in request")
     free_IPs = session.exec(
-        select(IPaddress).where(IPaddress.ipam == ipam_name, IPaddress.hostname == None)
+        select(IPaddress).where(IPaddress.ipam == ipam_name, IPaddress.hostname is None)
     ).all()
     if len(free_IPs) == 0:
         raise HTTPException(status_code=410, detail="No free IPs left")
