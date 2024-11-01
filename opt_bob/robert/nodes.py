@@ -1,14 +1,15 @@
-from fastapi import HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
 
 from database import SessionDep
 from library import API_DELETE_Responses, API_GET_Responses, API_POST_Responses
-from main import app
 from models import Node
 
+n_router = APIRouter(prefix="/node", tags=["Nodes"])
 
-@app.post("/node", status_code=201, responses=API_POST_Responses, tags=["Nodes"])
+
+@n_router.post("", status_code=201, responses=API_POST_Responses)
 def create_node(node: Node, session: SessionDep) -> Node:
     session.add(node)
     session.commit()
@@ -16,7 +17,7 @@ def create_node(node: Node, session: SessionDep) -> Node:
     return node
 
 
-@app.get("/node", tags=["Nodes"])
+@n_router.get("")
 def read_node_list(
     session: SessionDep,
     offset: int = 0,
@@ -26,7 +27,7 @@ def read_node_list(
     return nodes
 
 
-@app.get("/node/{node_name}", responses=API_GET_Responses, tags=["Nodes"])
+@n_router.get("/{node_name}", responses=API_GET_Responses)
 def read_node(node_name: str, session: SessionDep) -> Node:
     node = session.get(Node, node_name)
     if not node:
@@ -34,7 +35,7 @@ def read_node(node_name: str, session: SessionDep) -> Node:
     return node
 
 
-@app.delete("/node/{node_name}", responses=API_DELETE_Responses, tags=["Nodes"])
+@n_router.delete("/{node_name}", responses=API_DELETE_Responses)
 def delete_node(node_name: str, session: SessionDep):
     node = session.get(Node, node_name)
     if not node:

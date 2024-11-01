@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
 
@@ -12,13 +12,12 @@ from library import (
     wipe_vm_playbooks,
     write_vm_playbooks,
 )
-from main import app
 from models import Hypervisor, IPaddress, Subnet, Virtual
 
+vm_router = APIRouter(prefix="/mm", tags=["Virtual Machines"])
 
-@app.post(
-    "/vm", status_code=201, responses=API_POST_Responses, tags=["Virtual Machines"]
-)
+
+@vm_router.post("/vm", status_code=201, responses=API_POST_Responses)
 def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     if session.get(Virtual, virtual.name):
         raise HTTPException(status_code=409, detail="VM already exists")
@@ -55,7 +54,7 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     return virtual
 
 
-@app.get("/vm", tags=["Virtual Machines"])
+@vm_router.get("")
 def read_virtual_list(
     session: SessionDep,
     offset: int = 0,
@@ -65,7 +64,7 @@ def read_virtual_list(
     return virtuals
 
 
-@app.get("/vm/{vm_name}", responses=API_GET_Responses, tags=["Virtual Machines"])
+@vm_router.get("/{vm_name}", responses=API_GET_Responses)
 def read_virtual(vm_name: str, session: SessionDep) -> Virtual:
     virtual = session.get(Virtual, vm_name)
     if not virtual:
@@ -73,7 +72,7 @@ def read_virtual(vm_name: str, session: SessionDep) -> Virtual:
     return virtual
 
 
-@app.delete("/vm/{vm_name}", responses=API_DELETE_Responses, tags=["Virtual Machines"])
+@vm_router.delete("/{vm_name}", responses=API_DELETE_Responses)
 def delete_virtual(vm_name: str, session: SessionDep):
     virtual = session.get(Virtual, vm_name)
     if not virtual:
@@ -84,9 +83,7 @@ def delete_virtual(vm_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@app.patch(
-    "/vm/{vm_name}/build", responses=API_GET_Responses, tags=["Virtual Machines"]
-)
+@vm_router.patch("/{vm_name}/build", responses=API_GET_Responses)
 def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
     vm = session.get(Virtual, vm_name)
     if not vm:
@@ -96,9 +93,7 @@ def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
     return vm
 
 
-@app.patch(
-    "/vm/{vm_name}/remove", responses=API_GET_Responses, tags=["Virtual Machines"]
-)
+@vm_router.patch("/{vm_name}/remove", responses=API_GET_Responses)
 def remove_virtual(vm_name: str, session: SessionDep) -> Virtual:
     vm = session.get(Virtual, vm_name)
     if not vm:

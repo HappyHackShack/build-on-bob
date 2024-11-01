@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
 
@@ -9,13 +9,12 @@ from library import (
     API_POST_Responses,
     write_ansible_inventory,
 )
-from main import app
 from models import Hypervisor
 
+hv_router = APIRouter(prefix="/hypervisor", tags=["Hypervisors"])
 
-@app.post(
-    "/hypervisor", status_code=201, responses=API_POST_Responses, tags=["Hypervisors"]
-)
+
+@hv_router.post("", status_code=201, responses=API_POST_Responses)
 def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor:
     session.add(hypervisor)
     session.commit()
@@ -24,7 +23,7 @@ def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor
     return hypervisor
 
 
-@app.get("/hypervisor", tags=["Hypervisors"])
+@hv_router.get("")
 def read_hypervisor_list(
     session: SessionDep,
     offset: int = 0,
@@ -34,9 +33,7 @@ def read_hypervisor_list(
     return hypervisors
 
 
-@app.get(
-    "/hypervisor/{hypervisor_name}", responses=API_GET_Responses, tags=["Hypervisors"]
-)
+@hv_router.get("/{hypervisor_name}", responses=API_GET_Responses)
 def read_hypervisor(hypervisor_name: str, session: SessionDep) -> Hypervisor:
     hypervisor = session.get(Hypervisor, hypervisor_name)
     if not hypervisor:
@@ -44,10 +41,9 @@ def read_hypervisor(hypervisor_name: str, session: SessionDep) -> Hypervisor:
     return hypervisor
 
 
-@app.delete(
-    "/hypervisor/{hypervisor_name}",
+@hv_router.delete(
+    "/{hypervisor_name}",
     responses=API_DELETE_Responses,
-    tags=["Hypervisors"],
 )
 def delete_hypervisor(hypervisor_name: str, session: SessionDep):
     hypervisor = session.get(Hypervisor, hypervisor_name)

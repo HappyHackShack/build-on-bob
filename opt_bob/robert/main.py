@@ -7,6 +7,13 @@ import yaml
 from database import create_db_and_tables, SessionDep
 from library import Config, render_template
 from models import Host, Node, OpSys, OsTemplate, OsVersion, Subnet
+from hosts import h_router
+from hypervisors import hv_router
+from ipam import i_router
+from nodes import n_router
+from opsystems import os_router
+from subnets import sn_router
+from virtuals import vm_router
 
 # Some HTTP Response Codes
 # 200 = OK
@@ -34,14 +41,13 @@ app = FastAPIOffline(
     root_path="/api",
     # static_url = '/static-offline-docs'
 )
-
-# from hosts import *
-# from hypervisors import *
-# from ipam import *
-# from nodes import *
-# from opsystems import *
-# from subnets import *
-# from virtuals import *
+app.include_router(h_router)
+app.include_router(hv_router)
+app.include_router(i_router)
+app.include_router(n_router)
+app.include_router(os_router)
+app.include_router(sn_router)
+app.include_router(vm_router)
 
 
 @app.get("/config", tags=["Miscellaneous"])

@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
 
@@ -10,11 +10,13 @@ from library import (
     write_Build_Files,
     write_Dnsmasq,
 )
-from main import app
 from models import Host, OsVersion
 
 
-@app.post("/host", status_code=201, responses=API_POST_Responses, tags=["Hosts"])
+h_router = APIRouter(prefix="/host", tags=["Hosts"])
+
+
+@h_router.post("", status_code=201, responses=API_POST_Responses)
 def create_host(host: Host, session: SessionDep) -> Host:
     """Create a new Host\n
     Example text"""
@@ -41,7 +43,7 @@ def create_host(host: Host, session: SessionDep) -> Host:
     return host
 
 
-@app.get("/host", tags=["Hosts"])
+@h_router.get("")
 def read_list_of_hosts(
     session: SessionDep,
     offset: int = 0,
@@ -52,7 +54,7 @@ def read_list_of_hosts(
     return hosts
 
 
-@app.get("/host/{host_name}", responses=API_GET_Responses, tags=["Hosts"])
+@h_router.get("/{host_name}", responses=API_GET_Responses)
 def read_a_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
@@ -60,7 +62,7 @@ def read_a_host(host_name: str, session: SessionDep) -> Host:
     return host
 
 
-@app.patch("/host/{host_name}", responses=API_GET_Responses, tags=["Hosts"])
+@h_router.patch("/{host_name}", responses=API_GET_Responses)
 def update_host(host_name: str, Patch: Host, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
@@ -86,7 +88,7 @@ def update_host(host_name: str, Patch: Host, session: SessionDep):
     return host
 
 
-@app.delete("/host/{host_name}", responses=API_DELETE_Responses, tags=["Hosts"])
+@h_router.delete("/{host_name}", responses=API_DELETE_Responses)
 def delete_host(host_name: str, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
@@ -96,7 +98,7 @@ def delete_host(host_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@app.patch("/host/{host_name}/build", responses=API_GET_Responses, tags=["Hosts"])
+@h_router.patch("/{host_name}/build", responses=API_GET_Responses)
 def build_host(Params: dict, host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
@@ -121,7 +123,7 @@ def build_host(Params: dict, host_name: str, session: SessionDep) -> Host:
     return host
 
 
-@app.get("/host/{host_name}/complete", responses=API_GET_Responses, tags=["Hosts"])
+@h_router.get("/{host_name}/complete", responses=API_GET_Responses)
 def complete_host(host_name: str, session: SessionDep) -> Host:
     host = session.get(Host, host_name)
     if not host:
