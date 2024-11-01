@@ -17,6 +17,10 @@ hv_router = APIRouter(prefix="/hypervisor", tags=["Hypervisors"])
 
 @hv_router.post("", status_code=201, responses=API_POST_Responses)
 def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor:
+    # Validations
+    if session.get(Hypervisor, hypervisor.name):
+        raise HTTPException(status_code=409, detail="Hypervisor already exists")
+    #
     session.add(hypervisor)
     session.commit()
     session.refresh(hypervisor)

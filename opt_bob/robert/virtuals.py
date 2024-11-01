@@ -14,10 +14,10 @@ from library import (
 )
 from models import Hypervisor, IPaddress, Subnet, Virtual
 
-vm_router = APIRouter(prefix="/mm", tags=["Virtual Machines"])
+vm_router = APIRouter(prefix="/vm", tags=["Virtual Machines"])
 
 
-@vm_router.post("/vm", status_code=201, responses=API_POST_Responses)
+@vm_router.post("", status_code=201, responses=API_POST_Responses)
 def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     if session.get(Virtual, virtual.name):
         raise HTTPException(status_code=409, detail="VM already exists")

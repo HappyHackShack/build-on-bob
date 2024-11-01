@@ -1,2 +1,7 @@
 ---
 # defaults file for proxmox-vm
+
+pve_storage_name: "local-lvm"
+
+# Details of the template to craete
+pve_template_id: 8094

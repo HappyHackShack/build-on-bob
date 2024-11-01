@@ -6,7 +6,7 @@ import yaml
 
 from database import create_db_and_tables, SessionDep
 from library import Config, render_template
-from models import Host, Node, OpSys, OsTemplate, OsVersion, Subnet
+from models import Node, OpSys, OsTemplate, OsVersion
 from hosts import h_router
 from hypervisors import hv_router
 from ipam import i_router

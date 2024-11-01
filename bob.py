@@ -504,9 +504,9 @@ def do_Virtual_Command(Args):
 
 
 def virtual_Add(Args):
-    VM = { 'hypervisor':Args.pop(0), 'name':Args.pop(0), 'ip':Args.pop(0) }
-    req = requests.post(f'{API}/vm', json=VM)
-    show_API_Response(req, 'VM', VM['name'], 'added')
+    vm = { 'hypervisor':Args.pop(0), 'name':Args.pop(0), 'ip':Args.pop(0) }
+    req = requests.post(f'{API}/vm', json=vm)
+    show_API_Response(req, 'VM', vm['name'], 'added')
 
 
 def virtual_Build(Args):

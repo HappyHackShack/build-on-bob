@@ -1,3 +1,4 @@
+from enum import Enum
 import netaddr
 from pydantic import field_validator, AfterValidator, ConfigDict
 from sqlmodel import Field, SQLModel
@@ -8,12 +9,23 @@ def coerce_to_lower(n: str) -> str:
     return n.lower()
 
 
+def validate_hv_type(hv_type: str) -> str:
+    if hv_type not in ("libvirt", "proxmox"):
+        raise ValueError("invalid hypervisor type")
+    return hv_type
+
+
 def validate_ip(ip: str) -> str:
     try:
         netaddr.IPAddress(ip)
     except Exception:
         raise ValueError("invalid IP address")
     return ip
+
+
+class HypervisorType(str, Enum):
+    libvirt = "libvirt"
+    proxmox = "proxmox"
 
 
 class HostModel(SQLModel):
@@ -41,9 +53,11 @@ class Host(HostModel, table=True):
     pass
 
 
-class Hypervisor(SQLModel, table=True):
+class HypervisorModel(SQLModel):
+    model_config = ConfigDict(validate_assignment=True)
+    #
     name: str = Field(primary_key=True)
-    type: Optional[str] = Field(default="libvirt")
+    type: Annotated[str, AfterValidator(validate_hv_type)]
     ssh_user: Optional[str] = Field(default="rocky")
     ssh_key_file: Optional[str] = Field(default="~/.ssh/rocky")
     api_user: Optional[str] = Field(default="root@pam")
@@ -55,6 +69,10 @@ class Hypervisor(SQLModel, table=True):
     )
     lv_config_dir: Optional[str] = Field(default="/var/lib/libvirt/cloud")
     lv_image_dir: Optional[str] = Field(default="/var/lib/libvirt/images")
+
+
+class Hypervisor(HypervisorModel, table=True):
+    pass
 
 
 class IpamModel(SQLModel):

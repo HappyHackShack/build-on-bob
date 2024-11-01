@@ -9,12 +9,12 @@
   tasks:
     - name: Destroy VM (Force Shutdown)
       community.libvirt.virt:
-        uri: 'qemu+ssh://{{ user }}@{{ hypervisor }}/system?keyfile={{ key_file }}'
+        uri: 'qemu+ssh://{{ ssh_user }}@{{ hypervisor }}/system?keyfile={{ ssh_key_file }}'
         name: {{ name }}
         state: destroyed
     - name: Undefine VM (Actually delete it)
       community.libvirt.virt:
-        uri: 'qemu+ssh://{{ user }}@{{ hypervisor }}/system?keyfile={{ key_file }}'
+        uri: 'qemu+ssh://{{ ssh_user }}@{{ hypervisor }}/system?keyfile={{ ssh_key_file }}'
         name: {{ name }}
         command: undefine
 
@@ -27,7 +27,7 @@
   tasks:
     - name: Delete the build files
       ansible.builtin.file:
-        path: "/var/lib/libvirt/cloud/{{'{{'}} item {{'}}'}}"
+        path: "/var/lib/libvirt/cloud/{{'{{ item }}'}}"
         state: absent
       loop:
         - "create-{{ name }}-vm.sh"
