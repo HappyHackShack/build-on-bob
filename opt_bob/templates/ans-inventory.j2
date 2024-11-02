@@ -9,13 +9,9 @@ all:
       hosts:
         {% for hv in Hypervisors %}{% if hv.type == 'libvirt' -%}
         {{ hv.name }}:
-          ansible_user: {{ hv.ssh_user }}
-          ansible_ssh_private_key_file: '{{ hv.ssh_key_file }}'
         {% endif %}{% endfor %}
     proxmox:
       hosts:
         {% for hv in Hypervisors -%}{% if hv.type == 'proxmox' -%}
         {{ hv.name }}:
-          ansible_user: {{ hv.ssh_user }}
-          ansible_ssh_private_key_file: '{{ hv.ssh_key_file }}'
         {% endif %}{% endfor -%}

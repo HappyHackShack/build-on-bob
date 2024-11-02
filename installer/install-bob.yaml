@@ -142,7 +142,9 @@
           # ansible.builtin.set_fact:
           #   vault_password: "{{ lookup('ansible.builtin.password', '/etc/ansible/vault.pwd') }}"
           ansible.builtin.shell:
-            cmd: uuidgen > /etc/ansible/vault.pwd
+            cmd: |
+              uuidgen > /etc/ansible/vault.pwd
+              chmod 600 /etc/ansible/vault.pwd
             creates: /etc/ansible/vault.pwd
 
         # Ensure there ia a a vault
