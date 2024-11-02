@@ -7,7 +7,7 @@ from library import (
     API_DELETE_Responses,
     API_GET_Responses,
     API_POST_Responses,
-    write_ansible_hostvars,
+    write_ansible_hypervisor,
     write_ansible_inventory,
 )
 from models import Hypervisor
@@ -25,7 +25,7 @@ def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor
     session.commit()
     session.refresh(hypervisor)
     write_ansible_inventory(session)
-    write_ansible_hostvars(hypervisor)
+    write_ansible_hypervisor(hypervisor)
     return hypervisor
 
 

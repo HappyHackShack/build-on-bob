@@ -1,10 +1,10 @@
 ---
 # defaults file for libvirt-vm
 
- lvvm_cloud_image: Rocky-9-GenericCloud-Base-9.4-20240609.0.x86_64.qcow2
+ lvvm_cloud_image: Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
  lvvm_hostname: ''
  lvvm_domain: home.lab
- lvvm_default_pass: Rocky123
+ lvvm_default_pass: "{{ V_DEFAULT_ROCKY_PASS }}"
  lvvm_ssh_pwauth: false
  lvvm_ssh_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1oAk7G11Ms90ZhHmmeAe+Ik/yw34+d+P9/AaEXJOVqXhDiBtFPhDvhV+MKY/UH0xgTeiVNo7+SzOnTp8oqi4X/mqxnvCd6/GxCT0gdb/lS9rBeGWna4ldxMYrAmLg0J9+h1pbOXMpRebDoEkyzXoaHB+9ZH69T0UJR9LvjKvhm6+1DuX5bvO050Sdom24vR0eoGSbligNGDr07mx1JsHw/FCHQjLDlforj5POmG3t5X7YC/Qv6oEcllbdsXINmW6L3KYRTgo3omSuj4D2cnVTlDHrlwZo6L73MC9aU6lMRNmZJC6F0UVX6jaGwNx4DTf1FXihz00+s3KgmPkFgnu9Q== james@server

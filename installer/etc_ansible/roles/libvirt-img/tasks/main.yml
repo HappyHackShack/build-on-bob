@@ -1,2 +1,14 @@
 ---
 # tasks file for libvirt-img
+
+- name: Ensure cloud script directory exists
+  ansible.builtin.file:
+    path: "{{ lv_libvirt_dir }}/cloud"
+    state: directory
+    mode: '0755'
+
+- name: Fetch the cloud image
+  ansible.builtin.get_url:
+    url: '{{ lv_cloud_image_url }}'
+    dest: '/{{ lv_libvirt_dir }}/images/{{ lv_cloud_image }}'
+    mode: '0640'

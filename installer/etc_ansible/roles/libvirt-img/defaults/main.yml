@@ -1,2 +1,8 @@
 ---
 # defaults file for libvirt-img
+
+lv_libvirt_dir: "/var/lib/libvirt"
+
+# Details of where to get the cloud image from
+lv_cloud_image: Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
+lv_cloud_image_url: "http://172.16.0.10/rocky/9.4-240609/{{ pve_cloud_image }}"

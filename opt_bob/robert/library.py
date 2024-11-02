@@ -169,16 +169,17 @@ def wipe_vm_playbooks(VM: Virtual):
             os.unlink(playbook)
 
 
-def write_ansible_hostvars(hypervisor: Hypervisor):
+def write_ansible_hypervisor(hypervisor: Hypervisor):
+    hv_type = hypervisor.type
     render_template(
-        "proxmox-host-vars.j2",
+        f"{hv_type}-host-vars.j2",
         hypervisor.dict(),
         f"{Ansible_Dir}/host_vars/{hypervisor.name}.yaml",
     )
     render_template(
-        "proxmox-mk-template.j2",
+        f"{hv_type}-prepare.j2",
         hypervisor.dict(),
-        f"{Ansible_Dir}/mk-{hypervisor.name}-r94-tpl.yaml",
+        f"{Ansible_Dir}/prep-{hypervisor.name}-hypervisor.yaml",
     )
 
 

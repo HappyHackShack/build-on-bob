@@ -1,0 +1,48 @@
+---
+- name: Create a VM Template on libvirt
+  hosts: {{ name }}
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Check if default password set
+      when: V_DEFAULT_ROCKY_PASS is undefined
+      ansible.builtin.fail:
+        msg: "Please define a default password for the rocky user (V_DEFAULT_ROCKY_PASS)"
+
+    - name: Update packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+
+    - name: Install HV packages
+      ansible.builtin.package:
+        name:
+          - cockpit
+          - cockpit-machines
+          - virt-install
+          - virt-manager
+
+    - name: Start cockpit
+      ansible.builtin.service:
+        name: cockpit.socket
+        enabled: true
+        state: started
+
+    - name: Set the default password for the rocky user
+      ansible.builtin.user:
+        name: rocky
+        groups: libvirt
+        password: "{{"{{ V_DEFAULT_ROCKY_PASS | password_hash('sha512', 'Build0nBoB') }}"}}"
+
+    - name: Import create template role
+      ansible.builtin.include_role:
+        name: libvirt-img
+      vars:
+        lv_cloud_image: "{{ cloud_image }}"
+        lv_cloud_image_url: "http://172.16.0.10/rocky/9.4-240609/{{ cloud_image }}"
+
+    - name: Tell the user to create the Bridge
+      ansible.builtin.debug:
+        msg: "Please log in to cockpit and create bridge0 on the main interface https://{{ name }}:9090"
+ 

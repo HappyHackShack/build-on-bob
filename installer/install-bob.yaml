@@ -21,6 +21,12 @@
               - qemu-img
               - wget
 
+        - name: Install system python packages
+          # These are reuired by ansible
+          ansible.builtin.package:
+            name:
+              - passlib
+
         - name: Make the required directories
           ansible.builtin.file:
             path: "{{ item }}"
@@ -130,6 +136,25 @@
       tags:
         - update-ansible
       block:
+        # Ensure there ia a a password
+        - name: Generate Vault password
+          # :- I got a permssion error trying to use builtin.password into this file
+          # ansible.builtin.set_fact:
+          #   vault_password: "{{ lookup('ansible.builtin.password', '/etc/ansible/vault.pwd') }}"
+          ansible.builtin.shell:
+            cmd: uuidgen > /etc/ansible/vault.pwd
+            creates: /etc/ansible/vault.pwd
+
+        # Ensure there ia a a vault
+        - name: Generate Ansible Vault
+          ansible.builtin.shell:
+            chdir: /etc/ansible
+            cmd: |
+              mkdir -p group_vars/all
+              echo "---\nV_DEFAULT_ROCKY_PASS: RockyPass123" > group_vars/all/vault.yaml
+              ansible-vault encrypt group_vars/all/vault.yaml
+            creates: /etc/ansible/group_vars/all/vault.yaml
+
         # - name: Make Ansible directory
         - name: Put Ansible engine into place
           ansible.builtin.copy:
