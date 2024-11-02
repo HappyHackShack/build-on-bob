@@ -64,9 +64,6 @@ class HypervisorModel(SQLModel):
     api_token: Optional[str] = Field(default="bob")
     api_secret: Optional[str] = Field(default="")
     bridge_name: Optional[str] = Field(default="bridge0")
-    cloud_image: Optional[str] = Field(
-        default="Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2"
-    )
     lv_config_dir: Optional[str] = Field(default="/var/lib/libvirt/cloud")
     lv_image_dir: Optional[str] = Field(default="/var/lib/libvirt/images")
 
@@ -118,6 +115,7 @@ class OsVersion(SQLModel, table=True):
     os_version: str
     url: str
     files: str
+    pve_id: int = Field(ge=0, lt=1000, default=0)
 
 
 class Subnet(SQLModel, table=True):

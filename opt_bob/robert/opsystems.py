@@ -65,7 +65,9 @@ def read_os_versions4os(os_name: str, session: SessionDep) -> list[OsVersion]:
     "/{os_name}/version/{os_version}",
     responses=API_GET_Responses,
 )
-def read_one_os_version(os_name: str, os_version: str, session: SessionDep) -> OsVersion:
+def read_one_os_version(
+    os_name: str, os_version: str, session: SessionDep
+) -> OsVersion:
     if not session.get(OpSys, os_name):
         raise HTTPException(status_code=404, detail="OS not found")
     sql = (

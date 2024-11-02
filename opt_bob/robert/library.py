@@ -5,10 +5,10 @@ from jinja2 import Environment, FileSystemLoader
 import os
 from pydantic import BaseModel
 import shutil
-from sqlmodel import select
+from sqlmodel import select, Session
 import yaml
 
-from models import Host, Hypervisor, OsTemplate, OsVersion, Subnet, Virtual
+from models import Host, Hypervisor, OpSys, OsTemplate, OsVersion, Subnet, Virtual
 
 
 My_Dir = os.path.dirname(__file__)
@@ -105,7 +105,7 @@ def run_ansible(playbook):
 ### ---------- Networks --------------------------------------------------------------------
 
 
-def get_Subnet_for_ip(ip, session) -> Subnet:
+def get_Subnet_for_ip(ip, session: Session) -> Subnet:
     for sub in session.exec(select(Subnet)).all():
         if network_contains_ip(sub.net_cidr(), ip):
             return sub
@@ -121,7 +121,7 @@ def network_contains_ip(network_CIDR: str, ip_address: str) -> bool:
 ### ---------- Build Templates -----------------------------------------------------------
 
 
-def wipe_host_build_files(host):
+def wipe_host_build_files(host: Host):
     for directory in [Config.nginx_build_dir, Config.nginx_ipxe_dir]:
         for filename in os.listdir(directory):
             if host.mac in filename:
@@ -129,14 +129,14 @@ def wipe_host_build_files(host):
                     os.unlink(f"{directory}/{filename}")
 
 
-def write_Dnsmasq(session):
+def write_Dnsmasq(session: Session):
     Hosts = session.exec(select(Host)).all()
     with open("/etc/dnsmasq.d/hosts.conf", "wt") as dns:
         for host in Hosts:
             dns.write(f"dhcp-host={host.mac},{host.ip},{host.name}\n")
 
 
-def write_Build_Files(host, session):
+def write_Build_Files(host: Host, session: Session):
     wipe_host_build_files(host)
     Rname = "local" if host.target == "local" else host.os_name
     Templates = session.exec(
@@ -159,6 +159,19 @@ def write_Build_Files(host, session):
         )
 
 
+### ---------- Op Systems -----------------------------------------------------------------
+
+
+def get_os_join_versions(session: Session):
+    os_versions = session.exec(
+        select(OpSys, OsVersion).where(
+            OpSys.name == OsVersion.os_name, OsVersion.pve_id != 0
+        )
+    ).all()
+    # The join returns a list of tuples: (OpSys, OsVersion)
+    return [a.dict() | b.dict() for a, b in os_versions]
+
+
 ### ---------- Hypervisor & VMs -----------------------------------------------------------
 
 
@@ -169,7 +182,7 @@ def wipe_vm_playbooks(VM: Virtual):
             os.unlink(playbook)
 
 
-def write_ansible_hypervisor(hypervisor: Hypervisor):
+def write_ansible_hypervisor(hypervisor: Hypervisor, os_versions):
     hv_type = hypervisor.type
     render_template(
         f"{hv_type}-host-vars.j2",
@@ -178,7 +191,7 @@ def write_ansible_hypervisor(hypervisor: Hypervisor):
     )
     render_template(
         f"{hv_type}-prepare.j2",
-        hypervisor.dict(),
+        {"cfg": Config, "hv": hypervisor, "os_versions": os_versions},
         f"{Ansible_Dir}/prep-{hypervisor.name}-hypervisor.yaml",
     )
 

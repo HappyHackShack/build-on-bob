@@ -10,7 +10,7 @@ from library import (
     write_ansible_hypervisor,
     write_ansible_inventory,
 )
-from models import Hypervisor
+from models import Hypervisor, OsVersion
 
 hv_router = APIRouter(prefix="/hypervisor", tags=["Hypervisors"])
 
@@ -25,7 +25,8 @@ def create_hypervisor(hypervisor: Hypervisor, session: SessionDep) -> Hypervisor
     session.commit()
     session.refresh(hypervisor)
     write_ansible_inventory(session)
-    write_ansible_hypervisor(hypervisor)
+    os_versions = session.exec(select(OsVersion).where(OsVersion.pve_id != 0)).all()
+    write_ansible_hypervisor(hypervisor, os_versions)
     return hypervisor
 
 

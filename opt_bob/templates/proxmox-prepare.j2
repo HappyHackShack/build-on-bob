@@ -1,15 +1,17 @@
 ---
 - name: Create a VM Template on proxmox
-  hosts: {{ name }}
+  hosts: {{ hv.name }}
   gather_facts: false
   become: true
 
   tasks:
-    - name: Import create template role
+{% for osv in os_versions %}
+    - name: Import create template role for {{ osv.os_name }}/{{ osv.os_version }}
       ansible.builtin.include_role:
         name: proxmox-tpl
       vars:
-        pve_cloud_image: {{ cloud_image }}
-        pve_cloud_image_url: "http://172.16.0.10/rocky/9.4-240609/{{ cloud_image }}"
-        pve_template_id: 8094
-        pve_template_name: rocky-9.4-cloud
+        pve_cloud_image: {{ osv.files }}
+        pve_cloud_image_url: "http://{{ cfg.bob_listen_address }}/{{ osv.os_name }}/{{ osv.os_version }}/{{ osv.files }}"
+        pve_template_id: 900{{ osv.pve_id }}
+        pve_template_name: {{ osv.os_name }}-{{ osv.pve_id }}-tpl
+{% endfor %}
