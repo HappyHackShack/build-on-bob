@@ -45,14 +45,14 @@ def delete_opsys(os_name: str, session: SessionDep):
     return {"ok": True}
 
 
-@os_router.get("ver")
+@os_router.get("version")
 def read_all_os_versions(session: SessionDep) -> list[OsVersion]:
     sql = select(OsVersion)
     versions = session.exec(sql).all()
     return versions
 
 
-@os_router.get("ver/{os_name}", responses=API_GET_Responses)
+@os_router.get("/{os_name}/version", responses=API_GET_Responses)
 def read_os_versions4os(os_name: str, session: SessionDep) -> list[OsVersion]:
     if not session.get(OpSys, os_name):
         raise HTTPException(status_code=404, detail="OS not found")
@@ -62,10 +62,10 @@ def read_os_versions4os(os_name: str, session: SessionDep) -> list[OsVersion]:
 
 
 @os_router.get(
-    "ver/{os_name}/{os_version}",
+    "/{os_name}/version/{os_version}",
     responses=API_GET_Responses,
 )
-def read_os_version(os_name: str, os_version: str, session: SessionDep) -> OsVersion:
+def read_one_os_version(os_name: str, os_version: str, session: SessionDep) -> OsVersion:
     if not session.get(OpSys, os_name):
         raise HTTPException(status_code=404, detail="OS not found")
     sql = (

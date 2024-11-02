@@ -14,9 +14,9 @@
         node: "{{ pve_node }}"
         vmid: "{{ pve_template_id }}"
         clone: fluffy_bunnies
-        newid: "{{ vm_id }}"
+        newid: "{{ pve_vm_id }}"
         full: true
-        name: "{{ vm_name }}"
+        name: "{{ pve_vm_name }}"
         storage: "{{ pve_storage_name }}"
         format: qcow2
 
@@ -27,29 +27,25 @@
         api_token_id: "{{ pve_token }}"
         api_token_secret: "{{ pve_secret }}"
         node: "{{ pve_node }}"
-        name: "{{ vm_name }}"
-        vmid: "{{ vm_id }}"
+        name: "{{ pve_vm_name }}"
+        vmid: "{{ pve_vm_id }}"
         bios: ovmf
         cpu: host
-        cores: "{{ vm_cpu_cores }}"
-        memory: "{{ vm_memory }}"
-        ciuser: "{{ auth.user }}"
-        cipassword: "{{ auth.password }}"
-        sshkeys: "{{ auth.public_ssh_key }}"
+        cores: "{{ pve_vm_cpu_cores }}"
+        memory: "{{ pve_vm_memory_mb }}"
+        ciuser: "{{ pve_vm_auth.user }}"
+        cipassword: "{{ pve_vm_auth.password }}"
+        sshkeys: "{{ pve_vm_auth.public_ssh_key }}"
         ipconfig:
-          ipconfig0: "ip={{ vm_ip_cidr }},gw={{ vm_gateway }}"
-        nameservers: '{{ vm_gateway }}'
-        searchdomains: '{{ vm_dns_domain }}'
+          ipconfig0: "ip={{ pve_vm_ip_cidr }},gw={{ pve_vm_gateway }}"
+        nameservers: '{{ pve_vm_gateway }}'
+        searchdomains: '{{ pve_vm_dns_domain }}'
         update: true
-
-    # - name: Pause for a few seconds
-    #   ansible.builtin.pause:
-    #     seconds: 1
 
     - name: "Regenerate CI.1 : Remove"
       ansible.builtin.uri:
         validate_certs: false
-        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ vm_id }}/config
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/config
         method: POST
         headers:
           Authorization: 'PVEAPIToken={{ pve_user }}!{{ pve_token }}={{ pve_secret }}'
@@ -60,7 +56,7 @@
     - name: "Regenerate CI.2 : Recreate"
       ansible.builtin.uri:
         validate_certs: false
-        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ vm_id }}/config
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/config
         method: POST
         headers:
           Authorization: 'PVEAPIToken={{ pve_user }}!{{ pve_token }}={{ pve_secret }}'
@@ -68,14 +64,10 @@
         body:
           ide0: "{{ pve_storage_name }}:cloudinit"
 
-    # - name: Pause for a few seconds
-    #   ansible.builtin.pause:
-    #     seconds: 1
-
     - name: "VM : Start"
       ansible.builtin.uri:
         validate_certs: false
-        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ vm_id }}/status/start
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/status/start
         method: POST
         headers:
           Authorization: 'PVEAPIToken={{ pve_user }}!{{ pve_token }}={{ pve_secret }}'

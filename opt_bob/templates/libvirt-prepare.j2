@@ -10,6 +10,14 @@
       ansible.builtin.fail:
         msg: "Please define a default password for the rocky user (V_DEFAULT_ROCKY_PASS)"
 
+    - name: Create the text screen saver script
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          setterm -term linux -blank 1 -powersave powerdown -powerdown 1
+        dest: /root/text-screen-saver.sh
+        mode: '0750'
+
     - name: Update packages
       ansible.builtin.dnf:
         name: "*"

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
+import random
 from sqlmodel import select
 from typing import Annotated
 
@@ -21,8 +22,10 @@ vm_router = APIRouter(prefix="/vm", tags=["Virtual Machines"])
 def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     if session.get(Virtual, virtual.name):
         raise HTTPException(status_code=409, detail="VM already exists")
-    if not session.get(Hypervisor, virtual.hypervisor):
+    hypervisor = session.get(Hypervisor, virtual.hypervisor)
+    if not hypervisor:
         raise HTTPException(status_code=406, detail="Unknown hypervisor")
+    
     # Now check the IP validity
     subnet = session.get(Subnet, virtual.ip)
     if subnet:
@@ -45,6 +48,26 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
             raise HTTPException(
                 status_code=409, detail="That IP is within an IPAM controlled range"
             )
+    
+    # Check / Generate an ID for ProxMox VMs
+    if hypervisor.type != 'proxmox':
+        # force zero, when it's not needed
+        virtual.vmid = 0
+    else:
+        # if ID requested, then check it
+        if virtual.vmid != 0:
+            sql = select(Virtual).where(Virtual.vmid==virtual.vmid)
+            if session.exec(sql).one_or_none():
+                raise HTTPException(
+                    status_code=409, detail="A VM with that ID already exists"
+                )
+        else:
+            while True:
+                vmid = random.randint(100000, 500000)
+                sql = select(Virtual).where(Virtual.vmid==vmid)
+                if not session.exec(sql).one_or_none():
+                    virtual.vmid = vmid
+                    break
 
     # All OK ...
     session.add(virtual)

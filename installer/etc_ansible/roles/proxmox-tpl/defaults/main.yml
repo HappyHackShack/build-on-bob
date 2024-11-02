@@ -2,12 +2,12 @@
 # defaults file for proxmox-tpl
 
 # Where to store the vm-Template
-pve_storage_name: ""
+pve_storage_name: "local-lvm"
 
 # Details of where to get the cloud image from
-pve_cloud_image: Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
-pve_cloud_image_url: "http://172.16.0.10/rocky/9.4-240609/{{ pve_cloud_image }}"
+pve_cloud_image: "{{ undef(hint='You must define a cloud image (file)') }}"
+pve_cloud_image_url: "{{ undef(hint='You must define a cloud image URL') }}"
 
 # Details of the template to craete
-pve_template_id: 8094
-pve_template_name: rocky-9.4-cloud
+pve_template_id: "{{ undef(hint='You must define a template ID') }}"
+pve_template_name: "{{ undef(hint='You must define a template name') }}"

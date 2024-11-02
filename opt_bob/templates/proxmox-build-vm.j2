@@ -10,14 +10,14 @@
     ansible.builtin.include_role:
         name: proxmox-vm
     vars:
-        vm_id: 150
-        vm_name: {{ name }}
-        vm_cpu_cores: {{ vm_cpu_cores }}
-        vm_memory: {{ vm_memory_mb }}
-        vm_ip_cidr: '{{ ip }}/{{ cidr }}'
-        vm_gateway: '{{ gateway }}'
-        vm_dns_domain: gotham.lab
-        auth:
+        pve_vm_id: {{ vmid }}
+        pve_vm_name: {{ name }}
+        pve_vm_cpu_cores: {{ vm_cpu_cores }}
+        pve_vm_memory_mb: {{ vm_memory_mb }}
+        pve_vm_ip_cidr: '{{ ip }}/{{ cidr }}'
+        pve_vm_gateway: '{{ gateway }}'
+        pve_vm_dns_domain: gotham.lab
+        pve_vm_auth:
             user: "rocky"
             password: "Rocky124"
             public_ssh_key: "{{"{{ lookup('file', '/home/james/.ssh/id_rsa.pub') }}"}}"

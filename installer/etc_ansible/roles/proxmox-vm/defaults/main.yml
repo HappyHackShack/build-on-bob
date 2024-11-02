@@ -3,5 +3,6 @@
 
 pve_storage_name: "local-lvm"
 
-# Details of the template to craete
-pve_template_id: 8094
+# Details of the template and VM to create
+pve_template_id: "{{ undef(hint='You must define the template_id to clone') }}"
+pve_vm_id: "{{ undef(hint='You must define the VM ID to create') }}"

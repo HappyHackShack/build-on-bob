@@ -405,7 +405,7 @@ def os_List():
     else:
         print(f'{BG_GRAY}  Name         Version          URL                                                            {END}')
         for os in Systems:
-            Versions = requests.get(f"{API}/osver/{os['name']}").json()
+            Versions = requests.get(f"{API}/os/{os['name']}/version").json()
             for osv in Versions:
                 print(f"  {osv['os_name']:12} {osv['os_version']:16} {os['base_url']}/{osv['url']}")
 

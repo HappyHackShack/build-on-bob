@@ -1,20 +1,18 @@
 ---
 # defaults file for libvirt-vm
 
- lvvm_cloud_image: Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
- lvvm_hostname: ''
- lvvm_domain: home.lab
- lvvm_default_pass: "{{ V_DEFAULT_ROCKY_PASS }}"
- lvvm_ssh_pwauth: false
- lvvm_ssh_keys:
-  - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1oAk7G11Ms90ZhHmmeAe+Ik/yw34+d+P9/AaEXJOVqXhDiBtFPhDvhV+MKY/UH0xgTeiVNo7+SzOnTp8oqi4X/mqxnvCd6/GxCT0gdb/lS9rBeGWna4ldxMYrAmLg0J9+h1pbOXMpRebDoEkyzXoaHB+9ZH69T0UJR9LvjKvhm6+1DuX5bvO050Sdom24vR0eoGSbligNGDr07mx1JsHw/FCHQjLDlforj5POmG3t5X7YC/Qv6oEcllbdsXINmW6L3KYRTgo3omSuj4D2cnVTlDHrlwZo6L73MC9aU6lMRNmZJC6F0UVX6jaGwNx4DTf1FXihz00+s3KgmPkFgnu9Q== james@server
+lvvm_cloud_image: "{{ undef(hint='You must define the cloud image to base the VM on') }}"
+lvvm_hostname: "{{ undef(hint='You must define the hostname of the VM') }}"
+lvvm_domain: "{{ undef(hint='You must define a DNS domain for the VM') }}"
+lvvm_default_pass: "{{ lookup('ansible.builtin.password', '/dev/null') }}"
+lvvm_ssh_pwauth: false
+lvvm_ssh_keys: "{{ undef(hint='You must define the user SSH keys for the VM') }}"
 
- lvvm_ip_cidr: ''
- lvvm_ip_gateway: ''
- lvvm_nameservers: 
-  - 192.168.178.254
+lvvm_ip_cidr: "{{ undef(hint='You must define the IP-CIDR for the VM') }}"
+lvvm_ip_gateway: "{{ undef(hint='You must define the gateway for the VM') }}"
+lvvm_nameservers: "{{ undef(hint='You must define the name servers for the VM') }}"
 
- lvvm_vm_memory: 4096
- lvvm_vm_cores: 4
- lvvm_vm_os_disk_size: 50
- lvvm_extra_config: ''
+lvvm_vm_memory: 4096
+lvvm_vm_cores: 4
+lvvm_vm_os_disk_size: 50
+lvvm_extra_config: ''

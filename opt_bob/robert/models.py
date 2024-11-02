@@ -136,11 +136,12 @@ class VirtualModel(SQLModel):
     model_config = ConfigDict(validate_assignment=True)
     #
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
+    vmid: Optional[int] = Field(default=0)
     hypervisor: str
     ip: Annotated[str, AfterValidator(validate_ip)]
-    vm_cpu_cores: Optional[int] = Field(default=4)
-    vm_memory_mb: Optional[int] = Field(default=4096)
-    vm_disk_gb: Optional[int] = Field(default=25)
+    cpu_cores: Optional[int] = Field(default=4)
+    memory_mb: Optional[int] = Field(default=4096)
+    disk_gb: Optional[int] = Field(default=25)
 
 
 class Virtual(VirtualModel, table=True):

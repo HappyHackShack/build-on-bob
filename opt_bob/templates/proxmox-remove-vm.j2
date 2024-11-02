@@ -10,7 +10,7 @@
     - name: "VM : Stop"
       ansible.builtin.uri:
         validate_certs: false
-        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/150/status/stop
+        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/{{ vmid }}/status/stop
         method: POST
         headers:
           Authorization: 'PVEAPIToken={{'{{ pve_user }}'}}!{{'{{ pve_token }}'}}={{'{{ pve_secret }}'}}'
@@ -18,7 +18,7 @@
     - name: "VM : Destroy"
       ansible.builtin.uri:
         validate_certs: false
-        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/150?purge=0&destroy-unreferenced-disks=0
+        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/{{ vmid }}?purge=0&destroy-unreferenced-disks=0
         method: DELETE
         headers:
           Authorization: 'PVEAPIToken={{'{{ pve_user }}'}}!{{'{{ pve_token }}'}}={{'{{ pve_secret }}'}}'
