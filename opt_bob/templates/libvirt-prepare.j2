@@ -1,6 +1,6 @@
 ---
 - name: Create a VM Template on libvirt
-  hosts: {{ name }}
+  hosts: {{ hv.name }}
   gather_facts: false
   become: true
 
@@ -43,14 +43,16 @@
         groups: libvirt
         password: "{{"{{ V_DEFAULT_ROCKY_PASS | password_hash('sha512', 'Build0nBoB') }}"}}"
 
-    - name: Import create template role
+{% for osv in os_versions %}
+    - name: Import libvirt-img role for {{ osv.os_name }}/{{ osv.os_version }}
       ansible.builtin.include_role:
         name: libvirt-img
       vars:
-        lv_cloud_image: "{{ cloud_image }}"
-        lv_cloud_image_url: "http://172.16.0.10/rocky/9.4-240609/{{ cloud_image }}"
+        lv_cloud_image: "{{ osv.files }}"
+        lv_cloud_image_url: "http://{{ cfg.bob_listen_address }}/{{ osv.os_name }}/{{ osv.os_version }}/{{ osv.files }}"
+{% endfor %}
 
     - name: Tell the user to create the Bridge
       ansible.builtin.debug:
-        msg: "Please log in to cockpit and create bridge0 on the main interface https://{{ name }}:9090"
+        msg: "Please log in to cockpit and create bridge0 on the main interface https://{{ hv.name }}:9090"
  

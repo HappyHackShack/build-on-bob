@@ -57,6 +57,7 @@ op_systems:
       output: build/user-MAC
     versions:
       - os_version: '40-1.14'
+        net_iface: eth0
         pve_id: 401
         url: '40/Cloud/x86_64/images'
         files:
@@ -90,11 +91,13 @@ op_systems:
       output: build/user-MAC
     versions:
       - os_version: '9.4-240609'
+        net_iface: eth0
         pve_id: 941
         url: '9/images/x86_64'
         files:
           - Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
       - os_version: '9.4-240509L'
+        net_iface: eth0
         pve_id: 940
         url: '9/images/x86_64'
         files:
@@ -113,11 +116,13 @@ op_systems:
       output: build/user-MAC
     versions:
       - os_version: '24.04-240911'
+        net_iface: enp1s0
         pve_id: 741
         url: '24.04/release-20240911'
         files:
           - ubuntu-24.04-server-cloudimg-amd64.img
       - os_version: '23.10-240710'
+        net_iface: enp1s0
         pve_id: 732
         url: '23.10/release-20240710'
         files:

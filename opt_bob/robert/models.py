@@ -115,6 +115,7 @@ class OsVersion(SQLModel, table=True):
     os_version: str
     url: str
     files: str
+    net_iface: str = Field(default="n/a")
     pve_id: int = Field(ge=0, lt=1000, default=0)
 
 
@@ -136,6 +137,7 @@ class VirtualModel(SQLModel):
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
     vmid: Optional[int] = Field(default=0)
     hypervisor: str
+    osver_pid: int
     ip: Annotated[str, AfterValidator(validate_ip)]
     cpu_cores: Optional[int] = Field(default=4)
     memory_mb: Optional[int] = Field(default=4096)

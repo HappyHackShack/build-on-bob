@@ -7,11 +7,11 @@ all:
   
     libvirt:
       hosts:
-        {% for hv in Hypervisors %}{% if hv.type == 'libvirt' -%}
+        {% for hv in hypervisors %}{% if hv.type == 'libvirt' -%}
         {{ hv.name }}:
         {% endif %}{% endfor %}
     proxmox:
       hosts:
-        {% for hv in Hypervisors -%}{% if hv.type == 'proxmox' -%}
+        {% for hv in hypervisors -%}{% if hv.type == 'proxmox' -%}
         {{ hv.name }}:
         {% endif %}{% endfor -%}

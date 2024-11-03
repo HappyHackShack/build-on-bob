@@ -10,6 +10,7 @@
     ansible.builtin.include_role:
         name: proxmox-vm
     vars:
+        pve_template_id: 900{{ osver_pid }}
         pve_vm_id: {{ vmid }}
         pve_vm_name: {{ name }}
         pve_vm_cpu_cores: {{ vm_cpu_cores }}

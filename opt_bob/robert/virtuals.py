@@ -13,7 +13,7 @@ from library import (
     wipe_vm_playbooks,
     write_vm_playbooks,
 )
-from models import Hypervisor, IPaddress, Subnet, Virtual
+from models import Hypervisor, IPaddress, OsVersion, Subnet, Virtual
 
 vm_router = APIRouter(prefix="/vm", tags=["Virtual Machines"])
 
@@ -25,6 +25,11 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     hypervisor = session.get(Hypervisor, virtual.hypervisor)
     if not hypervisor:
         raise HTTPException(status_code=406, detail="Unknown hypervisor")
+
+    # Check OS-Ver PID (and convert)
+    osver = session.exec(select(OsVersion).where(OsVersion.pve_id==virtual.osver_pid)).one_or_none()
+    if not osver:
+        raise HTTPException(status_code=406, detail="Unknown OS_Version ID")
 
     # Now check the IP validity
     subnet = session.get(Subnet, virtual.ip)

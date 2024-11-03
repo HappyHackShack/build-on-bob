@@ -197,22 +197,24 @@ def write_ansible_hypervisor(hypervisor: Hypervisor, os_versions):
 
 
 def write_ansible_inventory(session):
-    Hypers = session.exec(select(Hypervisor)).all()
-    Data = {"Hypervisors": Hypers}
-    render_template("ans-inventory.j2", Data, f"{Ansible_Dir}/inventory.yaml")
+    hypers = session.exec(select(Hypervisor)).all()
+    data = {"hypervisors": hypers}
+    render_template("ans-inventory.j2", data, f"{Ansible_Dir}/inventory.yaml")
 
 
-def write_vm_playbooks(VM: Virtual, session):
-    Hyper = session.get(Hypervisor, VM.hypervisor)
-    Extra = {"cidr": "24", "gateway": "172.16.0.254", "nameservers": ["172.16.0.254"]}
-    hv_type = Hyper.type
+def write_vm_playbooks(vm: Virtual, session):
+    hyper = session.get(Hypervisor, vm.hypervisor)
+    # TODO - lookup subnet deets properly
+    osver = session.exec(select(OsVersion).where(OsVersion.pve_id==vm.osver_pid)).one()
+    extra = {"cidr": "24", "gateway": "172.16.0.254", "nameservers": ["172.16.0.254"], "net_iface": osver.net_iface, "cloud_image": osver.files}
+    hv_type = hyper.type
     render_template(
         f"{hv_type}-build-vm.j2",
-        VM.dict() | Extra,
-        f"{Ansible_Dir}/build-{VM.name}-vm.yaml",
+        vm.dict() | extra,
+        f"{Ansible_Dir}/build-{vm.name}-vm.yaml",
     )
     render_template(
         f"{hv_type}-remove-vm.j2",
-        Hyper.dict() | VM.dict(),
-        f"{Ansible_Dir}/remove-{VM.name}-vm.yaml",
+        hyper.dict() | vm.dict(),
+        f"{Ansible_Dir}/remove-{vm.name}-vm.yaml",
     )
