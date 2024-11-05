@@ -58,7 +58,7 @@ def do_Command(args):
     elif OBJ in ("o", "os"):
         do_OS_Command(args)
     elif OBJ in ("s", "status"):
-        for svc in ["dnsmasq", "nginx", "wendy"]:  # run_Status_Command()
+        for svc in ["dnsmasq", "nginx", "robert", "wendy"]:  # run_Status_Command()
             print(
                 f"{CYAN}-----------------------------------------  {svc}  -----------------------------------------{END}"
             )

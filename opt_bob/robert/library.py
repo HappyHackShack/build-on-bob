@@ -67,7 +67,7 @@ Config = Configuration()
 ### ---------- General --------------------------------------------------------------------
 
 
-def render_template(Template_Filename, Config, Target_Filename):
+def render_template(Template_Filename, Config, Target_Filename, mode = 0o644):
     environment = Environment(loader=FileSystemLoader(Template_Dir))
     template = environment.get_template(Template_Filename)
     rendered = template.render(Config)
@@ -75,8 +75,14 @@ def render_template(Template_Filename, Config, Target_Filename):
     with open(Target_Filename, "wt") as cfg:
         cfg.write(rendered)
         cfg.write("\n")
+    # Then set the mode (perms)
+    os.chmod(Target_Filename, mode)
 
 
+def restart_dnsmasq():
+    os.system("systemctl restart dnsmasq")
+
+    
 def run_ansible(playbook):
     result = Ansible.interface.run(private_data_dir=Ansible_Dir, playbook=playbook)
     # print(result)

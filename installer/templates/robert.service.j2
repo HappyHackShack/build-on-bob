@@ -1,0 +1,10 @@
+[Unit]
+Description=Robert API service unit file for BoB.
+
+[Service]
+WorkingDirectory=/opt/bob/robert
+ExecStartPre=/usr/local/bin/uv sync --allow-insecure-host pypi.org
+ExecStart=/usr/local/bin/uv run fastapi run --host 127.0.0.1 --port 7999
+
+[Install]
+WantedBy=multi-user.target

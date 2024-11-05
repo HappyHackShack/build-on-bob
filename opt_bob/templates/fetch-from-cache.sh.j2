@@ -18,7 +18,7 @@ mkdir -p {{os.name}}/{{ver.os_version}}
   cd {{os.name}}/{{ver.os_version}}
 {% for file in ver.files.split(',') %}  FILE="{{file}}"
   wget -nc {{bob_local_cache}}/{{os.name}}/{{ver.os_version}}/${FILE}
-  file "${FILE}" | grep "QCOW Image" > /dev/null && {
+  file "${FILE}" | grep "QCOW[2]* Image" > /dev/null && {
     echo -e "${BLUE}QCOW Image detected${END}"
     RAW="${FILE%.*}.raw"
     [[ -f "${RAW}.gz" ]] || {

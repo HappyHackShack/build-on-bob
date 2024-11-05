@@ -17,15 +17,16 @@
               # A new version of this is needed (e.g. Fedora-40) | Rocky 9.4 is 4 years too old
               - ipxe-bootimgs-x86
               - nginx
-              - python3-pip
               - qemu-img
               - wget
 
         - name: Install system python packages
-          # These are reuired by ansible
-          ansible.builtin.package:
+          # These are required by ansible
+          ansible.builtin.pip:
             name:
               - passlib
+              - pyfiglet
+              - uv
 
         - name: Make the required directories
           ansible.builtin.file:
@@ -136,7 +137,21 @@
       tags:
         - update-ansible
       block:
-        # Ensure there ia a a password
+        # Make Ansible directory
+        - name: Create the ansible directory first
+          ansible.builtin.file:
+            path: /etc/ansible
+            state: directory
+            mode: '0755'
+
+        - name: Put Ansible engine into place
+          ansible.builtin.copy:
+            src: ./etc_ansible/
+            dest: "/etc/ansible/"
+            owner: root
+            mode: preserve
+
+        # Ensure there is a password
         - name: Generate Vault password
           # :- I got a permssion error trying to use builtin.password into this file
           # ansible.builtin.set_fact:
@@ -157,13 +172,31 @@
               ansible-vault encrypt group_vars/all/vault.yaml
             creates: /etc/ansible/group_vars/all/vault.yaml
 
-        # - name: Make Ansible directory
-        - name: Put Ansible engine into place
-          ansible.builtin.copy:
-            src: ./etc_ansible/
-            dest: "/etc/ansible/"
+    # Robert
+    - name: Wendy block
+      tags:
+        - robert
+      block:
+        - name: Robert service file
+          ansible.builtin.template:
+            src: robert.service.j2
+            dest: /etc/systemd/system/robert.service
             owner: root
-            mode: preserve
+            mode: '0644'
+          notify: Restart ROBERT
+
+        - name: Make robert copy of project.toml
+          ansible.builtin.copy:
+            src: ../pyproject.toml
+            dest: "{{ BOB_HOME_DIRECTORY }}/robert"
+            owner: root
+            mode: '0644'
+
+        - name: Enable the Robert service
+          ansible.builtin.service:
+            name: robert
+            enabled: true
+            state: started
 
     # Wendy
     - name: Wendy block
@@ -247,6 +280,11 @@
     - name: Restart NGINX
       ansible.builtin.service:
         name: nginx
+        state: restarted
+
+    - name: Restart ROBERT
+      ansible.builtin.service:
+        name: robert
         state: restarted
 
     - name: Restart WENDY

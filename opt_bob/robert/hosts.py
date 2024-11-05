@@ -7,6 +7,7 @@ from library import (
     API_DELETE_Responses,
     API_GET_Responses,
     API_POST_Responses,
+    restart_dnsmasq,
     write_Build_Files,
     write_Dnsmasq,
 )
@@ -40,6 +41,7 @@ def create_host(host: Host, session: SessionDep) -> Host:
     #
     write_Dnsmasq(session)
     write_Build_Files(host, session)
+    restart_dnsmasq()
     return host
 
 
@@ -95,6 +97,7 @@ def delete_host(host_name: str, session: SessionDep):
         raise HTTPException(status_code=404, detail="Host not found")
     session.delete(host)
     session.commit()
+    restart_dnsmasq()
     return {"ok": True}
 
 

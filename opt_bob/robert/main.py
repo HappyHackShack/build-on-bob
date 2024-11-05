@@ -63,10 +63,10 @@ def cache_scripts_generate(session: SessionDep):
     Temp = {"os_systems": Systems, "os_versions": Versions}
 
     render_template(
-        "populate-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/populate-cache.sh"
+        "populate-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/populate-cache.sh", 0o750
     )
     render_template(
-        "fetch-from-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/fetch-from-cache.sh"
+        "fetch-from-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/fetch-from-cache.sh", 0o750
     )
 
     return {"ok": True}
