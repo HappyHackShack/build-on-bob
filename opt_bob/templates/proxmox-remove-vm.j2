@@ -1,0 +1,29 @@
+---
+
+- name: Clone a VM Template on proxmox
+  hosts: {{ hypervisor }}
+  connection: local
+  gather_facts: false
+
+  tasks:
+
+    - name: "VM : Stop"
+      community.general.proxmox_kvm:
+        api_host         : {{ hypervisor }}
+        api_user         : "{{ "{{ pve_api_user }}" }}"
+        api_token_id     : "{{ "{{ pve_api_token }}" }}"
+        api_token_secret : "{{ "{{ pve_api_secret }}" }}"
+        node             : "{{ "{{ pve_node }}" }}"
+        vmid             : {{ vmid }}
+        state            : stopped
+        force            : yes
+
+    - name: "VM : Destroy"
+      community.general.proxmox_kvm:
+        api_host         : {{ hypervisor }}
+        api_user         : "{{ "{{ pve_api_user }}" }}"
+        api_token_id     : "{{ "{{ pve_api_token }}" }}"
+        api_token_secret : "{{ "{{ pve_api_secret }}" }}"
+        node             : "{{ "{{ pve_node }}" }}"
+        vmid             : {{ vmid }}
+        state            : absent

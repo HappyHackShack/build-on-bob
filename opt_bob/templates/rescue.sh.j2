@@ -25,7 +25,7 @@ chmod 600 authorized_keys
 
 echo "dd if=/dev/zero of=/dev/sda bs=4M count=99 ; reboot" > /usr/local/bin/SPLAT.sh
 chmod 750 /usr/local/bin/SPLAT.sh
-wget -q http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
+wget -q http://{{bob_listen_address}}/api/host/{{name}}/complete -O /dev/null
 
 echo -e "\n\n${INFO}You can now ssh in as alpine (with your key) ${END}"
 echo "*** You can become root by 'su -' and Rescue123" >> /etc/motd

@@ -1,0 +1,83 @@
+---
+# tasks file for proxmox-vm
+
+- name: Create a VM block (all done locally)
+  connection: local
+  block:
+
+    - name: Create new VM
+      community.general.proxmox_kvm:
+        api_host: "{{ inventory_hostname }}"
+        api_user: "{{ pve_api_user }}"
+        api_token_id: "{{ pve_api_token }}"
+        api_token_secret: "{{ pve_api_secret }}"
+        node: "{{ pve_node }}"
+        vmid: "{{ pve_template_id }}"
+        clone: fluffy_bunnies
+        newid: "{{ pve_vm_id }}"
+        full: true
+        name: "{{ pve_hostname }}.{{ pve_dns_domain }}"
+        storage: "{{ pve_storage_name }}"
+        format: qcow2
+
+    # TODO - Can't find a way to do this with ansible module
+    - name: "Resize OS disk"
+      ansible.builtin.uri:
+        validate_certs: false
+        url: "https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/resize"
+        method: PUT
+        headers:
+          Authorization: "PVEAPIToken={{ pve_api_user }}!{{ pve_api_token }}={{ pve_api_secret }}"
+        body: 'disk=scsi0&size={{ pve_vm_os_disk_gb }}G'
+
+    - name: Config Test 1
+      community.general.proxmox_kvm:
+        api_host: "{{ inventory_hostname }}"
+        api_user: "{{ pve_api_user }}"
+        api_token_id: "{{ pve_api_token }}"
+        api_token_secret: "{{ pve_api_secret }}"
+        node: "{{ pve_node }}"
+        name: "{{ pve_hostname }}.{{ pve_dns_domain }}"
+        vmid: "{{ pve_vm_id }}"
+        bios: ovmf
+        cpu: host
+        cores: "{{ pve_vm_cpu_cores }}"
+        memory: "{{ pve_vm_memory_mb }}"
+        ciuser: "{{ pve_cloud_user }}"
+        cipassword: "{{ pve_cloud_pass }}"
+        sshkeys: "{{ pve_cloud_ssh_keys }}"
+        ipconfig:
+          ipconfig0: "ip={{ pve_vm_ip_cidr }},gw={{ pve_net_gateway }}"
+        nameservers: '{{ pve_net_nameservers }}'
+        searchdomains: '{{ pve_dns_domain }}'
+        update: true
+
+    - name: "Regenerate CI.1 : Remove"
+      ansible.builtin.uri:
+        validate_certs: false
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/config
+        method: POST
+        headers:
+          Authorization: 'PVEAPIToken={{ pve_api_user }}!{{ pve_api_token }}={{ pve_api_secret }}'
+        body_format: json
+        body:
+          ide0: none,media=cdrom
+
+    - name: "Regenerate CI.2 : Recreate"
+      ansible.builtin.uri:
+        validate_certs: false
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/config
+        method: POST
+        headers:
+          Authorization: 'PVEAPIToken={{ pve_api_user }}!{{ pve_api_token }}={{ pve_api_secret }}'
+        body_format: json
+        body:
+          ide0: "{{ pve_storage_name }}:cloudinit"
+
+    - name: "VM : Start"
+      ansible.builtin.uri:
+        validate_certs: false
+        url: https://{{ inventory_hostname }}:8006/api2/json/nodes/{{ pve_node }}/qemu/{{ pve_vm_id }}/status/start
+        method: POST
+        headers:
+          Authorization: 'PVEAPIToken={{ pve_api_user }}!{{ pve_api_token }}={{ pve_api_secret }}'

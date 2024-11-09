@@ -1,0 +1,42 @@
+---
+# tasks file for proxmox-tpl
+
+- name: Check if base VM already exists
+  ansible.builtin.shell: 'qm status {{ pve_template_id }}'
+  register: check_tpl
+  ignore_errors: true
+
+- name: 'Setup Cloud-VM with image {{ pve_cloud_image }}'
+  when: check_tpl.rc != 0
+  block:
+    - name: Download cloud image
+      ansible.builtin.get_url:
+        url: '{{ pve_cloud_image_url }}'
+        dest: '/tmp/{{ pve_cloud_image }}'
+        mode: '0640'
+
+    - name: Create VM
+      ansible.builtin.shell: |
+        qm create {{ pve_template_id }} --name {{ pve_template_name }} --cpu host --cores 1 --memory 1024 --numa 1 --net0 virtio,bridge=vmbr0 \
+            --scsihw virtio-scsi-single --ostype l26 --agent 1
+
+    - name: Import disk to VM
+      ansible.builtin.shell: 'qm importdisk {{ pve_template_id }} /tmp/{{ pve_cloud_image }} {{ pve_storage_name }}'
+
+    - name: Set VM hardware options
+      ansible.builtin.shell:
+        cmd: |
+          # Get the path to the cloud image disk
+          UNUSED=$( qm config {{ pve_template_id }} | grep unused0 | awk '{ print $2 }' )
+          # Attach cloud disk
+          qm set {{ pve_template_id }} --scsi0 $UNUSED
+
+          # Create cloud-init device
+          qm set {{ pve_template_id }} --ide0 {{ pve_storage_name }}:cloudinit,format=raw
+
+          # Set boot order
+          qm set {{ pve_template_id }} --boot order=scsi0
+
+          # Convert to template
+          qm cloudinit update {{ pve_template_id }}
+          qm template {{ pve_template_id }}

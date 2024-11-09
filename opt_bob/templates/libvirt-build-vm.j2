@@ -1,0 +1,28 @@
+---
+
+- name: Create a LibVirt VM
+  hosts: {{ hypervisor }}
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Include libvirt-VM role
+      ansible.builtin.include_role:
+        name: libvirt-vm
+      vars:
+        lvvm_hostname: {{ name }}
+        lvvm_dns_domain: {{ dns_domain }}
+        lvvm_cloud_image: {{ cloud_image }}
+        lvvm_net_iface: {{ net_iface }}
+        lvvm_vm_cpu_cores: {{ cpu_cores }}
+        lvvm_vm_memory_mb: {{ memory_mb }}
+        lvvm_vm_os_disk_gb: {{ disk_gb }}
+        lvvm_vm_ip_cidr: {{ ip }}/{{ cidr }}
+        lvvm_net_gateway: {{ sn_gateway }}
+        lvvm_net_nameservers:
+          {% for ns in sn_nameservers %}- {{ ns }}
+          {% endfor %}
+        lvvm_cloud_user: {{ "bob" }}
+        lvvm_cloud_pass: "{{ V_DEFAULT_ROCKY_PASS }}"
+        lvvm_cloud_ssh_keys: "{{ cloud_ssh_keys.0 }}"
+        

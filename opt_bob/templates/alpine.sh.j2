@@ -7,29 +7,29 @@ END='\e[0m'
 
 echo -e "\n\n${INFO}Doing a build of ALPINE ...${END}"
 # Clean the disk first
-dd if=/dev/zero of={{disk}} bs=8M count=8
-partprobe {{disk}}
+dd if=/dev/zero of={{ disk }} bs=8M count=8
+partprobe {{ disk }}
 
 cd /tmp
-wget http://{{bob_listen_address}}/{{ os }}/{{ version }}/{{ files.0 | replace("qcow2","raw.gz") }}
+wget http://{{ bob_listen_address }}/{{ os_name }}/{{ os_version }}/{{ files.0 | replace("qcow2","raw.gz") }}
 
-echo -e "\n\n${INFO}Please wait while image is written to {{disk}} ...${END}"
-gunzip < {{ files.0 | replace("qcow2","raw.gz") }} | dd of={{disk}} bs=4M
-partprobe {{disk}}
+echo -e "\n\n${INFO}Please wait while image is written to {{ disk }} ...${END}"
+gunzip < {{ files.0 | replace("qcow2","raw.gz") }} | dd of={{ disk }} bs=4M
+partprobe {{ disk }}
 
 exit
 
 ## Cloud stuff
 echo -e "\n\n${INFO}Configuring cloud-init ...${END}"
-mkdosfs -n CIDATA {{disk}}1 || { echo -e "${ERROR}FAILED to make filesystem on {{disk}}1${END}"; exit 1; }
-mount -t vfat {{disk}}1 /mnt || { echo -e "${ERROR}FAILED to mount {{disk}}1${END}"; exit 1; }
+mkdosfs -n CIDATA {{ disk }}1 || { echo -e "${ERROR}FAILED to make filesystem on {{ disk }}1${END}"; exit 1; }
+mount -t vfat {{ disk }}1 /mnt || { echo -e "${ERROR}FAILED to mount {{ disk }}1${END}"; exit 1; }
 
 cd /mnt
-wget http://{{bob_listen_address}}/build/meta-{{mac}} -O meta-data
-wget http://{{bob_listen_address}}/build/user-{{mac}} -O user-data
+wget http://{{ bob_listen_address }}/build/meta-{{ mac }} -O meta-data
+wget http://{{ bob_listen_address }}/build/user-{{ mac }} -O user-data
 
 # Notify Completion and count down to reboot
-wget http://{{bob_listen_address}}/wendy/api/complete/{{mac}} -O /dev/null
+wget http://{{ bob_listen_address }}/api/host/{{ name }}/complete -O /dev/null
 
 echo -e "\n\nRebooting in 5 ..."; sleep 1
 echo "Rebooting in 4 ..."; sleep 1

@@ -1,0 +1,28 @@
+---
+# defaults file for libvirt-vm
+
+lvvm_hostname: "{{ undef(hint='You must define the hostname of the VM') }}"
+lvvm_dns_domain: "{{ undef(hint='You must define a DNS domain for the VM') }}"
+lvvm_cloud_image: "{{ undef(hint='You must define the cloud image to base the VM on') }}"
+lvvm_hv_bridge: bridge0
+
+lvvm_net_iface: "{{ undef(hint='You must define the network interface for the VM') }}"
+lvvm_vm_cpu_cores: 4
+lvvm_vm_memory_mb: 4096
+lvvm_vm_os_disk_gb: 50
+lvvm_vm_ip_cidr: "{{ undef(hint='You must define the IP-CIDR for the VM') }}"
+
+lvvm_net_gateway: "{{ undef(hint='You must define the gateway for the VM') }}"
+lvvm_net_nameservers: "{{ undef(hint='You must define the name servers for the VM') }}"
+
+lvvm_cloud_user: "bob"
+lvvm_cloud_pass: "{{ lookup('ansible.builtin.password', '/dev/null') }}"
+lvvm_cloud_ssh_keys: "{{ undef(hint='You must define the user SSH keys for the VM') }}"
+lvvm_ssh_pwauth: false
+
+lvvm_extra_config: ''
+
+# These could be overridden on a per-hypervisor basis?
+lvvm_libvirt_dir: /var/lib/libvirt
+lvvm_config_dir: "{{ lvvm_libvirt_dir }}/cloud"
+lvvm_image_dir: "{{ lvvm_libvirt_dir }}/images"

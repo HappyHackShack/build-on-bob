@@ -6,102 +6,30 @@ all:
     ansible_become_pass: "{{ lookup('ansible.builtin.env', 'BECOME_PASS') }}"
     ansible_connection: local
 
-    # What IP address do you want to use (MUST already be on one of your interfaces)
-    BOB_LISTEN_ADDRESS: '172.16.0.10'
-    BOB_GATEWAY_ADDRESS: '172.16.0.254'
-    BOB_DNS_SERVER: '172.16.0.254'
+    ALPINE_SITE: 'https://uk.alpinelinux.org/alpine'
 
+    # What IP address do you want to use (MUST already be on one of your interfaces)
+    BOB_LISTEN_ADDRESS: '192.168.0.1'
+    BOB_DHCP_GATEWAY: '192.168.0.254'
+    BOB_DHCP_NAMESERVER: '192.168.0.254'
     # Local DNS Domain
     BOB_DNS_DOMAIN: 'home.lab'
     # Where to share the TFTP files from
     BOB_TFTP_DIRECTORY: '/var/lib/tftp'
+
     # Builder SSH key (to be put onto deployed images)
+    BUILDER_USER: bob
     BUILDER_SSH_KEY_FILE: '~/.ssh/id_rsa.pub'
     BUILDER_SSH_KEY: "{{ lookup('ansible.builtin.file', ''+BUILDER_SSH_KEY_FILE) }}"
 
-    LOCAL_CACHE: 'http://sponge/cache'
-    # External Sites
-    ALPINE_SITE: 'https://uk.alpinelinux.org/alpine'
-    RESCUE_VERSION: '3.20'
-    RESCUE_MINOR_VER: '3'
-
-    FCOS_SITE: 'https://builds.coreos.fedoraproject.org/prod/streams/stable/builds'
-    FEDORA_SITE: 'https://download.fedoraproject.org/pub/fedora/linux/releases'
-    ROCKY_SITE: 'https://dl.rockylinux.org/pub/rocky'
-    UBUNTU_SITE: 'https://cloud-images.ubuntu.com/releases'
-
-    os_cache:
-      - name: rescue
-        url: '{{ ALPINE_SITE }}/'
-        versions:
-          - tag: '{{ RESCUE_VERSION }}.{{ RESCUE_MINOR_VER }}'
-            url: 'v{{ RESCUE_VERSION }}/releases/x86_64/netboot-{{ RESCUE_VERSION }}.{{ RESCUE_MINOR_VER }}'
-            files:
-              - vmlinuz-lts
-              - initramfs-lts
-              - modloop-lts
-      - name: fcos
-        url: "{{ FCOS_SITE }}/"
-        versions:
-          - tag: '37-221127'
-            url: '37.20221127.3.0/x86_64'
-            files:
-              - 'fedora-coreos-37.20221127.3.0-live-kernel-x86_64'
-              - 'fedora-coreos-37.20221127.3.0-live-initramfs.x86_64.img'
-              - 'fedora-coreos-37.20221127.3.0-live-rootfs.x86_64.img'
-          - tag: '40-240906'
-            url: '40.20240906.3.0/x86_64'
-            files:
-              - 'fedora-coreos-40.20240906.3.0-live-kernel-x86_64'
-              - 'fedora-coreos-40.20240906.3.0-live-initramfs.x86_64.img'
-              - 'fedora-coreos-40.20240906.3.0-live-rootfs.x86_64.img'
-      
-      - name: alpine
-        url: "{{ ALPINE_SITE }}/"
-        versions:
-          - tag: '3.19.4'
-            url: 'v3.19/releases/cloud'
-            files:
-              - nocloud_alpine-3.19.4-x86_64-uefi-cloudinit-r0.qcow2
-          - tag: '3.20.3'
-            url: 'v3.20/releases/cloud'
-            files:
-              - generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2
-      - name: fedora
-        url: '{{ FEDORA_SITE }}/'
-        versions:
-          - tag: '40-1.14'
-            url: '40/Cloud/x86_64/images'
-            files:
-              - Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2
-      - name: rocky
-        url: '{{ ROCKY_SITE }}/'
-        versions:
-          - tag: '9.4-240609'
-            url: '9/images/x86_64'
-            files:
-              - Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
-          - tag: '9.4-240509L'
-            url: '9/images/x86_64'
-            files:
-              - Rocky-9-GenericCloud-LVM-9.4-20240509.0.x86_64.qcow2
-      - name: ubuntu
-        url: '{{ UBUNTU_SITE }}/'
-        versions:
-          - tag: '24.04-240911'
-            url: '24.04/release-20240911'
-            files:
-              - ubuntu-24.04-server-cloudimg-amd64.img
-          - tag: '23.10-240710'
-            url: '23.10/release-20240710'
-            files:
-              - ubuntu-23.10-server-cloudimg-amd64.img
-
+    BOB_LOCAL_CACHE: 'http://your.server/cache'
 
     #-----------------------------------------------------------------------------------------------------------------------
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing
     BOB_DNSMASQ_DIRECTORY: '/etc/dnsmasq.d'
     BOB_ETC_DIRECTORY: '/etc/bob'
-    BOB_HTML_DIRECTORY: '/usr/share/nginx/html'
     # Bob's home
     BOB_HOME_DIRECTORY: '/opt/bob'
+    BOB_RESCUE_VERSION: 'v3.20'
+    #
+    NGINX_BASE_DIRECTORY: '/usr/share/nginx/html'

@@ -8,17 +8,17 @@
 CYAN='\e[36m'
 BLUE='\e[34m'
 END='\e[0m'
-{% for os in os_cache %}
 
-{% for ver in os.versions %}
-echo -e "${CYAN}Fetching {{os.name}} v {{ver.tag}} ...${END}"
-mkdir -p {{os.name}}/{{ver.tag}}
+cd {{nginx_base_dir}}
+{% for os in os_systems -%}
+{% for ver in os_versions %}{% if ver.os_name == os.name %}
+echo -e "${CYAN}Fetching {{os.name}} v {{ver.os_version}} ...${END}"
+mkdir -p {{os.name}}/{{ver.os_version}}
 (
-  cd {{os.name}}/{{ver.tag}}
-{% for file in ver.files %}
-  FILE="{{file}}"
-  wget -nc {{LOCAL_CACHE}}/{{os.name}}/{{ver.tag}}/${FILE}
-  file "${FILE}" | grep 'QCOW Image' > /dev/null && {
+  cd {{os.name}}/{{ver.os_version}}
+{% for file in ver.files.split(',') %}  FILE="{{file}}"
+  wget -nc {{bob_local_cache}}/{{os.name}}/{{ver.os_version}}/${FILE}
+  file "${FILE}" | grep "QCOW[2]* Image" > /dev/null && {
     echo -e "${BLUE}QCOW Image detected${END}"
     RAW="${FILE%.*}.raw"
     [[ -f "${RAW}.gz" ]] || {
@@ -28,7 +28,7 @@ mkdir -p {{os.name}}/{{ver.tag}}
       gzip "${RAW}"
     }
   }
-{% endfor %}
+{% endfor -%}
 )
-{% endfor %}
+{% endif %}{% endfor -%}
 {% endfor %}

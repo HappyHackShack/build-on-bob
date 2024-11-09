@@ -1,0 +1,17 @@
+---
+
+all:
+  vars:
+    ansible_python_interpreter: /bin/python3
+  children:
+  
+    libvirt:
+      hosts:
+        {% for hv in hypervisors %}{% if hv.type == 'libvirt' -%}
+        {{ hv.name }}:
+        {% endif %}{% endfor %}
+    proxmox:
+      hosts:
+        {% for hv in hypervisors -%}{% if hv.type == 'proxmox' -%}
+        {{ hv.name }}:
+        {% endif %}{% endfor -%}

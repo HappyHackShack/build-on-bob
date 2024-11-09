@@ -1,0 +1,129 @@
+---
+
+op_systems:
+  - name: local
+    base_url: "."
+    templates:
+    - source: local.ipxe.j2
+      output: ipxe/MAC.cfg
+    versions: []
+
+  - name: alpine
+    base_url: "https://uk.alpinelinux.org/alpine"
+    templates:
+    - source: build.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: alpine.sh.j2
+      output: build/MAC.sh
+    versions:
+      - os_version: '3.19.4'
+        url: 'v3.19/releases/cloud'
+        files:
+          - nocloud_alpine-3.19.4-x86_64-uefi-cloudinit-r0.qcow2
+      - os_version: '3.20.3'
+        url: 'v3.20/releases/cloud'
+        files:
+          - generic_alpine-3.20.3-x86_64-uefi-cloudinit-metal-r0.qcow2
+
+  - name: fcos
+    base_url: "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds"
+    templates:
+    - source: fcos.ipxe.j2
+      output: ipxe/MAC.cfg
+    versions:
+      - os_version: '37-221127'
+        url: '37.20221127.3.0/x86_64'
+        files:
+          - 'fedora-coreos-37.20221127.3.0-live-kernel-x86_64'
+          - 'fedora-coreos-37.20221127.3.0-live-initramfs.x86_64.img'
+          - 'fedora-coreos-37.20221127.3.0-live-rootfs.x86_64.img'
+      - os_version: '40-240906'
+        url: '40.20240906.3.0/x86_64'
+        files:
+          - 'fedora-coreos-40.20240906.3.0-live-kernel-x86_64'
+          - 'fedora-coreos-40.20240906.3.0-live-initramfs.x86_64.img'
+          - 'fedora-coreos-40.20240906.3.0-live-rootfs.x86_64.img'
+
+  - name: fedora
+    base_url: 'https://download.fedoraproject.org/pub/fedora/linux/releases'
+    templates:
+    - source: build.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: fedora.sh.j2
+      output: build/MAC.sh
+    - source: empty-ci-meta.j2
+      output: build/meta-MAC
+    - source: fedora-ci-user.j2
+      output: build/user-MAC
+    versions:
+      - os_version: '40-1.14'
+        net_iface: eth0
+        pve_id: 401
+        url: '40/Cloud/x86_64/images'
+        files:
+          - Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2
+
+  - name: rescue
+    base_url: 'https://uk.alpinelinux.org/alpine'
+    templates:
+    - source: build.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: rescue.sh.j2
+      output: build/MAC.sh
+    versions:
+      - os_version: 'v3.20'
+        url: 'v3.20/releases/x86_64/netboot-3.20.3'
+        files:
+          - vmlinuz-lts
+          - initramfs-lts
+          - modloop-lts
+
+  - name: rocky
+    base_url: 'https://dl.rockylinux.org/pub/rocky'
+    templates:
+    - source: build.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: rocky.sh.j2
+      output: build/MAC.sh
+    - source: empty-ci-meta.j2
+      output: build/meta-MAC
+    - source: rocky-ci-user.j2
+      output: build/user-MAC
+    versions:
+      - os_version: '9.4-240609'
+        net_iface: eth0
+        pve_id: 941
+        url: '9/images/x86_64'
+        files:
+          - Rocky-9-GenericCloud-Base-9.4-20240609.1.x86_64.qcow2
+      - os_version: '9.4-240509L'
+        net_iface: eth0
+        pve_id: 940
+        url: '9/images/x86_64'
+        files:
+          - Rocky-9-GenericCloud-LVM-9.4-20240509.0.x86_64.qcow2
+
+  - name: ubuntu
+    base_url: 'https://cloud-images.ubuntu.com/releases'
+    templates:
+    - source: build.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: ubuntu.sh.j2
+      output: build/MAC.sh
+    - source: empty-ci-meta.j2
+      output: build/meta-MAC
+    - source: ubuntu-ci-user.j2
+      output: build/user-MAC
+    versions:
+      - os_version: '24.04-240911'
+        net_iface: enp1s0
+        pve_id: 741
+        url: '24.04/release-20240911'
+        files:
+          - ubuntu-24.04-server-cloudimg-amd64.img
+      - os_version: '23.10-240710'
+        net_iface: enp1s0
+        pve_id: 732
+        url: '23.10/release-20240710'
+        files:
+          - ubuntu-23.10-server-cloudimg-amd64.img
