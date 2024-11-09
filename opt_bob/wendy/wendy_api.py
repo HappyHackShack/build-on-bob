@@ -11,7 +11,7 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World !"}
 
+
 @app.get("/ping")
 def ping_pong():
     return {"ping": "pong"}
-

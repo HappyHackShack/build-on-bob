@@ -6,19 +6,26 @@
 
   tasks:
 
+  - name: Check that an API Token has been set
+    when: pve_api_secret|length == 0
+    fail:
+      msg: "Please set an API Token Secret in the host_vars/{{ hypervisor }}.yaml"
+
   - name: Create a VM block
     ansible.builtin.include_role:
         name: proxmox-vm
     vars:
         pve_template_id: 900{{ osver_pid }}
+        pve_storage_name: {{ pve_storage }}
         pve_vm_id: {{ vmid }}
-        pve_vm_name: {{ name }}
-        pve_vm_cpu_cores: {{ vm_cpu_cores }}
-        pve_vm_memory_mb: {{ vm_memory_mb }}
+        pve_hostname: {{ name }}
+        pve_dns_domain: {{ dns_domain }}
+        pve_vm_cpu_cores: {{ cpu_cores }}
+        pve_vm_memory_mb: {{ memory_mb }}
+        pve_vm_os_disk_gb: {{ disk_gb }}
         pve_vm_ip_cidr: '{{ ip }}/{{ cidr }}'
-        pve_vm_gateway: '{{ gateway }}'
-        pve_vm_dns_domain: gotham.lab
-        pve_vm_auth:
-            user: "rocky"
-            password: "Rocky124"
-            public_ssh_key: "{{"{{ lookup('file', '/home/james/.ssh/id_rsa.pub') }}"}}"
+        pve_net_gateway: '{{ sn_gateway }}'
+        pve_net_nameservers: {{ sn_nameservers }}
+        pve_cloud_user: {{ cloud_user }} 
+        pve_cloud_pass: {{ cloud_pass }}
+        pve_cloud_ssh_keys: "{{ cloud_ssh_keys.0 }}"

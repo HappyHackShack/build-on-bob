@@ -11,18 +11,18 @@
         name: libvirt-vm
       vars:
         lvvm_hostname: {{ name }}
+        lvvm_dns_domain: {{ dns_domain }}
         lvvm_cloud_image: {{ cloud_image }}
         lvvm_net_iface: {{ net_iface }}
-        lvvm_vm_cores: {{ cpu_cores }}
-        lvvm_vm_memory: {{ memory_mb }}
-        lvvm_vm_os_disk_size: {{ disk_gb }}
-        lvvm_ip_cidr: {{ ip }}/{{ cidr }}
-        lvvm_ip_gateway: {{ gateway }}
-        lvvm_domain: home.lab
-        lvvm_nameservers:
-          {% for ns in nameservers %}- {{ ns }}
+        lvvm_vm_cpu_cores: {{ cpu_cores }}
+        lvvm_vm_memory_mb: {{ memory_mb }}
+        lvvm_vm_os_disk_gb: {{ disk_gb }}
+        lvvm_vm_ip_cidr: {{ ip }}/{{ cidr }}
+        lvvm_net_gateway: {{ sn_gateway }}
+        lvvm_net_nameservers:
+          {% for ns in sn_nameservers %}- {{ ns }}
           {% endfor %}
-        lvvm_default_pass: "{{ V_DEFAULT_ROCKY_PASS }}"
-        lvvm_ssh_keys:
-          - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1oAk7G11Ms90ZhHmmeAe+Ik/yw34+d+P9/AaEXJOVqXhDiBtFPhDvhV+MKY/UH0xgTeiVNo7+SzOnTp8oqi4X/mqxnvCd6/GxCT0gdb/lS9rBeGWna4ldxMYrAmLg0J9+h1pbOXMpRebDoEkyzXoaHB+9ZH69T0UJR9LvjKvhm6+1DuX5bvO050Sdom24vR0eoGSbligNGDr07mx1JsHw/FCHQjLDlforj5POmG3t5X7YC/Qv6oEcllbdsXINmW6L3KYRTgo3omSuj4D2cnVTlDHrlwZo6L73MC9aU6lMRNmZJC6F0UVX6jaGwNx4DTf1FXihz00+s3KgmPkFgnu9Q== james@server
+        lvvm_cloud_user: {{ "bob" }}
+        lvvm_cloud_pass: "{{ V_DEFAULT_ROCKY_PASS }}"
+        lvvm_cloud_ssh_keys: "{{ cloud_ssh_keys.0 }}"
         

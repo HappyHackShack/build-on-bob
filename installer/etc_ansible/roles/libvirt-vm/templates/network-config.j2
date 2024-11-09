@@ -3,14 +3,14 @@ network:
   ethernets:
     {{ lvvm_net_iface }}:
       dhcp4: no
-      addresses: [ {{  lvvm_ip_cidr }} ]
+      addresses: [ {{ lvvm_vm_ip_cidr }} ]
       routes:
       - to: 0.0.0.0/0
-        via: {{  lvvm_ip_gateway }}
+        via: {{ lvvm_net_gateway }}
       nameservers:
         addresses:
-        {% for ns in  lvvm_nameservers %}
+        {% for ns in lvvm_net_nameservers %}
 - {{ns}}
         {% endfor %}
 search:
-        - {{ lvvm_domain}}
+        - {{ lvvm_dns_domain}}

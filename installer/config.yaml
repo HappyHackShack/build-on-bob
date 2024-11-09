@@ -9,19 +9,20 @@ all:
     ALPINE_SITE: 'https://uk.alpinelinux.org/alpine'
 
     # What IP address do you want to use (MUST already be on one of your interfaces)
-    BOB_LISTEN_ADDRESS: '172.16.0.10'
-    BOB_DHCP_GATEWAY: '172.16.0.254'
-    BOB_DHCP_NAMESERVER: '172.16.0.254'
+    BOB_LISTEN_ADDRESS: '192.168.0.1'
+    BOB_DHCP_GATEWAY: '192.168.0.254'
+    BOB_DHCP_NAMESERVER: '192.168.0.254'
     # Local DNS Domain
     BOB_DNS_DOMAIN: 'home.lab'
     # Where to share the TFTP files from
     BOB_TFTP_DIRECTORY: '/var/lib/tftp'
 
     # Builder SSH key (to be put onto deployed images)
+    BUILDER_USER: bob
     BUILDER_SSH_KEY_FILE: '~/.ssh/id_rsa.pub'
     BUILDER_SSH_KEY: "{{ lookup('ansible.builtin.file', ''+BUILDER_SSH_KEY_FILE) }}"
 
-    BOB_LOCAL_CACHE: 'http://sponge/cache'
+    BOB_LOCAL_CACHE: 'http://your.server/cache'
 
     #-----------------------------------------------------------------------------------------------------------------------
     # DO NOT CHANGE BELOW HERE, unless you know what you are doing

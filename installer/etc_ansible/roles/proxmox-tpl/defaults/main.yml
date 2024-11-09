@@ -2,7 +2,7 @@
 # defaults file for proxmox-tpl
 
 # Where to store the vm-Template
-pve_storage_name: "local-lvm"
+pve_storage_name: "{{ undef(hint='You must define the name of the storage') }}"
 
 # Details of where to get the cloud image from
 pve_cloud_image: "{{ undef(hint='You must define a cloud image (file)') }}"

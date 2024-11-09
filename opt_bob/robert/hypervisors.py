@@ -56,6 +56,8 @@ def delete_hypervisor(hypervisor_name: str, session: SessionDep):
     hypervisor = session.get(Hypervisor, hypervisor_name)
     if not hypervisor:
         raise HTTPException(status_code=404, detail=" Hypervisor not found")
+    # TODO - check if any VMs
+    # TODO - remove the prep playbook
     session.delete(hypervisor)
     session.commit()
     write_ansible_inventory(session)

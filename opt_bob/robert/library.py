@@ -1,8 +1,10 @@
 import ansible_runner as Ansible
+from ansible_runner.utils import cleanup_artifact_dir
 from fastapi import HTTPException
 import ipaddress
 from jinja2 import Environment, FileSystemLoader
 import os
+from pprint import pprint
 from pydantic import BaseModel
 import shutil
 from sqlmodel import select, Session
@@ -67,7 +69,7 @@ Config = Configuration()
 ### ---------- General --------------------------------------------------------------------
 
 
-def render_template(Template_Filename, Config, Target_Filename, mode = 0o644):
+def render_template(Template_Filename, Config, Target_Filename, mode=0o644):
     environment = Environment(loader=FileSystemLoader(Template_Dir))
     template = environment.get_template(Template_Filename)
     rendered = template.render(Config)
@@ -82,28 +84,35 @@ def render_template(Template_Filename, Config, Target_Filename, mode = 0o644):
 def restart_dnsmasq():
     os.system("systemctl restart dnsmasq")
 
-    
+
 def run_ansible(playbook):
     result = Ansible.interface.run(private_data_dir=Ansible_Dir, playbook=playbook)
-    # print(result)
-    # for ev in result.events:
-    #     stdout = ev['stdout'][2:] if ev['stdout'][:2] == '\r\n' else ev['stdout']
-    #     print('EV', ev['uuid'], stdout)
-
-    # Clean up the Artifacts
-    for ev in result.events:
-        uuid = ev["uuid"]
-        evPath = f"{Ansible_Dir}/artifacts/{uuid}"
-        if os.path.exists(evPath):
-            shutil.rmtree(evPath)
-    # Check for Total Failure
-    if not result.stats:
-        raise HTTPException(status_code=500, detail="FAILED to run the playbook")
-    # Check for task failures
     Stats = result.stats
+
+    # Check the event results
+    task_errors = []
+    for event in result.events:
+        # print("EV", event["uuid"], event["event"])
+        if "failed" in event["event"]:
+            ev_data = event["event_data"]
+            # print("FAIL ", end="")
+            # pprint(event)
+            task_errors.append(ev_data["res"]["msg"])
+
+    # Finally; clean-up artefacts
+    cleanup_artifact_dir(f"{Ansible_Dir}/artifacts",1 )
+
+    # Check for Total Failure
+    if not Stats:
+        raise HTTPException(status_code=500, detail="FAILED to run the playbook")
+
+    # Check for task failures
     print(Stats)
     if Stats["failures"]:
-        raise HTTPException(status_code=500, detail="There were some tasks failures")
+        raise HTTPException(
+            status_code=500,
+            detail="There were some tasks failures:\n" + "\n".join(task_errors),
+        )
     if not Stats["ok"]:
         raise HTTPException(status_code=500, detail="Hmm, no tasks were run")
 
@@ -182,8 +191,9 @@ def get_os_join_versions(session: Session):
 
 
 def wipe_vm_playbooks(VM: Virtual):
-    for verb in ["build", "remove]"]:
+    for verb in ["build", "remove"]:
         playbook = f"{Ansible_Dir}/{verb}-{VM.name}-vm.yaml"
+        print("RM ", playbook)
         if os.path.exists(playbook):
             os.unlink(playbook)
 
@@ -211,8 +221,20 @@ def write_ansible_inventory(session):
 def write_vm_playbooks(vm: Virtual, session):
     hyper = session.get(Hypervisor, vm.hypervisor)
     # TODO - lookup subnet deets properly
-    osver = session.exec(select(OsVersion).where(OsVersion.pve_id==vm.osver_pid)).one()
-    extra = {"cidr": "24", "gateway": "172.16.0.254", "nameservers": ["172.16.0.254"], "net_iface": osver.net_iface, "cloud_image": osver.files}
+    osver = session.exec(
+        select(OsVersion).where(OsVersion.pve_id == vm.osver_pid)
+    ).one()
+    extra = {
+        "pve_storage": hyper.pve_storage,
+        "cidr": "24",
+        "sn_gateway": "172.16.0.254",
+        "sn_nameservers": ["172.16.0.254"],
+        "net_iface": osver.net_iface,
+        "cloud_image": osver.files,
+        "cloud_user": Config.builder_user,
+        "cloud_pass": "RockyP@ss",
+        "cloud_ssh_keys": [ Config.builder_ssh_key ]
+    }
     hv_type = hyper.type
     render_template(
         f"{hv_type}-build-vm.j2",

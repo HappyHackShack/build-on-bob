@@ -66,7 +66,10 @@ def cache_scripts_generate(session: SessionDep):
         "populate-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/populate-cache.sh", 0o750
     )
     render_template(
-        "fetch-from-cache.sh.j2", Config() | Temp, f"{Opt_Bob}/fetch-from-cache.sh", 0o750
+        "fetch-from-cache.sh.j2",
+        Config() | Temp,
+        f"{Opt_Bob}/fetch-from-cache.sh",
+        0o750,
     )
 
     return {"ok": True}

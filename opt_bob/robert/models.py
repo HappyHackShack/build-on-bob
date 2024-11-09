@@ -32,6 +32,7 @@ class HostModel(SQLModel):
     model_config = ConfigDict(validate_assignment=True)
     #
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
+    dns_domain: Optional[str]
     ip: Annotated[str, AfterValidator(validate_ip)]
     mac: str
     os_name: Optional[str] = Field(default="rescue")
@@ -58,6 +59,7 @@ class HypervisorModel(SQLModel):
     #
     name: str = Field(primary_key=True)
     type: Annotated[str, AfterValidator(validate_hv_type)]
+    pve_storage: Optional[str] = Field(default="local-lvm")
     ssh_user: Optional[str] = Field(default="rocky")
     ssh_key_file: Optional[str] = Field(default="~/.ssh/rocky")
     api_user: Optional[str] = Field(default="root@pam")
@@ -135,6 +137,7 @@ class VirtualModel(SQLModel):
     model_config = ConfigDict(validate_assignment=True)
     #
     name: Annotated[str, AfterValidator(coerce_to_lower)] = Field(primary_key=True)
+    dns_domain: Optional[str]
     vmid: Optional[int] = Field(default=0)
     hypervisor: str
     osver_pid: int

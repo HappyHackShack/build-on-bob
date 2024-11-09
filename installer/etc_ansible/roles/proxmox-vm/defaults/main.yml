@@ -1,8 +1,20 @@
 ---
 # defaults file for proxmox-vm
 
-pve_storage_name: "local-lvm"
+pve_storage_name: "{{ undef(hint='You must define the name of the storage') }}"
 
 # Details of the template and VM to create
 pve_template_id: "{{ undef(hint='You must define the template_id to clone') }}"
 pve_vm_id: "{{ undef(hint='You must define the VM ID to create') }}"
+pve_hostname: "{{ undef(hint='You must define the name of the VM to create') }}"
+pve_dns_domain: "{{ undef(hint='You must define the DNS Dopmain') }}"
+pve_net_iface: "{{ undef(hint='You must define the network interface to use') }}"
+pve_vm_cpu_cores: "{{ undef(hint='You must define the CPU core count') }}"
+pve_vm_memory_mb: "{{ undef(hint='You must define the amount of memory') }}"
+pve_vm_os_disk_gb: 50
+pve_vm_ip_cidr: "{{ undef(hint='You must define the IP to use') }}"
+pve_net_gateway: "{{ undef(hint='You must define the network gateway') }}"
+pve_net_nameservers: "{{ undef(hint='You must define the DNS name servers') }}"
+pve_cloud_user: "bob"
+pve_cloud_pass: "{{ lookup('ansible.builtin.password', '/dev/null') }}"
+pve_cloud_ssh_keys: "{{ undef(hint='You must define some SSH keys for the cloud user') }}"

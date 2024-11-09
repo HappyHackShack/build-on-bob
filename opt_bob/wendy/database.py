@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datalite import datalite
 from datalite.fetch import fetch_all, fetch_from
-#from datalite.migrations import basic_migrate
+# from datalite.migrations import basic_migrate
 
-BoB_DB = 'bob-data.db'
+BoB_DB = "bob-data.db"
+
 
 @datalite(db_path=BoB_DB)
 @dataclass
@@ -29,4 +30,3 @@ class Host:
     version: str
     disk: str
     target: str
-    

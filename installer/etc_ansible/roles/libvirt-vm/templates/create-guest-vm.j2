@@ -1,15 +1,16 @@
 #!/bin/bash
 
 NAME="--name={{ lvvm_hostname }}"
-RAM="--ram={{ lvvm_vm_memory }}"
-CPUS="--vcpus={{ lvvm_vm_cores }}"
-DISK="--disk=size={{ lvvm_vm_os_disk_size }},backing_store={{ lvvm_image_dir }}/{{ lvvm_cloud_image }}"
+RAM="--ram={{ lvvm_vm_memory_mb }}"
+CPUS="--vcpus={{ lvvm_vm_cpu_cores }}"
+DISK="--disk=size={{ lvvm_vm_os_disk_gb }},backing_store={{ lvvm_image_dir }}/{{ lvvm_cloud_image }}"
 CLOUD="--cloud-init user-data={{ lvvm_config_dir }}/{{ lvvm_hostname }}.user,network-config={{ lvvm_config_dir }}/{{ lvvm_hostname }}.network"
 OS="--os-variant=rocky9"
+NETWORK="--network bridge={{ lvvm_hv_bridge }},model=virtio"
 EXTRA="{{ lvvm_extra_config }}"
 BOOT_MODE="--boot hd,network"
 
 # Check if exists
 virsh list --all | grep {{ lvvm_hostname }} && exit 0
 # Needs creating ...
-virt-install $NAME $RAM $CPUS $BOOT_MODE --import $DISK $EXTRA $CLOUD $OS --network bridge=bridge0,model=virtio --noautoconsole
+virt-install $NAME $RAM $CPUS $BOOT_MODE --import $DISK $EXTRA $CLOUD $OS $NETWORK --noautoconsole

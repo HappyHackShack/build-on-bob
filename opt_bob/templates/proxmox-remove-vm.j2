@@ -8,17 +8,22 @@
   tasks:
 
     - name: "VM : Stop"
-      ansible.builtin.uri:
-        validate_certs: false
-        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/{{ vmid }}/status/stop
-        method: POST
-        headers:
-          Authorization: 'PVEAPIToken={{'{{ pve_user }}'}}!{{'{{ pve_token }}'}}={{'{{ pve_secret }}'}}'
+      community.general.proxmox_kvm:
+        api_host         : {{ hypervisor }}
+        api_user         : "{{ "{{ pve_api_user }}" }}"
+        api_token_id     : "{{ "{{ pve_api_token }}" }}"
+        api_token_secret : "{{ "{{ pve_api_secret }}" }}"
+        node             : "{{ "{{ pve_node }}" }}"
+        vmid             : {{ vmid }}
+        state            : stopped
+        force            : yes
 
     - name: "VM : Destroy"
-      ansible.builtin.uri:
-        validate_certs: false
-        url: https://{{ hypervisor }}:8006/api2/json/nodes/{{'{{ pve_node }}'}}/qemu/{{ vmid }}?purge=0&destroy-unreferenced-disks=0
-        method: DELETE
-        headers:
-          Authorization: 'PVEAPIToken={{'{{ pve_user }}'}}!{{'{{ pve_token }}'}}={{'{{ pve_secret }}'}}'
+      community.general.proxmox_kvm:
+        api_host         : {{ hypervisor }}
+        api_user         : "{{ "{{ pve_api_user }}" }}"
+        api_token_id     : "{{ "{{ pve_api_token }}" }}"
+        api_token_secret : "{{ "{{ pve_api_secret }}" }}"
+        node             : "{{ "{{ pve_node }}" }}"
+        vmid             : {{ vmid }}
+        state            : absent

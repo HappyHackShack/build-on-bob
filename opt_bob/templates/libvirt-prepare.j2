@@ -37,6 +37,12 @@
         enabled: true
         state: started
 
+    - name: Start LibVirt
+      ansible.builtin.service:
+        name: libvirtd
+        enabled: true
+        state: started
+
     - name: Set the default password for the rocky user
       ansible.builtin.user:
         name: rocky

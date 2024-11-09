@@ -67,6 +67,8 @@ def do_Command(args):
         do_Subnet_Command(args)
     elif OBJ in ("t", "tail"):
         os.system("tail -n 3 -f /var/log/nginx/access.log")
+    elif OBJ in ("ve", "vaultedit"):
+        do_Vault_Edit()
     elif OBJ in ("vm", "virtual"):
         do_Virtual_Command(args)
     elif OBJ in ("w", "watch"):
@@ -144,7 +146,6 @@ def show_Help():
         print(f"""{bob} - your gateway to automated builds of Physicals (and virtuals)\n
 Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> ...]{END}""")
     print(f"""  The following {WHITE}Objects{END} can be worked with:
-    {WHITE}G  | gcs{END}        - generate cache scripts (fetch and populate)
     {WHITE}h  | host{END}       - perform {MAGENTA}host{END} actions
     {WHITE}hv | hypervisor{END} - perform {MAGENTA}hypervisor{END} actions
     {WHITE}i  | ipam{END}       - perform {MAGENTA}IPAM{END} actions
@@ -153,11 +154,13 @@ Call with: {CYAN}bob <system-action> | <object> [<action>] [<extra_parameters> .
     {WHITE}sn | subnet{END}     - perform {MAGENTA}subnet{END} actions
     {WHITE}vm | virtual{END}    - perform {MAGENTA}virtual machine{END} actions
   The following {WHITE}System Actions{END} can be performed:
-    {WHITE}f  | fetch{END}  - perform a fetch
-    {WHITE}?  | help{END}   - show this help :)
-    {WHITE}s  | status{END} - show the status of Bob components
-    {WHITE}t  | tail{END}   - tail the web (Wendy) logs.
-    {WHITE}w  | watch{END}  - start watching the build status file.
+    {WHITE}f  | fetch{END}      - perform a fetch
+    {WHITE}G  | gcs{END}        - generate cache scripts (fetch and populate)
+    {WHITE}s  | status{END}     - show the status of Bob components
+    {WHITE}t  | tail{END}       - tail the web (Wendy) logs.
+    {WHITE}ve | vaultedit{END}  - edit the (ansible vault)
+    {WHITE}w  | watch{END}      - start watching the build status file.
+    {WHITE}?  | help{END}       - show this help :)
 For more details, run : {CYAN}man bob{END}""")
 
 
@@ -261,11 +264,11 @@ def do_Hypervisor_Command(args):
     if ACTION == "":
         CONTEXT = "hypervisor"
     elif ACTION in ("a", "add"):
-        if len(args) > 1:
+        if len(args) > 2:
             hypervisor_Add(args)
         else:
             print(
-                f"{RED}Please specify (at least) <name> <type> [<user>] [<ssh_private_key_file>]{END}"
+                f"{RED}Please specify (at least) <name> <type> [<pve_storage>] [<ssh_user>] [<ssh_private_key_file>]{END}"
             )
     elif ACTION in ("d", "delete"):
         if args:
@@ -284,6 +287,8 @@ def do_Hypervisor_Command(args):
 
 def hypervisor_Add(args):
     hv = {"name": args.pop(0), "type": args.pop(0)}
+    if args:
+        hv["pve_storage"] = args.pop(0)
     if args:
         hv["ssh_user"] = args.pop(0)
     if args:
@@ -305,9 +310,13 @@ def hypervisor_List():
     if len(Hypers) == 0:
         print(f"{YELLOW}You don't have any hypervisors yet{END}")
     else:
-        print(f"{BG_GRAY}  Hostname        Type              {END}")
+        print(
+            f"{BG_GRAY}  Hostname        Type       SSH-User   Storage      Bridge      {END}"
+        )
         for h in Hypers:
-            print(f"  {h['name']:15} {h['type']} {END}")
+            print(
+                f"  {h['name']:15} {h['type']:10} {h['ssh_user']:10} {h['pve_storage']:12} {h['bridge_name']:8}{END}"
+            )
 
 
 ## IPAM Functions ---------------------------------------------------------------------------------
@@ -496,6 +505,13 @@ def subnet_List():
             )
 
 
+## Vault Functions -----------------------------------------------------------------------------------
+
+
+def do_Vault_Edit():
+    os.system(f"cd /etc/ansible ; ansible-vault edit group_vars/all/vault.yaml")
+
+
 ## Virtual Machine Functions -------------------------------------------------------------------------
 
 
@@ -539,7 +555,12 @@ def do_Virtual_Command(args):
 
 
 def virtual_Add(args):
-    vm = {"hypervisor": args.pop(0), "name": args.pop(0), "osver_pid": args.pop(0), "ip": args.pop(0)}
+    vm = {
+        "hypervisor": args.pop(0),
+        "name": args.pop(0),
+        "osver_pid": args.pop(0),
+        "ip": args.pop(0),
+    }
     req = requests.post(f"{API}/vm", json=vm)
     show_API_Response(req, "VM", vm["name"], "added")
 
@@ -562,9 +583,13 @@ def virtual_List():
     if len(Virtuals) == 0:
         print(f"{YELLOW}You don't have any Virtual Machines yet{END}")
     else:
-        print(f"{BG_GRAY}  Hypervisor   Name         IP               PID       {END}")
+        print(
+            f"{BG_GRAY}  Hypervisor   PID   IP               Name . Domain                        {END}"
+        )
         for vm in Virtuals:
-            print(f"  {vm['hypervisor']:12} {vm['name']:12} {vm['ip']:16} {vm['osver_pid']}")
+            print(
+                f"  {vm['hypervisor']:12} {vm['osver_pid']:<5} {vm['ip']:16} {vm['name']}.{vm['dns_domain']} "
+            )
 
 
 def virtual_Remove(args):

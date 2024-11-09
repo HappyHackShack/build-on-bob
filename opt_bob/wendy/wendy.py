@@ -2,7 +2,7 @@
 
 from flask import Flask
 
-app = Flask('wendy')
+app = Flask("wendy")
 
 from config import *
 from cli_pages import *

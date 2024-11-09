@@ -7,6 +7,7 @@ from library import (
     API_DELETE_Responses,
     API_GET_Responses,
     API_POST_Responses,
+    Config,
     restart_dnsmasq,
     write_Build_Files,
     write_Dnsmasq,
@@ -34,6 +35,13 @@ def create_host(host: Host, session: SessionDep) -> Host:
     # TODO
     # Which subnet / Node
 
+    # Sort the DNS Domain
+    if "." in host.name:
+        host.dns_domain = ".".join(host.name.split(".")[1:])
+        host.name = host.name.split(".")[0]
+    else:
+        # Just use the default
+        host.dns_domain = Config.dns_domain
     # OK
     session.add(host)
     session.commit()

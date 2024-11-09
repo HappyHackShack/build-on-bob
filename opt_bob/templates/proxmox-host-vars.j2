@@ -4,8 +4,8 @@ ansible_user: {{ ssh_user }}
 ansible_ssh_private_key_file: '{{ ssh_key_file }}'
 
 pve_node: {{ name }}
-pve_user: {{ api_user }}
-pve_token: {{ api_token }}
-pve_secret: "{{ api_secret }}"
+pve_api_user: {{ api_user }}
+pve_api_token: {{ api_token }}
+pve_api_secret: "{{ api_secret }}"
 
-pve_storage_name: local-lvm
+pve_storage_name: {{ pve_storage }}

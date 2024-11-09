@@ -12,6 +12,7 @@
       vars:
         pve_cloud_image: {{ osv.files }}
         pve_cloud_image_url: "http://{{ cfg.bob_listen_address }}/{{ osv.os_name }}/{{ osv.os_version }}/{{ osv.files }}"
+        pve_storage_name: {{ hv.pve_storage }}
         pve_template_id: 900{{ osv.pve_id }}
         pve_template_name: {{ osv.os_name }}-{{ osv.pve_id }}-tpl
 {% endfor %}

@@ -8,6 +8,7 @@ from library import (
     API_DELETE_Responses,
     API_GET_Responses,
     API_POST_Responses,
+    Config,
     get_Subnet_for_ip,
     run_ansible,
     wipe_vm_playbooks,
@@ -26,8 +27,18 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
     if not hypervisor:
         raise HTTPException(status_code=406, detail="Unknown hypervisor")
 
+    # Sort the DNS Domain
+    if "." in virtual.name:
+        virtual.dns_domain = ".".join(virtual.name.split(".")[1:])
+        virtual.name = virtual.name.split(".")[0]
+    else:
+        # Just use the default
+        virtual.dns_domain = Config.dns_domain
+
     # Check OS-Ver PID (and convert)
-    osver = session.exec(select(OsVersion).where(OsVersion.pve_id==virtual.osver_pid)).one_or_none()
+    osver = session.exec(
+        select(OsVersion).where(OsVersion.pve_id == virtual.osver_pid)
+    ).one_or_none()
     if not osver:
         raise HTTPException(status_code=406, detail="Unknown OS_Version ID")
 
