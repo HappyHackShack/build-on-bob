@@ -9,7 +9,7 @@ from library import (
     API_POST_Responses,
     Config,
     restart_dnsmasq,
-    write_Build_Files,
+    write_host_build_files,
     write_Dnsmasq,
 )
 from models import Host, OsVersion
@@ -48,7 +48,7 @@ def create_host(host: Host, session: SessionDep) -> Host:
     session.refresh(host)
     #
     write_Dnsmasq(session)
-    write_Build_Files(host, session)
+    write_host_build_files(host, session)
     restart_dnsmasq()
     return host
 
@@ -130,7 +130,7 @@ def build_host(Params: dict, host_name: str, session: SessionDep) -> Host:
     session.refresh(host)
     #
     write_Dnsmasq(session)
-    write_Build_Files(host, session)
+    write_host_build_files(host, session)
     return host
 
 
@@ -143,5 +143,5 @@ def complete_host(host_name: str, session: SessionDep) -> Host:
     session.add(host)
     session.commit()
     session.refresh(host)
-    write_Build_Files(host, session)
+    write_host_build_files(host, session)
     return host

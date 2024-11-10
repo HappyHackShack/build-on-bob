@@ -18,6 +18,12 @@
         dest: /root/text-screen-saver.sh
         mode: '0750'
 
+    - name: Create the mk-bridge0 script
+      ansible.builtin.template:
+        src: mk-bridge0.sh.j2
+        dest: /root/mk-bridge0.sh
+        mode: '0750'
+
     - name: Update packages
       ansible.builtin.dnf:
         name: "*"
@@ -60,5 +66,8 @@
 
     - name: Tell the user to create the Bridge
       ansible.builtin.debug:
-        msg: "Please log in to cockpit and create bridge0 on the main interface https://{{ hv.name }}:9090"
- 
+        msg: "About to create bridge0 on the main interface https://{{ hv.name }}:9090"
+
+    - name: Run the mk-bridge0 script
+      ansible.builtin.shell:
+        cmd: /root/mk-bridge0

@@ -51,6 +51,8 @@ op_systems:
       output: ipxe/MAC.cfg
     - source: fedora.sh.j2
       output: build/MAC.sh
+    - source: generic-ci-network.j2
+      output: build/network-MAC
     - source: empty-ci-meta.j2
       output: build/meta-MAC
     - source: fedora-ci-user.j2
@@ -85,6 +87,8 @@ op_systems:
       output: ipxe/MAC.cfg
     - source: rocky.sh.j2
       output: build/MAC.sh
+    - source: generic-ci-network.j2
+      output: build/network-MAC
     - source: empty-ci-meta.j2
       output: build/meta-MAC
     - source: rocky-ci-user.j2
@@ -110,6 +114,8 @@ op_systems:
       output: ipxe/MAC.cfg
     - source: ubuntu.sh.j2
       output: build/MAC.sh
+    - source: generic-ci-network.j2
+      output: build/network-MAC
     - source: empty-ci-meta.j2
       output: build/meta-MAC
     - source: ubuntu-ci-user.j2

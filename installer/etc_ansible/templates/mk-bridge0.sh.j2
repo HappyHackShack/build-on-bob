@@ -1,0 +1,30 @@
+#!/bin/bash
+
+nmcli conn show | grep bridge0 && { echo "It's already there"; exit 0; }
+
+# Get the current settings
+cd /etc/sysconfig/network-scripts
+IPADDR=$( grep IPADDR ifcfg-eth0 | awk -F= '{ print $2 }' )
+IPCIDR=$( ip a | grep "$IPADDR" | awk '{ print $2 }' )
+GATEWAY=$( grep GATEWAY ifcfg-eth0 | awk -F= '{ print $2 }' )
+DNS_SVR=$( grep nameserver /etc/resolv.conf | awk '{ print $2 }' )
+DNS_SEARCH=$( grep search /etc/resolv.conf | awk '{ print $2 }' )
+
+mv /etc/sysconfig/network-scripts/ifcfg* /tmp
+
+nmcli conn add type bridge ifname bridge0 con-name bridge0
+nmcli conn modify bridge0 bridge.stp no connection.autoconnect-ports 1 connection.autoconnect-slaves 1
+nmcli conn modify bridge0 ipv6.method ignore
+nmcli conn modify bridge0 ipv4.addresses $IPCIDR
+nmcli conn modify bridge0 ipv4.gateway $GATEWAY
+nmcli conn modify bridge0 ipv4.dns $DNS_SVR
+nmcli conn modify bridge0 ipv4.dns-search $DNS_SEARCH
+nmcli conn modify bridge0 ipv4.method manual
+
+nmcli conn add type ethernet ifname eth0 con-name eth0 master bridge0
+nmcli conn modify eth0 connection.port-type bridge connection.slave-type bridge
+
+nmcli conn reload
+nmcli conn down eth0
+nmcli conn up bridge0
+nmcli conn up eth0

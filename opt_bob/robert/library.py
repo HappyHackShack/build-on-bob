@@ -151,7 +151,7 @@ def write_Dnsmasq(session: Session):
             dns.write(f"dhcp-host={host.mac},{host.ip},{host.name}\n")
 
 
-def write_Build_Files(host: Host, session: Session):
+def write_host_build_files(host: Host, session: Session):
     wipe_host_build_files(host)
     Rname = "local" if host.target == "local" else host.os_name
     Templates = session.exec(
@@ -162,6 +162,8 @@ def write_Build_Files(host: Host, session: Session):
             OsVersion.os_name == host.os_name, OsVersion.os_version == host.os_version
         )
     ).one()
+    # TODO - lookup the subnet
+    subnet = { "cidr": "24", "gateway": "172.16.0.254", "nameservers": "172.16.0.254" }
     for template in Templates:
         tpl_src = template.source
         output = template.output.replace("MAC", host.mac)
@@ -169,7 +171,7 @@ def write_Build_Files(host: Host, session: Session):
         # cfg = host.dict() | OS_Ver.dict()
         render_template(
             tpl_src,
-            Config() | host.dict() | OS_Ver.dict(),
+            Config() | subnet | host.dict() | OS_Ver.dict(),
             f"{Config.nginx_base_dir}/{output}",
         )
 
