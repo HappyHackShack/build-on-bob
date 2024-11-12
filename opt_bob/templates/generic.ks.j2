@@ -1,0 +1,69 @@
+#version=Rocky Linux 9
+#documentation: https://docs.fedoraproject.org/en-US/fedora/f36/install-guide/appendixes/Kickstart_Syntax_Reference/
+
+# PRE-INSTALLATION SCRIPT
+%pre --interpreter=/usr/bin/bash --log=/root/anaconda-ks-pre.log
+%end
+
+# INSTALL USING TEXT MODE
+text
+
+# KEYBOARDS, LANGUAGES, TIMEZONE
+keyboard --vckeymap=gb --xlayouts=gb
+lang en_UK.UTF-8
+timezone Etc/UTC --utc
+
+# NETWORK, SELINUX, FIREWALL
+# Hostname must be separate from link config, in either 'host' or 'host.domain.tld' form.
+network --hostname='{{ name }}.{{ dns_domain }}'
+network --device={{ mac }} --bootproto=static --onboot=on --noipv6 --activate --ip={{ ip }} --netmask=255.255.255.0 --gateway={{ gateway }} --nameserver={{ nameservers }}
+#selinux --enforcing
+firewall --enabled --ssh
+
+# DISKS, PARTITIONS, VOLUME GROUPS, LOGICAL VOLUMES
+# Install target is usually sda, vda, or nvme0n1; adjust all references below accordingly.
+# The EFI & /boot partitions are explicitly set here, but some people just use `reqpart`.
+ignoredisk --only-use=sda
+zerombr
+clearpart  --all --initlabel 
+bootloader --location=mbr --boot-drive=sda --append='crashkernel=auto'
+part /boot     --label=BOOT     --size=1024         --asprimary --fstype=ext4
+part pv.01     --label=VOLUMES  --size=1024  --grow --asprimary
+volgroup volgroup0 pv.01
+logvol swap    --label=SWAP     --size=8192         --vgname=volgroup0 --name=swap
+logvol /       --label=ROOT     --size=1024  --grow --vgname=volgroup0 --name=root --fstype=xfs
+
+# INSTALLATION SOURCE, EXTRA REPOSITOROIES, PACKAGE GROUPS, PACKAGES
+url  --url="http://{{ bob_listen_address }}:8080/rocky/9.4/BaseOS/x86_64/os"
+repo --baseurl="http://{{ bob_listen_address }}:8080/rocky/9.4/AppStream/x86_64/os" --name=AppStream --cost=0
+#repo --baseurl="http://{{ bob_listen_address }}:8080/rocky/9.4/extras/x86_64/os"    --name=Extras    --cost=0
+# Extras repository is needed to install `epel-release` package.
+# Remove `@guest-agents` group if this is not a VM.
+%packages --retries=5 --timeout=20 --inst-langs=en
+@^minimal-environment
+#@guest-agents
+#epel-release
+kernel-devel
+openssh-server
+%end
+
+# GROUPS, USERS, ENABLE SSH, FINISH INSTALL
+rootpw --lock
+# Create user 'cloud-user' and group 'mygroup' (with GID 3000), make it myuser's primary group, and add myuser to administrative 'wheel' group.
+user --name={{ builder_user }} --password='Rocky123' --plaintext --groups='wheel'
+sshkey --username={{ builder_user }} '{{ builder_ssh_key }}'
+services --enabled='sshd.service'
+reboot --eject
+
+# ENABLE EMERGENCY KERNEL DUMPS FOR DEBUGGING
+#%addon com_redhat_kdump --reserve-mb=auto --enable
+#%end
+
+# POST-INSTALLATION SCRIPT
+%post --interpreter=/usr/bin/bash --log=/root/anaconda-ks-post.log --erroronfail
+# Enable CodeReady Builder repo (requires `epel-release` package).
+/usr/bin/dnf config-manager --set-enabled crb
+which curl
+which wget
+curl http://172.16.0.10/api/host/lara/complete
+%end

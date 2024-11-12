@@ -133,3 +133,18 @@ op_systems:
         url: '23.10/release-20240710'
         files:
           - ubuntu-23.10-server-cloudimg-amd64.img
+
+  - name: r9ks
+    base_url: 'https://dl.rockylinux.org/pub/rocky'
+    templates:
+    - source: kickstart.ipxe.j2
+      output: ipxe/MAC.cfg
+    - source: generic.ks.j2
+      output: build/MAC.ks
+    versions:
+      - os_version: '9.4'
+        net_iface: eth0
+        pve_id: 194
+        url: '9.4/isos/x86_64'
+        files:
+          - Rocky-x86_64-boot.iso

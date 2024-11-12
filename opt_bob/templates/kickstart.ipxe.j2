@@ -1,0 +1,10 @@
+#!ipxe
+
+set bob http://{{ bob_listen_address }}
+set iso ${bob}/r194
+set boot ${iso}/images/pxeboot
+
+kernel ${boot}/vmlinuz inst.repo=${iso} initrd=initrd.img inst.ks=${bob}/build/{{ mac }}.ks
+initrd ${boot}/initrd.img
+
+boot
