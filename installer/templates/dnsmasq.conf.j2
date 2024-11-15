@@ -13,9 +13,15 @@ domain={{ BOB_DNS_DOMAIN }}
 enable-tftp 
 tftp-root={{ BOB_TFTP_DIRECTORY }}
 
-# Set a tag for a user-class
+# Default boot file (UEFI)
+dhcp-boot=ipxe.efi
+
+# Set a tag for a BIOS (legacy) mode
+dhcp-match=set:bios,option:client-arch, 0
+dhcp-boot=tag:bios,undionly.kpxe
+
+# Did iPXE boot ?
 dhcp-userclass=set:ipxe,iPXE
-dhcp-boot=ipxe-x86_64.efi
 dhcp-boot=tag:ipxe,http://{{ BOB_LISTEN_ADDRESS }}/ipxe/stage1.cfg
 
 dhcp-range={{ BOB_LISTEN_ADDRESS }},static,24h

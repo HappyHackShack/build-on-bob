@@ -226,6 +226,7 @@
 
     # DNSMASQ
     - name: The DNSMASQ block
+      tags: dnsmasq
       block:
         - name: Put the DNSMASQ config in place
           ansible.builtin.template:

@@ -100,7 +100,7 @@ def run_ansible(playbook):
             task_errors.append(ev_data["res"]["msg"])
 
     # Finally; clean-up artefacts
-    cleanup_artifact_dir(f"{Ansible_Dir}/artifacts",1 )
+    cleanup_artifact_dir(f"{Ansible_Dir}/artifacts", 1)
 
     # Check for Total Failure
     if not Stats:
@@ -163,7 +163,7 @@ def write_host_build_files(host: Host, session: Session):
         )
     ).one()
     # TODO - lookup the subnet
-    subnet = { "cidr": "24", "gateway": "172.16.0.254", "nameservers": "172.16.0.254" }
+    subnet = {"cidr": "24", "gateway": "172.16.0.254", "nameservers": "172.16.0.254"}
     for template in Templates:
         tpl_src = template.source
         output = template.output.replace("MAC", host.mac)
@@ -235,7 +235,7 @@ def write_vm_playbooks(vm: Virtual, session):
         "cloud_image": osver.files,
         "cloud_user": Config.builder_user,
         "cloud_pass": "RockyP@ss",
-        "cloud_ssh_keys": [ Config.builder_ssh_key ]
+        "cloud_ssh_keys": [Config.builder_ssh_key],
     }
     hv_type = hyper.type
     render_template(

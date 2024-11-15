@@ -12,7 +12,7 @@ from library import (
     write_host_build_files,
     write_Dnsmasq,
 )
-from models import Host, OsVersion
+from models import Host, OpSys, OsVersion
 
 
 h_router = APIRouter(prefix="/host", tags=["Hosts"])
@@ -117,8 +117,21 @@ def build_host(Params: dict, host_name: str, session: SessionDep) -> Host:
     host.target = "build"
     # TODO
     if "os_name" in Params:
+        # First check that the OS exists
+        os = session.get(OpSys, Params["os_name"])
+        if not os:
+            raise HTTPException(status_code=406, detail="That OS does not exist")
         host.os_name = Params["os_name"]
         if "os_version" in Params:
+            # First check the OS.Ver exists
+            osv = session.exec(
+                select(OsVersion).where(
+                    OsVersion.os_name == host.os_name,
+                    OsVersion.os_version == Params["os_version"],
+                )
+            ).one_or_none()
+            if not osv:
+                raise HTTPException(status_code=406, detail="That OS.version does not exist")
             host.os_version = Params["os_version"]
         else:  # Just get the first known
             Version0 = session.exec(
