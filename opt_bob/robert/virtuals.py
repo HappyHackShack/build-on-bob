@@ -88,14 +88,14 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
 
     # All OK ...
     run_event_scripts(
-        "virtual", "pre-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+        "virtual", "pre-add", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
     )
     session.add(virtual)
     session.commit()
     session.refresh(virtual)
     write_vm_playbooks(virtual, session)
     run_event_scripts(
-        "virtual", "post-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+        "virtual", "post-add", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
     )
     return virtual
 
