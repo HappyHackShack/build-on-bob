@@ -49,14 +49,19 @@
             - "{{ NGINX_BASE_DIRECTORY }}/alpine"
             - "{{ NGINX_BASE_DIRECTORY }}/fcos"
 
-        - name: Put the iPXE EFI module in place
+        - name: Put the PXE modules in place
           ansible.builtin.copy:
             # If you are on Fedora, you can this proper source:
             # src: /usr/share/ipxe/ipxe-x86_64.efi
-            # But for Rocky, use:
-            src: ipxe-x86_64.efi
+            # But prob better to download from boot.ipxe.org
+            src: "{{ item }}"
             dest: "{{ BOB_TFTP_DIRECTORY }}/"
             mode: '0644'
+          loop:
+            - ipxe.efi
+            - ipxe-x86_64.efi
+            - snponly.efi
+            - undionly.kpxe
 
         - name: Allow dnsmasq to serve files
           community.general.sefcontext:

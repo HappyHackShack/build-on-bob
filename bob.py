@@ -187,19 +187,21 @@ def do_Host_Command(args):
             host_Complete(args)
         else:
             print(f"{RED}Please specify host to complete{END}")
-    elif ACTION in ("d", "delete"):
-        if args:
-            host_Delete(args)
-        else:
-            print(f"{RED}Please specify host to delete{END}")
     elif ACTION in ("e", "edit"):
         pass
     elif ACTION in ("l", "list"):
         host_List()
+    elif ACTION in ("rm", "remove"):
+        if args:
+            host_Remove(args)
+        else:
+            print(f"{RED}Please specify host to remove{END}")
     elif ACTION == "?":
         print(
-            f"{CYAN}host {WHITE}a{END}dd | {WHITE}b{END}uild | {WHITE}c{END}omplete | {WHITE}d{END}elete | {WHITE}e{END}dit | {WHITE}l{END}ist"
+            f"{CYAN}host {YELLOW}a{END}dd | {YELLOW}b{END}uild | {YELLOW}c{END}omplete | {YELLOW}e{END}dit | {YELLOW}l{END}ist | {YELLOW}r{END}e{YELLOW}m{END}ove"
         )
+    else:
+        print(f"{RED}What ?{END}")
 
 
 def host_Add(args):
@@ -231,12 +233,6 @@ def host_Complete(args):
     show_API_Response(req, "Host", hn, ": build mode disabled", BLUE)
 
 
-def host_Delete(args):
-    hn = args.pop(0)
-    req = requests.delete(f"{API}/host/{hn}")
-    show_API_Response(req, "Host", hn, "deleted", MAGENTA)
-
-
 def host_List():
     req = requests.get(f"{API}/host")
     Hosts = req.json()
@@ -251,6 +247,12 @@ def host_List():
             print(
                 f"  {h['name']:15} {BLUE}{h['mac']} / {CYAN}{h['ip']:15}{END} {h['os_name']:9} {h['os_version']:16} {h['disk']:11} {bld}{h['target']}{END}"
             )
+
+
+def host_Remove(args):
+    hn = args.pop(0)
+    req = requests.delete(f"{API}/host/{hn}")
+    show_API_Response(req, "Host", hn, "removed", MAGENTA)
 
 
 ## Hypervisor Functions ---------------------------------------------------------------------------------
@@ -270,16 +272,16 @@ def do_Hypervisor_Command(args):
             print(
                 f"{RED}Please specify (at least) <name> <type> [<pve_storage>] [<ssh_user>] [<ssh_private_key_file>]{END}"
             )
-    elif ACTION in ("d", "delete"):
-        if args:
-            hypervisor_Delete(args)
-        else:
-            print(f"{RED}Please specify a hypervisor to delete{END}")
     elif ACTION in ("l", "list"):
         hypervisor_List()
+    elif ACTION in ("rm", "remove"):
+        if args:
+            hypervisor_Remove(args)
+        else:
+            print(f"{RED}Please specify a hypervisor to remove{END}")
     elif ACTION == "?":
         print(
-            f"{CYAN}hypervisor {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist"
+            f"{CYAN}hypervisor {YELLOW}a{END}dd | {YELLOW}l{END}ist | {YELLOW}r{END}e{YELLOW}m{END}ove"
         )
     else:
         print(f"{RED}What ?{END}")
@@ -298,12 +300,6 @@ def hypervisor_Add(args):
     show_API_Response(req, "Hypervisor", hv["name"], "added")
 
 
-def hypervisor_Delete(args):
-    hv = args.pop(0)
-    req = requests.delete(f"{API}/hypervisor/{hv}")
-    show_API_Response(req, "Hypervisor", hv, "deleted", MAGENTA)
-
-
 def hypervisor_List():
     req = requests.get(f"{API}/hypervisor")
     Hypers = req.json()
@@ -317,6 +313,12 @@ def hypervisor_List():
             print(
                 f"  {h['name']:15} {h['type']:10} {h['ssh_user']:10} {h['pve_storage']:12} {h['bridge_name']:8}{END}"
             )
+
+
+def hypervisor_Remove(args):
+    hv = args.pop(0)
+    req = requests.delete(f"{API}/hypervisor/{hv}")
+    show_API_Response(req, "Hypervisor", hv, "removed", MAGENTA)
 
 
 ## IPAM Functions ---------------------------------------------------------------------------------
@@ -336,13 +338,13 @@ def do_Ipam_Command(args):
             print(
                 f"{RED}Please specify at least <name> <ip_range_start> <ip_range_end> {END}"
             )
-    elif ACTION in ("d", "delete"):
-        if args:
-            ipam_Delete(args)
-        else:
-            print(f"{RED}Please specify an IPAM to delete{END}")
     elif ACTION in ("l", "list"):
         ipam_List()
+    elif ACTION in ("rm", "remove"):
+        if args:
+            ipam_Remove(args)
+        else:
+            print(f"{RED}Please specify an IPAM to remove{END}")
     elif ACTION in ("s", "show"):
         if args:
             ipam_Show_IPs(args)
@@ -350,7 +352,7 @@ def do_Ipam_Command(args):
             print(f"{RED}Please specify an IPAM to show{END}")
     elif ACTION == "?":
         print(
-            f"{CYAN}ipam {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist | {WHITE}s{END}how"
+            f"{CYAN}ipam {YELLOW}a{END}dd | {YELLOW}l{END}ist | {YELLOW}r{END}e{YELLOW}m{END}ove | {YELLOW}s{END}how"
         )
     else:
         print(f"{RED}What ?{END}")
@@ -362,12 +364,6 @@ def ipam_Add(args):
     show_API_Response(req, "IPAM", IPAM["name"], "added")
 
 
-def ipam_Delete(args):
-    ipam = args.pop(0)
-    req = requests.delete(f"{API}/ipam/{ipam}")
-    show_API_Response(req, "IPAM", ipam, "deleted", MAGENTA)
-
-
 def ipam_List():
     req = requests.get(f"{API}/ipam")
     IPAMs = req.json()
@@ -377,6 +373,12 @@ def ipam_List():
         print(f"{BG_GRAY}  Name         IP Range                         {END}")
         for ipam in IPAMs:
             print(f"  {ipam['name']:12} {ipam['ip_from']} - {ipam['ip_to']} {END}")
+
+
+def ipam_Remove(args):
+    ipam = args.pop(0)
+    req = requests.delete(f"{API}/ipam/{ipam}")
+    show_API_Response(req, "IPAM", ipam, "removed", MAGENTA)
 
 
 def ipam_Show_IPs(args):
@@ -405,7 +407,7 @@ def do_Node_Command(args):
     elif ACTION in ("l", "list"):
         node_List()
     elif ACTION == "?":
-        print(f"{CYAN}node {WHITE}l{END}ist")
+        print(f"{CYAN}node {YELLOW}l{END}ist")
     else:
         print(f"{RED}What ?{END}")
 
@@ -423,7 +425,7 @@ def do_OS_Command(args):
     elif ACTION in ("l", "list"):
         os_List()
     elif ACTION == "?":
-        print(f"{CYAN}os {WHITE}l{END}ist")
+        print(f"{CYAN}os {YELLOW}l{END}ist")
     else:
         print(f"{RED}What ?{END}")
 
@@ -459,15 +461,15 @@ def do_Subnet_Command(args):
             subnet_Add(args)
         else:
             print(f"{RED}Please specify at least <network>/<cidr> <gateway> {END}")
-    elif ACTION in ("d", "delete"):
-        if args:
-            subnet_Delete(args)
-        else:
-            print(f"{RED}Please specify an IPAM to delete{END}")
     elif ACTION in ("l", "list"):
         subnet_List()
+    elif ACTION in ("rm", "remove"):
+        if args:
+            subnet_Remove(args)
+        else:
+            print(f"{RED}Please specify a Subnet to remove{END}")
     elif ACTION == "?":
-        print(f"{CYAN}subnet {WHITE}a{END}dd | {WHITE}d{END}elete | {WHITE}l{END}ist")
+        print(f"{CYAN}subnet {YELLOW}a{END}dd | {YELLOW}l{END}ist | {YELLOW}r{END}e{YELLOW}m{END}ove")
     else:
         print(f"{RED}What ?{END}")
 
@@ -481,12 +483,6 @@ def subnet_Add(args):
         Snet["nameservers"] = args.pop(0)
     req = requests.post(f"{API}/subnet", json=Snet)
     show_API_Response(req, "Subnet", network_cidr, "added")
-
-
-def subnet_Delete(args):
-    net = args.pop(0)
-    req = requests.delete(f"{API}/subnet/{net}")
-    show_API_Response(req, "Subnet", net, "deleted", MAGENTA)
 
 
 def subnet_List():
@@ -503,6 +499,12 @@ def subnet_List():
             print(
                 f"  {net:22} {sn['gateway']:15} {sn['ipam']:15} {sn['nameservers']:30} {sn['node']:16}{END}"
             )
+
+
+def subnet_Remove(args):
+    net = args.pop(0)
+    req = requests.delete(f"{API}/subnet/{net}")
+    show_API_Response(req, "Subnet", net, "removed", MAGENTA)
 
 
 ## Vault Functions -----------------------------------------------------------------------------------
@@ -534,21 +536,21 @@ def do_Virtual_Command(args):
             virtual_Build(args)
         else:
             print(f"{RED}Please specify a VM to build{END}")
-    elif ACTION in ("d", "delete"):
+    elif ACTION in ("d", "destroy"):
         if args:
-            virtual_Delete(args)
+            virtual_Destroy(args)
         else:
-            print(f"{RED}Please specify a VM to delete{END}")
+            print(f"{RED}Please specify a VM to destroy{END}")
     elif ACTION in ("l", "list"):
         virtual_List()
     elif ACTION in ("rm", "remove"):
         if args:
             virtual_Remove(args)
         else:
-            print(f"{RED}Please specify a VM to delete{END}")
+            print(f"{RED}Please specify a VM to remove{END}")
     elif ACTION == "?":
         print(
-            f"{CYAN}virtual {WHITE}a{END}dd | {WHITE}b{END}uild | {WHITE}d{END}elete | {WHITE}l{END}ist | {WHITE}r{END}emove"
+            f"{CYAN}virtual {YELLOW}a{END}dd | {YELLOW}b{END}uild | {YELLOW}d{END}estroy | {YELLOW}l{END}ist | {YELLOW}r{END}e{YELLOW}m{END}ove"
         )
     else:
         print(f"{RED}What ?{END}")
@@ -572,10 +574,10 @@ def virtual_Build(args):
     show_API_Response(req, "Virtual Machine", vm_name, "built")
 
 
-def virtual_Delete(args):
+def virtual_Destroy(args):
     vm_name = args.pop(0)
-    req = requests.delete(f"{API}/vm/{vm_name}")
-    show_API_Response(req, "Virtual Machine", vm_name, "deleted", MAGENTA)
+    req = requests.patch(f"{API}/vm/{vm_name}/destroy")
+    show_API_Response(req, "Virtual Machine", vm_name, "destroyed", MAGENTA)
 
 
 def virtual_List():
@@ -595,7 +597,7 @@ def virtual_List():
 def virtual_Remove(args):
     vm_name = args.pop(0)
     print(f"{CYAN}Please wait while the VM is removed ...{END}")
-    req = requests.patch(f"{API}/vm/{vm_name}/remove")
+    req = requests.delete(f"{API}/vm/{vm_name}")
     show_API_Response(req, "Virtual Machine", vm_name, "removed", MAGENTA)
 
 

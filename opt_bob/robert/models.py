@@ -49,6 +49,9 @@ class HostModel(SQLModel):
             raise ValueError("invalid MAC address")
         return mac
 
+    def fqdn(self):
+        return f"{self.name}.{self.dns_domain}"
+
 
 class Host(HostModel, table=True):
     pass
@@ -145,6 +148,9 @@ class VirtualModel(SQLModel):
     cpu_cores: Optional[int] = Field(default=4)
     memory_mb: Optional[int] = Field(default=4096)
     disk_gb: Optional[int] = Field(default=25)
+
+    def fqdn(self):
+        return f"{self.name}.{self.dns_domain}"
 
 
 class Virtual(VirtualModel, table=True):

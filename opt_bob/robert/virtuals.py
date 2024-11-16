@@ -11,6 +11,7 @@ from library import (
     Config,
     get_Subnet_for_ip,
     run_ansible,
+    run_event_scripts,
     wipe_vm_playbooks,
     write_vm_playbooks,
 )
@@ -86,10 +87,16 @@ def create_virtual(virtual: Virtual, session: SessionDep) -> Virtual:
                     break
 
     # All OK ...
+    run_event_scripts(
+        "virtual", "pre-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
     session.add(virtual)
     session.commit()
     session.refresh(virtual)
     write_vm_playbooks(virtual, session)
+    run_event_scripts(
+        "virtual", "post-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
     return virtual
 
 
@@ -116,27 +123,46 @@ def delete_virtual(vm_name: str, session: SessionDep):
     virtual = session.get(Virtual, vm_name)
     if not virtual:
         raise HTTPException(status_code=404, detail=" Virtual not found")
+    #
+    run_event_scripts(
+        "virtual", "pre-remove", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
     wipe_vm_playbooks(virtual)
     session.delete(virtual)
     session.commit()
+    run_event_scripts(
+        "virtual", "post-remove", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
     return {"ok": True}
 
 
 @vm_router.patch("/{vm_name}/build", responses=API_GET_Responses)
 def build_virtual(vm_name: str, session: SessionDep) -> Virtual:
-    vm = session.get(Virtual, vm_name)
-    if not vm:
+    virtual = session.get(Virtual, vm_name)
+    if not virtual:
         raise HTTPException(status_code=404, detail="VM not found")
     #
+    run_event_scripts(
+        "virtual", "pre-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
     run_ansible(f"build-{vm_name}-vm.yaml")
-    return vm
+    run_event_scripts(
+        "virtual", "post-build", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
+    return virtual
 
 
-@vm_router.patch("/{vm_name}/remove", responses=API_GET_Responses)
+@vm_router.patch("/{vm_name}/destroy", responses=API_GET_Responses)
 def remove_virtual(vm_name: str, session: SessionDep) -> Virtual:
-    vm = session.get(Virtual, vm_name)
-    if not vm:
+    virtual = session.get(Virtual, vm_name)
+    if not virtual:
         raise HTTPException(status_code=404, detail="VM not found")
     #
-    run_ansible(f"remove-{vm_name}-vm.yaml")
-    return vm
+    run_event_scripts(
+        "virtual", "pre-destroy", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
+    run_ansible(f"destroy-{vm_name}-vm.yaml")
+    run_event_scripts(
+        "virtual", "post-destroy", [virtual.hypervisor, virtual.fqdn(), virtual.ip]
+    )
+    return virtual

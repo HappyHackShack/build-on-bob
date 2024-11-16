@@ -117,6 +117,25 @@ def run_ansible(playbook):
         raise HTTPException(status_code=500, detail="Hmm, no tasks were run")
 
 
+def run_event_scripts(object: str, event: str, parameters: list[str]):
+    script_dir = f"{Config.bob_home_directory}/events/{object}/{event}"
+    print(f"Checking for {object}->{event} in {script_dir}")
+    files = os.listdir(script_dir)
+    for ff in files:
+        f_path = f"{script_dir}/{ff}"
+        f_stat = os.stat(f_path)
+        if f_stat.st_size == 0:
+            print(f"Quietly ignoring {ff}")
+            continue
+        # Check if ANY executable bit is set
+        if f_stat.st_mode & 0o111 == 0:
+            print(f"Found {ff}, but it's not executable")
+            continue
+        else:
+            print(f"Executing {ff} ...")
+            os.system(f"{f_path} " + " ".join(parameters))
+
+
 ### ---------- Networks --------------------------------------------------------------------
 
 
@@ -244,7 +263,7 @@ def write_vm_playbooks(vm: Virtual, session):
         f"{Ansible_Dir}/build-{vm.name}-vm.yaml",
     )
     render_template(
-        f"{hv_type}-remove-vm.j2",
+        f"{hv_type}-destroy-vm.j2",
         hyper.dict() | vm.dict(),
-        f"{Ansible_Dir}/remove-{vm.name}-vm.yaml",
+        f"{Ansible_Dir}/destroy-{vm.name}-vm.yaml",
     )

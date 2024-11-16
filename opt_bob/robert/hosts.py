@@ -9,6 +9,7 @@ from library import (
     API_POST_Responses,
     Config,
     restart_dnsmasq,
+    run_event_scripts,
     write_host_build_files,
     write_Dnsmasq,
 )
@@ -43,6 +44,7 @@ def create_host(host: Host, session: SessionDep) -> Host:
         # Just use the default
         host.dns_domain = Config.dns_domain
     # OK
+    run_event_scripts("host", "pre-add", [host.fqdn(), host.ip, host.mac])
     session.add(host)
     session.commit()
     session.refresh(host)
@@ -50,6 +52,7 @@ def create_host(host: Host, session: SessionDep) -> Host:
     write_Dnsmasq(session)
     write_host_build_files(host, session)
     restart_dnsmasq()
+    run_event_scripts("host", "post-add", [host.fqdn(), host.ip, host.mac])
     return host
 
 
@@ -103,9 +106,12 @@ def delete_host(host_name: str, session: SessionDep):
     host = session.get(Host, host_name)
     if not host:
         raise HTTPException(status_code=404, detail="Host not found")
+    #
+    run_event_scripts("host", "pre-remove", [host.fqdn(), host.ip, host.mac])
     session.delete(host)
     session.commit()
     restart_dnsmasq()
+    run_event_scripts("host", "post-remove", [host.fqdn(), host.ip, host.mac])
     return {"ok": True}
 
 
@@ -131,19 +137,24 @@ def build_host(Params: dict, host_name: str, session: SessionDep) -> Host:
                 )
             ).one_or_none()
             if not osv:
-                raise HTTPException(status_code=406, detail="That OS.version does not exist")
+                raise HTTPException(
+                    status_code=406, detail="That OS.version does not exist"
+                )
             host.os_version = Params["os_version"]
         else:  # Just get the first known
             Version0 = session.exec(
                 select(OsVersion).where(OsVersion.os_name == host.os_name)
             ).first()
             host.os_version = Version0.os_version
+    #
+    run_event_scripts("host", "pre-build", [host.fqdn(), host.ip, host.mac])
     session.add(host)
     session.commit()
     session.refresh(host)
     #
     write_Dnsmasq(session)
     write_host_build_files(host, session)
+    run_event_scripts("host", "post-build", [host.fqdn(), host.ip, host.mac])
     return host
 
 
@@ -153,8 +164,11 @@ def complete_host(host_name: str, session: SessionDep) -> Host:
     if not host:
         raise HTTPException(status_code=404, detail="Host not found")
     host.target = "local"
+    #
+    run_event_scripts("host", "pre-complete", [host.fqdn(), host.ip, host.mac])
     session.add(host)
     session.commit()
     session.refresh(host)
     write_host_build_files(host, session)
+    run_event_scripts("host", "post-complete", [host.fqdn(), host.ip, host.mac])
     return host
