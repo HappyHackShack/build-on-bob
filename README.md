@@ -1,6 +1,6 @@
 # Build on Bob
 
-An automated OS deployment system for Physicals and Virtuals - aimed at teh cloud-native world.
+An automated OS deployment system for Physicals and Virtuals - aimed at the cloud-native world.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Once you have cloned this repo onto the machine that you want to be the BoB serv
 
 ```bash
 # Install ansible (from PIP)
-dnf install -y git python3-pip
+dnf install -y git python3-pip python3-libdnf5
 pip install ansible
 
 cd <code-repo>/installer
@@ -21,7 +21,8 @@ ansible-playbook install-bob.yaml --tags pre-req
 ansible-playbook install-bob.yaml
 
 # Ensure you have some Operating Systems defined, e.g.:
-load the initialising data
+load the initialising data:
+curl -x POST http://127.0.0.1:7999/initialise/database
 # ... then generate the cache scripts
 cd /opt/bob
 bob gcs
